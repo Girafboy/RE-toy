@@ -49,39 +49,31 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm* algorithm, int chec
 int main() {
     std::vector<Algorithm*> algorithms = {
         // Kang
-        // new Kang(0),
-        // new Kang(1),
-        // new Kang(2),
-        // new Kang(5),
-        // new Kang(10),
-        // new Kang(20),
-        // new Kang(50),
-        // new Kang(100),
-        // new Kang(200),
-        // new Kang(500),
-        // new Kang(1000),
-        // new Kang(2000),
-        // new Kang(5000),
-        // new Kang(10000),
+        new Kang(2),
+        new Kang(3),
+        new Kang(4),
+        new Kang(5),
+        new Kang(6),
+        new Kang(7),
         // BFL
-        // new BFL(),
+        new BFL(),
         // Grail
-        // new GrailWrapper(1, 0, 2),
-        // new GrailWrapper(1, 0, 3),
-        // new GrailWrapper(1, 0, 5),
-        // new GrailWrapper(1, 0, 10),
-        // new GrailWrapper(1, 0, 20),
-        // new GrailWrapper(1, 0, 50),
-        // new GrailWrapper(1, 0, 100),
-        // new GrailWrapper(1, 0, 200),
-        // new GrailWrapper(1, 0, 500),
+        new GrailWrapper(1, 0, 2),
+        new GrailWrapper(1, 0, 3),
+        new GrailWrapper(1, 0, 5),
+        new GrailWrapper(1, 0, 10),
+        new GrailWrapper(1, 0, 20),
+        new GrailWrapper(1, 0, 50),
+        new GrailWrapper(1, 0, 100),
+        new GrailWrapper(1, 0, 200),
+        new GrailWrapper(1, 0, 500),
         // Path Tree
-        // new PathTreeWrapper(1),
+        new PathTreeWrapper(1),
         // TOL
         new TOLWrapper(0, 2),
         new TOLWrapper(1, 2),
         // Gripp
-        // new GrippWrapper(),
+        new GrippWrapper(),
     };
 
     /***************************************** Correctness Test *****************************************/

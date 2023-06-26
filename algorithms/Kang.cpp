@@ -17,6 +17,7 @@
 #include <climits>
 #include <algorithm>
 #include <cstring>
+#include <vector>
 
 namespace kang {
 
@@ -84,42 +85,11 @@ namespace kang {
             delete t;
     }
 
-// O(kdf + f log f)
-    void Kang::shrink(std::vector<int> &fakejump) {
-        std::vector<std::pair<int, int>> indices;
-        for (int i = 0; i < fakejump.size() - 1; ++i) {
-            if (nodes[fakejump[i + 1]].preorder - nodes[fakejump[i]].postorder > 1) {
-                indices.emplace_back(nodes[fakejump[i + 1]].preorder - nodes[fakejump[i]].postorder, i);
-            }
-        }
-
-        if (indices.size() > x) {
-            std::nth_element(indices.begin(), indices.begin() + x, indices.end(), std::greater<void>());
-        }
-        std::vector<int> slice;
-        for (int i = 0; i < std::min(indices.size(), x); ++i) {
-            slice.push_back(indices[i].second);
-        }
-        slice.push_back(-1);
-        slice.push_back(fakejump.size() - 1);
-        std::sort(slice.begin(), slice.end());
-
-        std::vector<int> old_fakejump(fakejump);
-        fakejump.clear();
-        for (auto it = slice.begin() + 1; it != slice.end(); ++it)
-            if (*prev(it) + 1 != *it) {
-                nodes.emplace_back(nodes[old_fakejump[*prev(it) + 1]].preorder, nodes[old_fakejump[*it]].postorder);
-                fakejump.push_back(nodes.size() - 1);
-            } else {
-                fakejump.push_back(old_fakejump[*it]);
-            }
-    }
-
     void Kang::DFS(int u) {
         static int increno = 0;
         nodes[u].preorder = ++increno;
         bool flag;
-        std::set<int>::iterator pos;
+
         for (auto it = topo_adj_list[u].begin(); it != topo_adj_list[u].end(); ++it) {
             if (nodes[*it].preorder == 0) {
                 DFS(*it);
@@ -129,48 +99,59 @@ namespace kang {
         }
         nodes[u].postorder = increno;
 
-        std::vector<std::vector<int> *> tmp_shallow, tmp_deep, tmp;
+        for (const int v: topo_adj_list[u]) {
+            nodes[u].levels_count[nodes[v].level]++;            
+            if (!nodes[v].level) {
+                for (int i=0; i<MAX_LEVEL; i++) {
+                    nodes[u].levels_count[i] += nodes[v].levels_count[i];
+                }
+            }
+        }
+        for (int i=MAX_LEVEL-1; i>=0; i--) {
+            if (nodes[u].levels_count[i] >= x) {
+                nodes[u].level = i + 1;
+                break;
+            }
+        }
+        // Tranvers child nodes and union all shallowjumps.
+        nodes[u].jump = new std::vector<int>();
+        if (nodes[u].level) {
+            std::vector<std::vector<int> *> tmp_shallow, tmp;
 
-        nodes[u].shallowjump = new std::vector<int>();
-        nodes[u].deepjump = new std::vector<int>();
-        tmp_deep.push_back(new std::vector<int>());
-        tmp_shallow.push_back(new std::vector<int>());
-        for (const int v: topo_adj_list[u])
-            if (nodes[v].shallowjump->size() + nodes[v].deepjump->size() > x) {
-                tmp.push_back(new std::vector<int>{v});
-                tmp_deep.push_back(tmp.back());
-            } else {
-                tmp.push_back(new std::vector<int>{v});
+            static int visit_cur = 0;
+            visit_cur++;
+            std::vector<int> stack;
+            std::copy(topo_adj_list[u].begin(), topo_adj_list[u].end(), std::back_inserter(stack));
+            while (!stack.empty()) {
+                int cur = stack.back();
+                stack.pop_back();
+                if (visit_cur == nodes[cur].visit) {
+                    continue;
+                }
+                nodes[cur].visit = visit_cur;
+
+                tmp.push_back(new std::vector<int> {cur});
                 tmp_shallow.push_back(tmp.back());
-                if (nodes[v].shallowjump) {
-                    tmp_shallow.push_back(nodes[v].shallowjump);
-                }
-                if (nodes[v].deepjump) {
-                    tmp_deep.push_back(nodes[v].deepjump);
+                if (nodes[cur].level) {
+                    tmp_shallow.push_back(nodes[cur].jump);
+                } else {
+                    std::copy(nodes[cur].jump->begin(), nodes[cur].jump->end(), std::back_inserter(stack));
                 }
             }
-        merge(tmp_deep, *nodes[u].deepjump);
-        merge(tmp_shallow, *nodes[u].shallowjump);
-        // merge(tmp_shallow, 0, tmp_shallow.size()-1, *nodes[u].shallowjump);
-        // merge(tmp_deep, 0, tmp_deep.size()-1, *nodes[u].deepjump);
-        for (auto t: tmp) delete t;
 
-        if (nodes[u].shallowjump->size() + nodes[u].deepjump->size() > x) {
-            nodes[u].fakejump = new std::vector<int>();
-            std::vector<std::vector<int> *> tmp_fake = {new std::vector<int>{u}};
-            if (nodes[u].shallowjump) {
-                tmp_fake.push_back(nodes[u].shallowjump);
+            if (!tmp_shallow.empty()) {
+                merge(tmp_shallow, *nodes[u].jump);            
             }
-            for (const int v: *(nodes[u].deepjump)) {
-                if (nodes[v].fakejump) {
-                    tmp_fake.push_back(nodes[v].fakejump);
-                }
+            for (auto t: tmp) delete t;
+        } else {
+            std::vector<std::vector<int> *> tmp;
+            for (const int v: topo_adj_list[u]) {
+                tmp.push_back(new std::vector<int> {v});
             }
-            merge(tmp_fake, *(nodes[u].fakejump));
-            // merge(tmp_fake, 0, tmp_fake.size()-1, *nodes[u].fakejump);
-            shrink(*nodes[u].fakejump);
-
-            delete tmp_fake[0];
+            if (!tmp.empty()) {
+                merge(tmp, *nodes[u].jump);            
+            }
+            for (auto t: tmp) delete t;
         }
     }
 
@@ -203,9 +184,14 @@ namespace kang {
             return false;
         } else if (target_->preorder >= source_->preorder) {
             return true;
+        } else if (source_->preorder <= target_->postorder) {
+            return false;
         }
 
-        if (source_->fakejump && !cover(*(source_->fakejump), target_->preorder)) {
+        if (cover(*(source_->jump), target_->preorder)) {
+            return true;
+        }
+        if (source_->level) {
             return false;
         }
 
@@ -214,30 +200,19 @@ namespace kang {
 
         std::stack<Node *> openlist;
         openlist.push(source_);
-        size_t len;
-        const int *cur;
         while (!openlist.empty()) {
             source_ = openlist.top();
             openlist.pop();
-            if (cover(*(source_->shallowjump), target_->preorder)) {
-                return true;
-            }
 
-            for (len = source_->deepjump->size(), cur = &(source_->deepjump->back()); len; len--) {
-                source_ = &nodes[*(cur--)];
-                if (target_->preorder >= source_->preorder) {
-                    if (target_->preorder <= source_->postorder) {
+            for (auto v: *source_->jump) {
+                if (nodes[v].visit != visit_cur) {
+                    if (cover(*(nodes[v].jump), target_->preorder)) {
                         return true;
                     }
-                    break;
-                }
-                if (source_->visit != visit_cur) {
-                    source_->visit = visit_cur;
-                    if (cover(*(source_->fakejump), target_->preorder)) {
-                        openlist.push(source_);
-                        // static int count = 0;
-                        // std::cout << ++count << std::endl;
+                    if (!nodes[v].level) {
+                        openlist.push(&nodes[v]);                        
                     }
+                    nodes[v].visit = visit_cur;
                 }
             }
         }
@@ -248,9 +223,7 @@ namespace kang {
 
     void Kang::reset() {
         for (auto node: nodes) {
-            if (!node.shallowjump) delete node.shallowjump;
-            if (!node.deepjump) delete node.deepjump;
-            if (!node.fakejump) delete node.fakejump;
+            if (!node.jump) delete node.jump;
         }
         nodes.clear();
         topo_adj_list.clear();
@@ -258,8 +231,18 @@ namespace kang {
 
     void Kang::construction(const Graph &graph) {
         size_t n = graph.size();
+        size_t m = graph.number_of_edges();
+        while (m) {
+            MAX_LEVEL++;
+            m /= x;
+        }
+
         nodes.resize(n);
         topo_adj_list.resize(n);
+        for (int i = 0; i < n; i++) {
+            nodes[i].levels_count = new unsigned char[MAX_LEVEL]; // TODO: log_x (m)
+            memset(nodes[i].levels_count, 0, MAX_LEVEL*sizeof(unsigned char));
+        }
 
         // in ascending topo-order
         std::queue<int> q;
@@ -291,6 +274,10 @@ namespace kang {
                 DFS(i);
             }
         }
+
+        for (int i = 0; i < n; ++i) {
+            nodes[i].visit = 0;
+        }
     }
 
     std::string Kang::getName() const {
@@ -302,11 +289,10 @@ namespace kang {
     }
 
     long long Kang::getIndexSize() const {
-        long long index_size = nodes.size() * (2 * sizeof(int));
+        long long index_size = nodes.size() * (3 * sizeof(int));
+        index_size += nodes.size() * MAX_LEVEL * sizeof(unsigned char);
         for (const auto &node: nodes) {
-            index_size +=
-                    ((node.shallowjump ? node.shallowjump->size() : 0) + (node.deepjump ? node.deepjump->size() : 0) +
-                     (node.fakejump ? node.fakejump->size() : 0)) * sizeof(int);
+            index_size += ((node.jump ? node.jump->size() : 0)) * sizeof(int);
         }
         return index_size;
     }

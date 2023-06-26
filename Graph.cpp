@@ -11,6 +11,11 @@
 
 Graph::Graph(std::vector<std::vector<int>> adj_list, std::string name) : adj_list(std::move(adj_list)), name(std::move(name)) {
     generateReverseAdjList();
+    n_node = adj_list.size();
+    n_edge = 0;
+    for (auto list : adj_list) {
+        n_edge += list.size();
+    }
 }
 
 size_t Graph::getInDegree(int i) const {
@@ -36,6 +41,12 @@ Graph::Graph(const std::string &input_file_path, std::string name) : name(std::m
     }
     graph_file.close();
     generateReverseAdjList();
+
+    n_node = adj_list.size();
+    n_edge = 0;
+    for (auto list : adj_list) {
+        n_edge += list.size();
+    }
 }
 
 Graph::Graph(int n, int d, std::string name) : name(std::move(name)) {
@@ -55,6 +66,12 @@ Graph::Graph(int n, int d, std::string name) : name(std::move(name)) {
         --m;
     }
     generateReverseAdjList();
+
+    n_node = adj_list.size();
+    n_edge = 0;
+    for (auto list : adj_list) {
+        n_edge += list.size();
+    }
 }
 
 void Graph::generateReverseAdjList() {
@@ -67,8 +84,12 @@ void Graph::generateReverseAdjList() {
 }
 
 size_t Graph::size() const {
-    return adj_list.size();
+    return n_node;
 }
+
+size_t Graph::number_of_edges() const {
+    return n_edge;
+};
 
 std::vector<int> Graph::getPredecessors(int i) const {
     return reverse_adj_list[i];

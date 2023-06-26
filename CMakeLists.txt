@@ -3,6 +3,10 @@ project(Kang)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+# SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+
 include_directories(.)
 include_directories(algorithms)
 include_directories(algorithms/GrailUtils)
@@ -35,6 +39,17 @@ add_executable(xJump
         algorithms/PathTreeUtils/PathTreeGraph.h
         algorithms/PathTreeUtils/PathTreeGraphUtil.cpp
         algorithms/PathTreeUtils/PathTreeGraphUtil.h
+        algorithms/TOLWrapper.cpp
+        algorithms/TOLWrapper.h
+        algorithms/TolUtils/utility1.h
+        algorithms/TolUtils/Butterfly.h
+        algorithms/GrippWrapper.cpp
+        algorithms/GrippWrapper.h
+        algorithms/GrippUtils/Util.h
+        algorithms/GrippUtils/GrippGraph.cpp
+        algorithms/GrippUtils/GrippGraph.h
+        algorithms/GrippUtils/Gripp.cpp
+        algorithms/GrippUtils/Gripp.h
         algorithms/Algorithm.h
         algorithms/BFL.cpp
         algorithms/BFL.h
@@ -49,4 +64,4 @@ add_executable(xJump
         Graph.cpp
         Graph.h
         main.cpp
-        Profile.h algorithms/TOLWrapper.cpp algorithms/TOLWrapper.h algorithms/TolUtils/utility1.h algorithms/TolUtils/Butterfly.h algorithms/GrippWrapper.cpp algorithms/GrippWrapper.h algorithms/GrippUtils/Util.h algorithms/GrippUtils/GrippGraph.cpp algorithms/GrippUtils/GrippGraph.h algorithms/GrippUtils/Gripp.cpp algorithms/GrippUtils/Gripp.h)
+        Profile.h )

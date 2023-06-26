@@ -22,9 +22,9 @@ namespace kang {
         struct Node {
             int preorder = 0;
             int postorder = 0;
-            std::vector<int> *shallowjump = nullptr;
-            std::vector<int> *deepjump = nullptr;
-            std::vector<int> *fakejump = nullptr;
+            std::vector<int> *jump = nullptr;
+            unsigned char *levels_count = nullptr;
+            int level = 0;
             int visit = 0;
 
             Node() {}
@@ -36,6 +36,7 @@ namespace kang {
 
         std::vector<std::list<int>> topo_adj_list;
         size_t x;
+        size_t MAX_LEVEL = 0;
 
         void TC();
 

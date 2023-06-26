@@ -5,7 +5,7 @@
 #ifndef XJUMP_GRIPPGRAPH_H
 #define XJUMP_GRIPPGRAPH_H
 
-#include"Util.h"
+#include "Util.h"
 #include "../Graph.h"
 
 namespace gripp {

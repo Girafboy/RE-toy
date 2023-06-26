@@ -5,12 +5,15 @@
 #ifndef KANG_GRAPH_H
 #define KANG_GRAPH_H
 
+#include <cstddef>
 #include <vector>
 #include <string>
 
 class Graph {
 private:
     std::string name;
+    std::size_t n_node;
+    std::size_t n_edge;
     std::vector<std::vector<int>> adj_list;
     std::vector<std::vector<int>> reverse_adj_list;
     void generateReverseAdjList();
@@ -22,6 +25,7 @@ public:
     size_t getInDegree(int i) const;
     size_t getOutDegree(int i) const;
     size_t size() const;
+    size_t number_of_edges() const;
     std::vector<int> getPredecessors(int i) const;
     std::vector<int> getSuccessors(int i) const;
     std::string getName() const;
