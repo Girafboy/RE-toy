@@ -23,19 +23,38 @@ namespace kang {
 
     std::vector<Kang::Node> Kang::nodes;
 
-    void Kang::merge2(std::vector<int> *a, std::vector<int> *b, std::vector<int> &result) {
-        result.reserve(a->size() + b->size());
-        auto aptr = a->begin(), bptr = b->begin();
+    Kang::Jumps* Kang::merge1(Jumps *jumps) {
+        static auto cmp = [](const int left, const int right) {
+            return nodes[left].preorder < nodes[right].preorder;
+        };
+
+        Jumps *result = new Jumps ();
+        std::sort(std::begin(*jumps), std::end(*jumps), cmp);
 
         int cur, last_postorder = INT_MIN;
-        while (aptr != a->end()) {
-            if (bptr == b->end()) {
-                while (aptr != a->end()) {
+        for (auto j: *jumps) {
+            if (nodes[j].postorder > last_postorder) {
+                result->push_back(j);
+                last_postorder = nodes[j].postorder;
+            }
+        }
+        return result;
+    }
+
+    Kang::Jumps* Kang::merge2(const Jumps *jumps_a, const Jumps *jumps_b) {
+        Jumps * result = new Jumps ();
+        result->reserve(jumps_a->size() + jumps_b->size());
+        auto aptr = jumps_a->begin(), bptr = jumps_b->begin();
+
+        int cur, last_postorder = INT_MIN;
+        while (aptr != jumps_a->end()) {
+            if (bptr == jumps_b->end()) {
+                while (aptr != jumps_a->end()) {
                     if (nodes[*aptr].postorder > last_postorder) break;
                     aptr++;
                 }
-                result.insert(result.end(), aptr, a->end());
-                result.shrink_to_fit();
+                result->insert(result->end(), aptr, jumps_a->end());
+                result->shrink_to_fit();
                 break;
             }
             if (nodes[*aptr].preorder < nodes[*bptr].preorder) {
@@ -46,44 +65,42 @@ namespace kang {
                 bptr++;
             }
             if (nodes[cur].postorder > last_postorder) {
-                result.push_back(cur);
+                result->push_back(cur);
                 last_postorder = nodes[cur].postorder;
             }
         }
-        while (bptr != b->end()) {
+        while (bptr != jumps_b->end()) {
             if (nodes[*bptr].postorder > last_postorder) break;
             bptr++;
         }
-        result.insert(result.end(), bptr, b->end());
-        result.shrink_to_fit();
+        result->insert(result->end(), bptr, jumps_b->end());
+        result->shrink_to_fit();
+        return result;
     }
 
-    void Kang::merge(std::vector<std::vector<int> *> &jumps, std::vector<int> &merged_jump) {
-        if (jumps.empty()) return;
-
-        static auto cmp = [](const std::vector<int> *left, const std::vector<int> *right) {
+    Kang::Jumps* Kang::mergek(const std::vector<const Jumps *> &jumps_list) {
+        static auto cmp = [](const Jumps *left, const Jumps *right) {
             return left->size() > right->size();
         };
-        std::priority_queue<std::vector<int> *, std::vector<std::vector<int> *>, decltype(cmp)> heap(jumps.begin(),
-                                                                                                     jumps.end(), cmp);
+        std::priority_queue<const Jumps *, std::vector<const Jumps *>, decltype(cmp)> heap(jumps_list.begin(), jumps_list.end(), cmp);
 
-        std::vector<std::vector<int> *> tmp;
+        std::vector<Jumps *> tmp;
         while (heap.size() > 1) {
-            tmp.push_back(new std::vector<int>());
-            std::vector<int> *resl = heap.top();
+            const Jumps *resl = heap.top();
             heap.pop();
-            std::vector<int> *resr = heap.top();
+            const Jumps *resr = heap.top();
             heap.pop();
-            merge2(resl, resr, *tmp.back());
+            tmp.push_back(merge2(resl, resr));
             heap.push(tmp.back());
         }
 
-        merged_jump.resize(heap.top()->size());
-        std::copy(heap.top()->begin(), heap.top()->end(), merged_jump.begin());
-
+        Jumps *result = new Jumps (*heap.top());
         for (auto t: tmp)
             delete t;
+
+        return result;
     }
+
 
     void Kang::DFS(int u) {
         static int increno = 0;
@@ -114,49 +131,51 @@ namespace kang {
             }
         }
         // Tranvers child nodes and union all shallowjumps.
-        nodes[u].jump = new std::vector<int>();
+        Jumps *jump_tmp = new Jumps();
         if (nodes[u].level) {
-            std::vector<std::vector<int> *> tmp_shallow, tmp;
+            std::vector<const Jumps *> tmp_shallow;
 
             static int visit_cur = 0;
             visit_cur++;
-            std::vector<int> stack;
-            std::copy(topo_adj_list[u].begin(), topo_adj_list[u].end(), std::back_inserter(stack));
+            std::stack<int> stack;
+            stack.push(u);
             while (!stack.empty()) {
-                int cur = stack.back();
-                stack.pop_back();
-                if (visit_cur == nodes[cur].visit) {
-                    continue;
-                }
-                nodes[cur].visit = visit_cur;
+                int cur = stack.top();
+                stack.pop();
 
-                tmp.push_back(new std::vector<int> {cur});
-                tmp_shallow.push_back(tmp.back());
-                if (nodes[cur].level) {
-                    tmp_shallow.push_back(nodes[cur].jump);
-                } else {
-                    std::copy(nodes[cur].jump->begin(), nodes[cur].jump->end(), std::back_inserter(stack));
+                for (auto v: topo_adj_list[cur]) {
+                    if (nodes[v].visit != visit_cur) {
+                        nodes[v].visit = visit_cur;
+                        jump_tmp->push_back(v);
+                        if (nodes[v].level) {
+                            tmp_shallow.push_back(nodes[v].jump);
+                        } else {
+                            stack.push(v);
+                        }
+                    }
                 }
             }
+            auto tmp = nodes[u].jump;
+            nodes[u].jump = merge1(jump_tmp);
+            delete tmp;
 
-            if (!tmp_shallow.empty()) {
-                merge(tmp_shallow, *nodes[u].jump);            
-            }
-            for (auto t: tmp) delete t;
+            tmp_shallow.push_back(nodes[u].jump);
+            tmp = nodes[u].jump;
+            nodes[u].jump = new Jumps ();
+            nodes[u].jump = mergek(tmp_shallow);
+            delete tmp;
         } else {
-            std::vector<std::vector<int> *> tmp;
             for (const int v: topo_adj_list[u]) {
-                tmp.push_back(new std::vector<int> {v});
+                jump_tmp->push_back(v);
             }
-            if (!tmp.empty()) {
-                merge(tmp, *nodes[u].jump);            
-            }
-            for (auto t: tmp) delete t;
+            auto tmp = nodes[u].jump;
+            nodes[u].jump = merge1(jump_tmp);
+            delete tmp;
         }
     }
 
 
-    bool Kang::cover(const std::vector<int> &sortedlist, const int target_order) {
+    bool Kang::cover(const Jumps &sortedlist, const int target_order) {
         // for (int u: sortedlist) {
         //     std::cout << "(" << nodes[u].preorder << "," << nodes[u].postorder << ")";
         // }

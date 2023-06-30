@@ -19,10 +19,11 @@ namespace kang {
 
     class Kang : public Algorithm {
     private:
+        typedef std::vector<int> Jumps;
         struct Node {
             int preorder = 0;
             int postorder = 0;
-            std::vector<int> *jump = nullptr;
+            const Jumps *jump = nullptr;
             unsigned char *levels_count = nullptr;
             int level = 0;
             int visit = 0;
@@ -42,13 +43,13 @@ namespace kang {
 
         void DFS(int u);
 
-        void merge(std::vector<std::vector<int> *> &jumps, std::vector<int> &merged_jump);
+        Jumps* merge1(Jumps *jumps);
 
-        void merge2(std::vector<int> *a, std::vector<int> *b, std::vector<int> &result);
+        Jumps* merge2(const Jumps *jumps_a, const Jumps *jumps_b);
 
-        static bool cover(const std::vector<int> &sortedlist, const int target_order);
+        Jumps* mergek(const std::vector<const Jumps *> &jumps_list);
 
-        void shrink(std::vector<int> &fakejump);
+        static bool cover(const Jumps &sortedlist, const int target_order);
 
     public:
         Kang(int x);
