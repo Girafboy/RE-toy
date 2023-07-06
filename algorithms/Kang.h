@@ -24,7 +24,7 @@ namespace kang {
             int preorder = 0;
             int postorder = 0;
             const Jumps *jump = nullptr;
-            unsigned char *levels_count = nullptr;
+            const Jumps *deep = nullptr;
             int level = 0;
             int visit = 0;
 
@@ -34,6 +34,8 @@ namespace kang {
         };
 
         static std::vector<Node> nodes; // TODO: 原生数组
+        static int visit_cur;
+        static int increno;
 
         std::vector<std::list<int>> topo_adj_list;
         size_t x;
