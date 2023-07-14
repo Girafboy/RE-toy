@@ -25,295 +25,291 @@ namespace kang {
 
     std::vector<Kang::Node> Kang::nodes;
     int Kang::visit_cur = 0;
-    int Kang::increno = 0;
+    int Kang::color_cur = 0;
 
-    Kang::Jumps* Kang::merge1(Jumps *jumps) {
-        static auto cmp = [](const int left, const int right) {
-            return nodes[left].preorder < nodes[right].preorder;
-        };
 
-        Jumps *result = new Jumps ();
-        std::sort(std::begin(*jumps), std::end(*jumps), cmp);
-
-        int cur, last_postorder = INT_MIN;
-        for (auto j: *jumps) {
-            if (nodes[j].postorder > last_postorder) {
-                result->push_back(j);
-                last_postorder = nodes[j].postorder;
-            }
+    void Kang::volume_update(std::vector<int>& main, std::vector<int>& minor) {
+        color_cur++;
+        for (auto v: main) {
+            nodes[v].color = color_cur;
         }
-        return result;
-    }
-
-    Kang::Jumps* Kang::merge2(const Jumps *jumps_a, const Jumps *jumps_b) {
-        Jumps * result = new Jumps ();
-        result->reserve(jumps_a->size() + jumps_b->size());
-        auto aptr = jumps_a->begin(), bptr = jumps_b->begin();
-
-        int cur, last_postorder = INT_MIN;
-        while (aptr != jumps_a->end()) {
-            if (bptr == jumps_b->end()) {
-                while (aptr != jumps_a->end()) {
-                    if (nodes[*aptr].postorder > last_postorder) break;
-                    aptr++;
-                }
-                result->insert(result->end(), aptr, jumps_a->end());
-                break;
-            }
-            if (nodes[*aptr].preorder < nodes[*bptr].preorder) {
-                cur = *aptr;
-                aptr++;
-            } else {
-                cur = *bptr;
-                bptr++;
-            }
-            if (nodes[cur].postorder > last_postorder) {
-                result->push_back(cur);
-                last_postorder = nodes[cur].postorder;
-            }
-        }
-        while (bptr != jumps_b->end()) {
-            if (nodes[*bptr].postorder > last_postorder) break;
-            bptr++;
-        }
-        result->insert(result->end(), bptr, jumps_b->end());
-        return result;
-    }
-
-    Kang::Jumps* Kang::mergek(const std::vector<const Jumps *> &jumps_list) {
-        static auto cmp = [](const Jumps *left, const Jumps *right) {
-            return left->size() > right->size();
-        };
-        std::priority_queue<const Jumps *, std::vector<const Jumps *>, decltype(cmp)> heap(jumps_list.begin(), jumps_list.end(), cmp);
-
-        std::vector<Jumps *> tmp;
-        while (heap.size() > 1) {
-            const Jumps *resl = heap.top();
-            heap.pop();
-            const Jumps *resr = heap.top();
-            heap.pop();
-            tmp.push_back(merge2(resl, resr));
-            heap.push(tmp.back());
+        for (auto v: minor) {
+            nodes[v].color = color_cur + 1;
         }
 
-        Jumps *result = new Jumps (*heap.top());
-        for (auto t: tmp)
-            delete t;
-
-        return result;
-    }
-
-
-    void Kang::DFS(int u) {
-        nodes[u].preorder = ++increno;
-        bool flag;
-
-        for (auto it = topo_adj_list[u].begin(); it != topo_adj_list[u].end(); ++it) {
-            if (nodes[*it].preorder == 0) {
-                DFS(*it);
-            } else if (nodes[*it].preorder >= nodes[u].preorder) {
-                topo_adj_list[u].erase(it--);
-            }
-        }
-        nodes[u].postorder = increno;
-
-        // Traverse child nodes and union all shallowjumps.
-        visit_cur++;
-        Jumps tmp_jump {u}, tmp_deep(topo_adj_list[u].begin(), topo_adj_list[u].end());
-        nodes[u].deep = merge1(&tmp_deep);
-        tmp_deep = *nodes[u].deep;
-        for (auto v: *nodes[u].deep) {
-            nodes[v].visit = visit_cur;
-            if (nodes[v].deep) {
-                for (auto d: *nodes[v].deep) {
-                    if (nodes[d].visit != visit_cur) {
-                        tmp_deep.push_back(d);
-                        nodes[d].visit = visit_cur;
-                    }
-                }
-            }
-        }
-        delete nodes[u].deep;
-        // int x_new = 1, tmp = nodes.size() - visit_cur + 1;
-        // while (tmp < nodes.size()) {
-        //     tmp *= x;
-        //     x_new *= x;
-        // }
-        // int x_new = x * std::log2(nodes.size()/(nodes.size() - nodes[u].preorder + 1));
-        if (tmp_deep.size() > x) {
-            static auto cmp = [](const int left, const int right) {
-                return nodes[left].jump->size() < nodes[right].jump->size();
-            };
-            std::nth_element(tmp_deep.begin(), tmp_deep.end()-x, tmp_deep.end(), cmp);
-            nodes[u].deep = new Jumps(tmp_deep.end()-x, tmp_deep.end());
-
-            std::vector<const Jumps *> tmp_shallow;
-
-            for (auto it = tmp_deep.begin(); it != tmp_deep.end()-x; it++) {
-                if (nodes[*it].jump) {
-                    tmp_shallow.push_back(nodes[*it].jump);
-                }
-            }
-            tmp_shallow.push_back(&tmp_jump);
-            nodes[u].jump = mergek(tmp_shallow);
-
-            tmp_jump.clear();
-            for (auto j: *nodes[u].jump) {
-                bool flag = true;
-                for (auto v: *nodes[u].deep) {
-                    if (cover(*(nodes[v].jump), nodes[j].preorder)) {
-                        flag = false;
-                        break;
-                    }
-                }
-                if (flag) {
-                    tmp_jump.push_back(j);
-                }
-            }
-            delete nodes[u].jump;
-            nodes[u].jump = new Jumps(tmp_jump);
-        } else {
-            nodes[u].deep = new Jumps(tmp_deep.begin(), tmp_deep.end());
-            nodes[u].jump = new Jumps(tmp_jump);
-        }
-        nodes[u].level = std::log2(nodes[u].jump->size());
-    }
-
-
-    bool Kang::cover(const Jumps &sortedlist, const int target_order) {
-        auto len = sortedlist.size();
-        const int *first = &sortedlist[0], *mid;
-        while (len) {
-            mid = first + (len >> 1);
-            if (target_order < nodes[*mid].preorder)
-                len = (len >> 1);
-            else {
-                first = mid + 1;
-                len -= (len >> 1) + 1;
-            }
-        }
-        if (first != &sortedlist[0] && target_order <= nodes[*(first - 1)].postorder) {
-            return true;
-        }
-        return false;
-    }
-
-    bool Kang::TC_haspath(const int source, const int target) {
-        if (nodes[target].preorder > nodes[source].postorder) {
-            return false;
-        } else if (nodes[target].preorder >= nodes[source].preorder) {
-            return true;
-        } else if (nodes[source].preorder <= nodes[target].postorder) {
-            return false;
-        }
-
-        if (cover(*nodes[source].jump, nodes[target].preorder)) {
-            return true;
-        }
-
-        for (auto v: *nodes[source].deep) {
-            if (cover(*nodes[v].jump, nodes[target].preorder)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    Kang::Kang(int x) : x(x) {}
-
-    void Kang::reset() {
-        for (auto node: nodes) {
-            if (!node.jump) delete node.jump;
-        }
-        nodes.clear();
-        topo_adj_list.clear();
-        visit_cur = 0;
-        increno = 0;
-    }
-
-    void Kang::construction(const Graph &graph) {
-        size_t n = graph.size();
-        MAX_LEVEL = 30;
-
-        nodes.resize(n);
-        topo_adj_list.resize(n);
-
-        // in ascending topo-order
         std::queue<int> q;
-        std::vector<size_t> in_degree(n);
-        for (int i = 0; i < n; ++i) {
-            in_degree[i] = graph.getInDegree(i);
+
+        // from up to down
+        for (auto i: main) {
+            nodes[i].volume_in = 0;
+            for (auto v: graph->getPredecessors(i)) {
+                if (nodes[v].color >= color_cur){
+                    nodes[i].degree_in++;
+                }
+            }
         }
-        for (int i = 0; i < n; ++i) {
-            if (in_degree[i] == 0) {
+        for (auto i: minor) {
+            nodes[i].volume_in = 0;
+            for (auto v: graph->getPredecessors(i)) {
+                if (nodes[v].color >= color_cur){
+                    nodes[i].degree_in++;
+                }
+            }
+        }
+        for (auto i: main) {
+            if (nodes[i].degree_in == 0) {
+                q.push(i);
+            }
+        }
+        for (auto i: minor) {
+            if (nodes[i].degree_in == 0) {
                 q.push(i);
             }
         }
         while (!q.empty()) {
-            int current = q.front();
-            q.pop();
-            // construct topo_adj_list
-            for (const int head: graph.getPredecessors(current)) {
-                topo_adj_list[head].push_back(current);
+            int cur = q.front(); q.pop();
+            int deg = 0;
+            for (auto v: graph->getSuccessors(cur)) {
+                if (nodes[v].color >= color_cur){
+                    deg++;
+                }
             }
-            for (const int tail: graph.getSuccessors(current)) {
-                if (--in_degree[tail] == 0) {
-                    q.push(tail);
+            for (auto v: graph->getSuccessors(cur)) {
+                if (nodes[v].color >= color_cur){
+                    if (!(--nodes[v].degree_in)) {
+                        q.push(v);
+                    }
+                    nodes[v].volume_in += (nodes[cur].volume_in/deg + 1);
+                }
+            }
+        }
+        // from down to up
+        for (auto i: main) {
+            nodes[i].volume_out = 0;
+            for (auto v: graph->getSuccessors(i)) {
+                if (nodes[v].color >= color_cur){
+                    nodes[i].degree_out++;                
+                }
+            }
+        }
+        for (auto i: minor) {
+            nodes[i].volume_out = 0;
+            for (auto v: graph->getSuccessors(i)) {
+                if (nodes[v].color >= color_cur){
+                    nodes[i].degree_out++;                
+                }
+            }
+        }
+        for (auto i: main) {
+            if (nodes[i].degree_out == 0) {
+                q.push(i);
+            }
+        }
+        for (auto i: minor) {
+            if (nodes[i].degree_out == 0) {
+                q.push(i);
+            }
+        }
+        while (!q.empty()) {
+            int cur = q.front(); q.pop();
+            int deg = 0;
+            for (auto v: graph->getPredecessors(cur)) {
+                if (nodes[v].color >= color_cur){
+                    deg++;
+                }
+            }
+            for (auto v: graph->getPredecessors(cur)) {
+                if (nodes[v].color >= color_cur){
+                    if (!(--nodes[v].degree_out)) {
+                        q.push(v);
+                    }
+                    nodes[v].volume_out += (nodes[cur].volume_out/deg + (nodes[v].color == color_cur));
+                }
+            }
+        }
+        color_cur++;
+
+        cutoff(main, minor);
+    }
+
+
+    void Kang::cutoff(std::vector<int>& main, std::vector<int>& minor) {
+        if (main.empty()) {
+            return;
+        }
+
+        color_cur++;
+        int split_node = main[0];
+        for (auto v: main) {
+            nodes[v].color = color_cur;
+            if (nodes[v].volume_in*nodes[v].volume_out > nodes[split_node].volume_in*nodes[split_node].volume_out) {
+                split_node = v;
+            }
+        }
+        
+        for (auto v: minor) {
+            nodes[v].color = color_cur;
+        }
+        nodes[split_node].color = color_cur+3; nodes[split_node].volume_in = 0; nodes[split_node].volume_out = 0;
+
+        std::vector<int> A, B, C;
+        std::stack<int> stack;
+
+        // from split_node to up
+        stack.push(split_node);
+        while (!stack.empty()) {
+            int cur = stack.top(); stack.pop();
+            for (auto v: graph->getPredecessors(cur)) {
+                if (nodes[v].color == color_cur) {
+                    nodes[v].color = color_cur + 1;
+                    nodes[v].jump_out.push_back(split_node);
+                    stack.push(v);
                 }
             }
         }
 
-        for (int i = 0; i < n; ++i) {
-            if (graph.getInDegree(i) == 0) {
-                DFS(i);
+        // from split_node to down
+        stack.push(split_node);
+        while (!stack.empty()) {
+            int cur = stack.top(); stack.pop();
+            for (auto v: graph->getSuccessors(cur)) {
+                if (nodes[v].color == color_cur) {
+                    nodes[v].color = color_cur + 2;
+                    nodes[v].jump_in.push_back(split_node);
+                    stack.push(v);
+                }
             }
         }
 
-        for (int i = 0; i < n; ++i) {
-            nodes[i].visit = 0;
+
+        if (minor.empty()) {
+            for (auto v: main) {
+                if (nodes[v].color == color_cur+1) {
+                    A.push_back(v);
+                } else if (nodes[v].color == color_cur+2) {
+                    B.push_back(v);
+                } else if (nodes[v].color == color_cur) {
+                    C.push_back(v);
+                }
+            }
+
+            color_cur+=3;
+
+            volume_update(B, C);
+            std::copy(C.begin(), C.end(), std::back_inserter(A)); C.clear();
+            volume_update(A, C);
+        } else {
+            for (auto v: main) {
+                if (nodes[v].color == color_cur || nodes[v].color == color_cur+1) {
+                    A.push_back(v);
+                } else if (nodes[v].color == color_cur+2) {
+                    B.push_back(v);
+                }
+                if (nodes[v].color == color_cur) {
+                    C.push_back(v);
+                }
+            }
+            for (auto v: minor) {
+                if (nodes[v].color == color_cur) {
+                    C.push_back(v);
+                }
+            }
+            color_cur+=3;
+
+            volume_update(A, minor);
+            volume_update(B, C);
+        }
+    }
+
+
+    Kang::Kang(int x) : x(x) {}
+
+    void Kang::reset() {
+        nodes.clear();
+        topo_adj_list.clear();
+        visit_cur = 0;
+        color_cur = 0;
+    }
+
+    void Kang::construction(const Graph &graph) {
+        this->graph = &graph;
+        nodes.resize(graph.size());
+
+        std::vector<int> main, minor;
+        for (int i = 0; i < graph.size(); i++) {
+            main.push_back(i);
+        }
+        volume_update(main, minor);
+        for (int i = 0; i < graph.size(); i++) {
+            std::sort(nodes[i].jump_in.begin(), nodes[i].jump_in.end());
+            std::sort(nodes[i].jump_out.begin(), nodes[i].jump_out.end());
         }
 
-        // std::vector<int> level_count, jump_size, deep_size;
-        // level_count.resize(MAX_LEVEL);
-        // jump_size.resize(MAX_LEVEL);
-        // deep_size.resize(MAX_LEVEL);
-        // for (int i = 0; i < n; ++i) {
-        //     level_count[nodes[i].level] ++;
-        //     jump_size[nodes[i].level] += nodes[i].jump->size();
+        // std::vector<int> storage; storage.resize(graph.size());
+        // std::vector<int> usage; usage.resize(graph.size());
+        // for (int i = 0; i < graph.size(); i++) {
+        //     for (int j = 0; j < graph.size(); j++) {
+        //         bool flag = false;
+        //         if (i == j) {
+        //             std::cout << '+';
+        //         } else {
+        //             for (auto v: nodes[j].jump_in) {
+        //                 if (v == i) {
+        //                     std::cout << "O";
+        //                     storage[j] += 1;
+        //                     flag = true;
+        //                 }
+        //             }
+        //             for (auto v: nodes[i].jump_out) {
+        //                 if (v == j) {
+        //                     std::cout << "I";
+        //                     usage[j] += 1;
+        //                     flag = true;
+        //                 }
+        //             }
+        //             if (!flag) {
+        //                 // if (TC_haspath(i, j)) {
+        //                 //     std::cout << "_";
+        //                 // } else {
+        //                     std::cout << " ";
+        //                 // }
+        //             }
+        //         }
+        //     }
+        //     // std::cout << "\t" << storage[i] << "\t" << usage[i]  << "\t" << (storage[i]+usage[i])*100/(storage[i]*(usage[i]+1)) << "%" << std::endl;
+        //     std::cout << std::endl;
         // }
-        // for (int i = 0; i < level_count.size(); ++i) {
-        //     std::cout << "level-" << i << ": \t" << level_count[i] << "\t" << jump_size[i] << "\t" << jump_size[i]/(level_count[i]+1) << std::endl;
-        // }
-        std::vector<int> storage; storage.resize(n);
-        std::vector<int> usage; usage.resize(n);
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                bool flag = false;
-                for (auto v: *nodes[i].jump) {
-                    if (v == j) {
-                        std::cout << "X";
-                        storage[i] += 1;
-                        flag = true;
-                    }
-                }
-                for (auto v: *nodes[i].deep) {
-                    if (v == j) {
-                        std::cout << "O";
-                        usage[j] += 1;
-                        flag = true;
-                    }
-                }
-                if (!flag) {
-                    if (TC_haspath(i, j)) {
-                        std::cout << "_";
-                    } else {
-                        std::cout << " ";
-                    }
-                }
+    }
+
+    bool Kang::TC_haspath(int source, int target) {
+        if (source == target) return true;
+        if (!nodes[source].jump_out.empty()) {
+            for (auto v: nodes[source].jump_out) {
+                if (v == target) return true;
             }
-            std::cout << "\t" << storage[i] << "\t" << usage[i]  << "\t" << (storage[i]+usage[i])*100/(storage[i]*(usage[i]+1)) << "%" << std::endl;
         }
+        if (!nodes[target].jump_in.empty()) {
+            for (auto v: nodes[target].jump_in) {
+                if (v == source) return true;
+            }
+        }
+        if (nodes[source].jump_out.empty() || nodes[target].jump_in.empty()) {
+            return false;
+        }
+
+        int ps = 0, pt = 0;
+        int m = nodes[source].jump_out.size(), n = nodes[target].jump_in.size();
+        int cur;
+        while (ps < m && pt < n) {
+            if (nodes[source].jump_out[ps] < nodes[target].jump_in[pt]) {
+                ps++;
+            } else if (nodes[source].jump_out[ps] > nodes[target].jump_in[pt]) {
+                pt++;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
     std::string Kang::getName() const {
@@ -327,8 +323,8 @@ namespace kang {
     long long Kang::getIndexSize() const {
         long long index_size = nodes.size() * (3 * sizeof(int));
         for (const auto &node: nodes) {
-            index_size += ((node.jump ? node.jump->size() : 0)) * sizeof(int);
-            index_size += ((node.deep ? node.deep->size() : 0)) * sizeof(int);
+            index_size += node.jump_in.size() * sizeof(int);
+            index_size += node.jump_out.size() * sizeof(int);
         }
         return index_size;
     }

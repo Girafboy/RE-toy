@@ -21,29 +21,33 @@ namespace kang {
     private:
         typedef std::vector<int> Jumps;
         struct Node {
-            int preorder = 0;
-            int postorder = 0;
-            const Jumps *jump = nullptr;
-            const Jumps *deep = nullptr;
-            int level = 0;
+            double volume_in = 0;
+            double volume_out = 0;
+            Jumps jump_in;
+            Jumps jump_out;
+            int degree_in = 0;
+            int degree_out = 0;
             int visit = 0;
+            int color = 0;
 
             Node() {}
-
-            Node(int preorder, int postorder) : preorder(preorder), postorder(postorder) {}
         };
 
         static std::vector<Node> nodes; // TODO: 原生数组
         static int visit_cur;
-        static int increno;
+        static int color_cur;
 
         std::vector<std::list<int>> topo_adj_list;
+        const Graph* graph;
         size_t x;
-        size_t MAX_LEVEL = 0;
 
         void TC();
 
         void DFS(int u);
+
+        void volume_update(std::vector<int>& main, std::vector<int>& minor);
+
+        void cutoff(std::vector<int>& main, std::vector<int>& minor);
 
         Jumps* merge1(Jumps *jumps);
 
