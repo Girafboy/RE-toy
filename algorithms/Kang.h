@@ -27,14 +27,13 @@ namespace kang {
             Jumps jump_out;
             int degree_in = 0;
             int degree_out = 0;
-            int visit = 0;
             int color = 0;
+            int level = 0;
 
             Node() {}
         };
 
         static std::vector<Node> nodes; // TODO: 原生数组
-        static int visit_cur;
         static int color_cur;
 
         std::vector<std::list<int>> topo_adj_list;
@@ -45,9 +44,9 @@ namespace kang {
 
         void DFS(int u);
 
-        void volume_update(std::vector<int>& main, std::vector<int>& minor);
+        void volume_update(std::vector<int>& main, std::vector<int>& minor, int level);
 
-        void cutoff(std::vector<int>& main, std::vector<int>& minor);
+        void cutoff(std::vector<int>& main, std::vector<int>& minor, int level);
 
         Jumps* merge1(Jumps *jumps);
 

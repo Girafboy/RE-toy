@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <fstream>
+#include <iomanip>
 #include <iterator>
 #include <sstream>
 #include <iostream>
@@ -24,11 +25,10 @@
 namespace kang {
 
     std::vector<Kang::Node> Kang::nodes;
-    int Kang::visit_cur = 0;
     int Kang::color_cur = 0;
 
 
-    void Kang::volume_update(std::vector<int>& main, std::vector<int>& minor) {
+    void Kang::volume_update(std::vector<int>& main, std::vector<int>& minor, int level) {
         color_cur++;
         for (auto v: main) {
             nodes[v].color = color_cur;
@@ -79,7 +79,7 @@ namespace kang {
                     if (!(--nodes[v].degree_in)) {
                         q.push(v);
                     }
-                    nodes[v].volume_in += (nodes[cur].volume_in/deg + 1);
+                    nodes[v].volume_in += (nodes[cur].volume_in + 1);
                 }
             }
         }
@@ -123,17 +123,17 @@ namespace kang {
                     if (!(--nodes[v].degree_out)) {
                         q.push(v);
                     }
-                    nodes[v].volume_out += (nodes[cur].volume_out/deg + (nodes[v].color == color_cur));
+                    nodes[v].volume_out += (nodes[cur].volume_out + (nodes[cur].color == color_cur));
                 }
             }
         }
         color_cur++;
 
-        cutoff(main, minor);
+        cutoff(main, minor, level);
     }
 
 
-    void Kang::cutoff(std::vector<int>& main, std::vector<int>& minor) {
+    void Kang::cutoff(std::vector<int>& main, std::vector<int>& minor, int level) {
         if (main.empty()) {
             return;
         }
@@ -141,8 +141,8 @@ namespace kang {
         color_cur++;
         int split_node = main[0];
         for (auto v: main) {
-            nodes[v].color = color_cur;
-            if (nodes[v].volume_in*nodes[v].volume_out > nodes[split_node].volume_in*nodes[split_node].volume_out) {
+            nodes[v].color = color_cur + 1;
+            if (nodes[v].volume_in*nodes[v].volume_out/(nodes[v].volume_in+nodes[v].volume_out) > nodes[split_node].volume_in*nodes[split_node].volume_out/(nodes[split_node].volume_in+nodes[split_node].volume_out)) {
                 split_node = v;
             }
         }
@@ -150,10 +150,27 @@ namespace kang {
         for (auto v: minor) {
             nodes[v].color = color_cur;
         }
-        nodes[split_node].color = color_cur+3; nodes[split_node].volume_in = 0; nodes[split_node].volume_out = 0;
+        nodes[split_node].color = color_cur-1;
+        nodes[split_node].level = level;
 
         std::vector<int> A, B, C;
         std::stack<int> stack;
+
+        // clear minor
+        for (auto v: main) {
+            stack.push(v);
+        }
+        while (!stack.empty()) {
+            int cur = stack.top(); stack.pop();
+            for (auto v: graph->getPredecessors(cur)) {
+                if (nodes[v].color == color_cur) {
+                    nodes[v].color = color_cur + 1;
+                    stack.push(v);
+                }
+            }
+        }
+        color_cur++;
+
 
         // from split_node to up
         stack.push(split_node);
@@ -193,11 +210,11 @@ namespace kang {
                 }
             }
 
-            color_cur+=3;
+            color_cur+=2;
 
-            volume_update(B, C);
+            volume_update(B, C, level+1);
             std::copy(C.begin(), C.end(), std::back_inserter(A)); C.clear();
-            volume_update(A, C);
+            volume_update(A, C, level+1);
         } else {
             for (auto v: main) {
                 if (nodes[v].color == color_cur || nodes[v].color == color_cur+1) {
@@ -214,10 +231,10 @@ namespace kang {
                     C.push_back(v);
                 }
             }
-            color_cur+=3;
+            color_cur+=2;
 
-            volume_update(A, minor);
-            volume_update(B, C);
+            volume_update(A, minor, level+1);
+            volume_update(B, C, level+1);
         }
     }
 
@@ -227,7 +244,6 @@ namespace kang {
     void Kang::reset() {
         nodes.clear();
         topo_adj_list.clear();
-        visit_cur = 0;
         color_cur = 0;
     }
 
@@ -239,46 +255,45 @@ namespace kang {
         for (int i = 0; i < graph.size(); i++) {
             main.push_back(i);
         }
-        volume_update(main, minor);
+        volume_update(main, minor, 1);
         for (int i = 0; i < graph.size(); i++) {
             std::sort(nodes[i].jump_in.begin(), nodes[i].jump_in.end());
             std::sort(nodes[i].jump_out.begin(), nodes[i].jump_out.end());
         }
 
-        // std::vector<int> storage; storage.resize(graph.size());
-        // std::vector<int> usage; usage.resize(graph.size());
-        // for (int i = 0; i < graph.size(); i++) {
-        //     for (int j = 0; j < graph.size(); j++) {
-        //         bool flag = false;
-        //         if (i == j) {
-        //             std::cout << '+';
-        //         } else {
-        //             for (auto v: nodes[j].jump_in) {
-        //                 if (v == i) {
-        //                     std::cout << "O";
-        //                     storage[j] += 1;
-        //                     flag = true;
-        //                 }
-        //             }
-        //             for (auto v: nodes[i].jump_out) {
-        //                 if (v == j) {
-        //                     std::cout << "I";
-        //                     usage[j] += 1;
-        //                     flag = true;
-        //                 }
-        //             }
-        //             if (!flag) {
-        //                 // if (TC_haspath(i, j)) {
-        //                 //     std::cout << "_";
-        //                 // } else {
-        //                     std::cout << " ";
-        //                 // }
-        //             }
-        //         }
-        //     }
-        //     // std::cout << "\t" << storage[i] << "\t" << usage[i]  << "\t" << (storage[i]+usage[i])*100/(storage[i]*(usage[i]+1)) << "%" << std::endl;
-        //     std::cout << std::endl;
-        // }
+        std::vector<int> storage; storage.resize(graph.size());
+        std::vector<int> usage; usage.resize(graph.size());
+        for (int i = 0; i < graph.size(); i++) {
+            for (int j = 0; j < graph.size(); j++) {
+                if (i == j) {
+                    std::cout << '+';
+                } else {
+                    bool flag = false;
+                    for (auto v: nodes[j].jump_in) {
+                        if (v == i) {
+                            std::cout << "O";
+                            storage[i] += 1;
+                            flag = true;
+                        }
+                    }
+                    for (auto v: nodes[i].jump_out) {
+                        if (v == j) {
+                            std::cout << "I";
+                            usage[j] += 1;
+                            flag = true;
+                        }
+                    }
+                    if (!flag) {
+                        if (TC_haspath(i, j)) {
+                            std::cout << "_";
+                        } else {
+                            std::cout << " ";
+                        }
+                    }
+                }
+            }
+            std::cout << '\t' << nodes[i].level << std::endl;
+        }
     }
 
     bool Kang::TC_haspath(int source, int target) {
