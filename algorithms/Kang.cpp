@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <iterator>
@@ -25,306 +26,176 @@
 namespace kang {
 
     std::vector<Kang::Node> Kang::nodes;
-    int Kang::color_cur = 0;
-
-
-    void Kang::volume_update(std::vector<int>& main, std::vector<int>& minor, int level) {
-        color_cur++;
-        for (auto v: main) {
-            nodes[v].color = color_cur;
-        }
-        for (auto v: minor) {
-            nodes[v].color = color_cur + 1;
-        }
-
-        std::queue<int> q;
-
-        // from up to down
-        for (auto i: main) {
-            nodes[i].volume_in = 0;
-            for (auto v: graph->getPredecessors(i)) {
-                if (nodes[v].color >= color_cur){
-                    nodes[i].degree_in++;
-                }
-            }
-        }
-        for (auto i: minor) {
-            nodes[i].volume_in = 0;
-            for (auto v: graph->getPredecessors(i)) {
-                if (nodes[v].color >= color_cur){
-                    nodes[i].degree_in++;
-                }
-            }
-        }
-        for (auto i: main) {
-            if (nodes[i].degree_in == 0) {
-                q.push(i);
-            }
-        }
-        for (auto i: minor) {
-            if (nodes[i].degree_in == 0) {
-                q.push(i);
-            }
-        }
-        while (!q.empty()) {
-            int cur = q.front(); q.pop();
-            int deg = 0;
-            for (auto v: graph->getSuccessors(cur)) {
-                if (nodes[v].color >= color_cur){
-                    deg++;
-                }
-            }
-            for (auto v: graph->getSuccessors(cur)) {
-                if (nodes[v].color >= color_cur){
-                    if (!(--nodes[v].degree_in)) {
-                        q.push(v);
-                    }
-                    nodes[v].volume_in += (nodes[cur].volume_in + 1);
-                }
-            }
-        }
-        // from down to up
-        for (auto i: main) {
-            nodes[i].volume_out = 0;
-            for (auto v: graph->getSuccessors(i)) {
-                if (nodes[v].color >= color_cur){
-                    nodes[i].degree_out++;                
-                }
-            }
-        }
-        for (auto i: minor) {
-            nodes[i].volume_out = 0;
-            for (auto v: graph->getSuccessors(i)) {
-                if (nodes[v].color >= color_cur){
-                    nodes[i].degree_out++;                
-                }
-            }
-        }
-        for (auto i: main) {
-            if (nodes[i].degree_out == 0) {
-                q.push(i);
-            }
-        }
-        for (auto i: minor) {
-            if (nodes[i].degree_out == 0) {
-                q.push(i);
-            }
-        }
-        while (!q.empty()) {
-            int cur = q.front(); q.pop();
-            int deg = 0;
-            for (auto v: graph->getPredecessors(cur)) {
-                if (nodes[v].color >= color_cur){
-                    deg++;
-                }
-            }
-            for (auto v: graph->getPredecessors(cur)) {
-                if (nodes[v].color >= color_cur){
-                    if (!(--nodes[v].degree_out)) {
-                        q.push(v);
-                    }
-                    nodes[v].volume_out += (nodes[cur].volume_out + (nodes[cur].color == color_cur));
-                }
-            }
-        }
-        color_cur++;
-
-        cutoff(main, minor, level);
-    }
-
-
-    void Kang::cutoff(std::vector<int>& main, std::vector<int>& minor, int level) {
-        if (main.empty()) {
-            return;
-        }
-
-        color_cur++;
-        int split_node = main[0];
-        for (auto v: main) {
-            nodes[v].color = color_cur + 1;
-            if (nodes[v].volume_in*nodes[v].volume_out/(nodes[v].volume_in+nodes[v].volume_out) > nodes[split_node].volume_in*nodes[split_node].volume_out/(nodes[split_node].volume_in+nodes[split_node].volume_out)) {
-                split_node = v;
-            }
-        }
-        
-        for (auto v: minor) {
-            nodes[v].color = color_cur;
-        }
-        nodes[split_node].color = color_cur-1;
-        nodes[split_node].level = level;
-
-        std::vector<int> A, B, C;
-        std::stack<int> stack;
-
-        // clear minor
-        for (auto v: main) {
-            stack.push(v);
-        }
-        while (!stack.empty()) {
-            int cur = stack.top(); stack.pop();
-            for (auto v: graph->getPredecessors(cur)) {
-                if (nodes[v].color == color_cur) {
-                    nodes[v].color = color_cur + 1;
-                    stack.push(v);
-                }
-            }
-        }
-        color_cur++;
-
-
-        // from split_node to up
-        stack.push(split_node);
-        while (!stack.empty()) {
-            int cur = stack.top(); stack.pop();
-            for (auto v: graph->getPredecessors(cur)) {
-                if (nodes[v].color == color_cur) {
-                    nodes[v].color = color_cur + 1;
-                    nodes[v].jump_out.push_back(split_node);
-                    stack.push(v);
-                }
-            }
-        }
-
-        // from split_node to down
-        stack.push(split_node);
-        while (!stack.empty()) {
-            int cur = stack.top(); stack.pop();
-            for (auto v: graph->getSuccessors(cur)) {
-                if (nodes[v].color == color_cur) {
-                    nodes[v].color = color_cur + 2;
-                    nodes[v].jump_in.push_back(split_node);
-                    stack.push(v);
-                }
-            }
-        }
-
-
-        if (minor.empty()) {
-            for (auto v: main) {
-                if (nodes[v].color == color_cur+1) {
-                    A.push_back(v);
-                } else if (nodes[v].color == color_cur+2) {
-                    B.push_back(v);
-                } else if (nodes[v].color == color_cur) {
-                    C.push_back(v);
-                }
-            }
-
-            color_cur+=2;
-
-            volume_update(B, C, level+1);
-            std::copy(C.begin(), C.end(), std::back_inserter(A)); C.clear();
-            volume_update(A, C, level+1);
-        } else {
-            for (auto v: main) {
-                if (nodes[v].color == color_cur || nodes[v].color == color_cur+1) {
-                    A.push_back(v);
-                } else if (nodes[v].color == color_cur+2) {
-                    B.push_back(v);
-                }
-                if (nodes[v].color == color_cur) {
-                    C.push_back(v);
-                }
-            }
-            for (auto v: minor) {
-                if (nodes[v].color == color_cur) {
-                    C.push_back(v);
-                }
-            }
-            color_cur+=2;
-
-            volume_update(A, minor, level+1);
-            volume_update(B, C, level+1);
-        }
-    }
-
 
     Kang::Kang(int x) : x(x) {}
 
+    void Kang::encode(const Bits &bits, Bits &out) {
+        uint64_t lo = 0, hi = RANGE_MAX;
+        double p0 = 1 - connect_probability;
+        int pending = 0;
+        for (int i = 0; i < bits.size; i++) {
+            uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
+
+            if (bits.get(i)) {
+                lo = lo + range;
+                p0 *= (1-connect_probability);
+            } else {
+                hi = lo + range - 1;
+            }
+            while (true) {
+                if (hi < RANGE_HALF) {
+                    out.append_zero();
+                    while (pending) {
+                        out.append_one();
+                        pending--;
+                    }
+                } else if (lo >= RANGE_HALF) {
+                    out.append_one();
+                    while (pending) {
+                        out.append_zero();
+                        pending--;
+                    }
+                } else if (lo >= RANGE_ONE_QUAR && hi < RANGE_THREE_QUAR) {
+                    pending++;
+                    lo -= RANGE_ONE_QUAR;
+                    hi -= RANGE_ONE_QUAR;
+                } else {
+                    break;
+                }
+                lo <<= 1;
+                hi <<= 1; hi |= 1;
+                lo &= RANGE_MAX;
+                hi &= RANGE_MAX;
+            }
+        }
+        pending++;
+        if (lo < RANGE_ONE_QUAR) {
+            out.append_zero();
+            while (pending) {
+                out.append_one();
+                pending--;
+            }
+        } else {
+            out.append_one();
+            while (pending) {
+                out.append_zero();
+                pending--;
+            }
+        }
+    }
+
+    void Kang::decode(const Bits &code, Bits &out, int len) {
+        uint64_t lo = 0, hi = RANGE_MAX, value = 0;
+        int code_cur = 0;
+        double p0 = 1 - connect_probability;
+
+        for (; code_cur < 32; code_cur++) {
+            value <<= 1;
+            value |= (code_cur < code.size ? code.get(code_cur) : 0);
+        }
+        for (int i = 0; i < len; i++) {
+            uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
+
+            if (value >= lo + range) {
+                lo = lo + range;
+                out.set(out.size - len + i);
+                p0 *= (1-connect_probability);
+            } else {
+                hi = lo + range - 1;
+            }
+
+            while (true) {
+                if (hi < RANGE_HALF) {
+                } else if (lo >= RANGE_HALF) {
+                    lo -= RANGE_HALF;
+                    hi -= RANGE_HALF;
+                    value -= RANGE_HALF;
+                } else if (lo >= RANGE_ONE_QUAR && hi < RANGE_THREE_QUAR) {
+                    lo -= RANGE_ONE_QUAR;
+                    hi -= RANGE_ONE_QUAR;
+                    value -= RANGE_ONE_QUAR;
+                } else {
+                    break;
+                }
+                lo <<= 1;
+                hi <<= 1; hi |= 1;
+                value <<= 1; value |= (code_cur < code.size ? code.get(code_cur++) : 0);
+            }
+        }
+    }
+
+    void Kang::encode_decode_correctness_test() {
+        connect_probability = 0.001;
+        Bits bits, out, res;
+        for (int i=0; i<100; i++) {
+            bits.append_zero();
+            bits.append_one();
+        }
+        res.init(bits.size);
+        std::cout << "*********** ";
+        bits.print();
+        std::cout << " >> ";
+        encode(bits, out);
+        out.print();
+        std::cout << " >> ";
+        decode(out, res, bits.size);
+        res.print();
+        std::cout << " ***********";
+    }
+
     void Kang::reset() {
         nodes.clear();
-        topo_adj_list.clear();
-        color_cur = 0;
     }
 
     void Kang::construction(const Graph &graph) {
+        // encode_decode_correctness_test();
+
         this->graph = &graph;
-        nodes.resize(graph.size());
-
-        std::vector<int> main, minor;
-        for (int i = 0; i < graph.size(); i++) {
-            main.push_back(i);
+        size_t n = graph.size();
+        nodes.resize(n);
+        connect_probability = (double)graph.number_of_edges() / n / (n-1) * 2;
+        
+        std::queue<int> q;
+        std::vector<size_t> out_degree(n);
+        for (int i = 0; i < n; ++i) {
+            out_degree[i] = graph.getOutDegree(i);
         }
-        volume_update(main, minor, 1);
-        for (int i = 0; i < graph.size(); i++) {
-            std::sort(nodes[i].jump_in.begin(), nodes[i].jump_in.end());
-            std::sort(nodes[i].jump_out.begin(), nodes[i].jump_out.end());
+        for (int i = 0; i < n; ++i) {
+            if (out_degree[i] == 0) {
+                q.push(i);
+            }
         }
+        int topo_order = 0;
+        while (!q.empty()) {
+            int cur = q.front(); q.pop();
+            nodes[cur].topo_order = topo_order++;
+            // ****************** encode start *****************//
+            Bits res; res.init(nodes[cur].topo_order);
+            for (const int v : graph.getSuccessors(cur)) {
+                res.set(nodes[cur].topo_order - nodes[v].topo_order - 1);
+                decode(nodes[v].code, res, nodes[v].topo_order);
+            }
+            encode(res, nodes[cur].code);
+            // ****************** encode end *******************//
 
-        std::vector<int> storage; storage.resize(graph.size());
-        std::vector<int> usage; usage.resize(graph.size());
-        for (int i = 0; i < graph.size(); i++) {
-            for (int j = 0; j < graph.size(); j++) {
-                if (i == j) {
-                    std::cout << '+';
-                } else {
-                    bool flag = false;
-                    for (auto v: nodes[j].jump_in) {
-                        if (v == i) {
-                            std::cout << "O";
-                            storage[i] += 1;
-                            flag = true;
-                        }
-                    }
-                    for (auto v: nodes[i].jump_out) {
-                        if (v == j) {
-                            std::cout << "I";
-                            usage[j] += 1;
-                            flag = true;
-                        }
-                    }
-                    if (!flag) {
-                        if (TC_haspath(i, j)) {
-                            std::cout << "_";
-                        } else {
-                            std::cout << " ";
-                        }
-                    }
+            for (const int u : graph.getPredecessors(cur)) {
+                if (--out_degree[u] == 0) {
+                    q.push(u);
                 }
             }
-            std::cout << '\t' << nodes[i].level << std::endl;
         }
     }
 
     bool Kang::TC_haspath(int source, int target) {
-        if (source == target) return true;
-        if (!nodes[source].jump_out.empty()) {
-            for (auto v: nodes[source].jump_out) {
-                if (v == target) return true;
-            }
-        }
-        if (!nodes[target].jump_in.empty()) {
-            for (auto v: nodes[target].jump_in) {
-                if (v == source) return true;
-            }
-        }
-        if (nodes[source].jump_out.empty() || nodes[target].jump_in.empty()) {
+        if (source == target) {
+            return true;
+        } else if (nodes[source].topo_order < nodes[target].topo_order) {
             return false;
+        } else {
+            Bits res; res.init(nodes[source].topo_order);
+            decode(nodes[source].code, res, nodes[source].topo_order - nodes[target].topo_order);
+            return res.get(nodes[source].topo_order - 1);
         }
-
-        int ps = 0, pt = 0;
-        int m = nodes[source].jump_out.size(), n = nodes[target].jump_in.size();
-        int cur;
-        while (ps < m && pt < n) {
-            if (nodes[source].jump_out[ps] < nodes[target].jump_in[pt]) {
-                ps++;
-            } else if (nodes[source].jump_out[ps] > nodes[target].jump_in[pt]) {
-                pt++;
-            } else {
-                return true;
-            }
-        }
-        return false;
     }
 
     std::string Kang::getName() const {
@@ -332,14 +203,13 @@ namespace kang {
     }
 
     std::string Kang::getParams() const {
-        return "x=" + std::to_string(x);
+        return "";
     }
 
     long long Kang::getIndexSize() const {
-        long long index_size = nodes.size() * (3 * sizeof(int));
+        long long index_size = nodes.size() * sizeof(int);
         for (const auto &node: nodes) {
-            index_size += node.jump_in.size() * sizeof(int);
-            index_size += node.jump_out.size() * sizeof(int);
+            index_size += node.code.size_bytes;
         }
         return index_size;
     }

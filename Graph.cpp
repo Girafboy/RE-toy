@@ -4,6 +4,7 @@
 
 #include "Graph.h"
 
+#include <algorithm>
 #include <utility>
 #include <fstream>
 #include <sstream>
@@ -62,7 +63,9 @@ Graph::Graph(int n, int d, std::string name) : name(std::move(name)) {
         }
         int v1 = std::min(r1, r2);
         int v2 = std::max(r1, r2);
-        adj_list[v1].push_back(v2);
+        if (std::find(adj_list[v1].begin(), adj_list[v1].end(), v2) == adj_list[v1].end()) {
+            adj_list[v1].push_back(v2);        
+        }
         --m;
     }
     generateReverseAdjList();
