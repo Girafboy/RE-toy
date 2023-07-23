@@ -4,6 +4,7 @@
 
 #include "Kang.h"
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -29,9 +30,8 @@ namespace kang {
 
     Kang::Kang(int x) : x(x) {}
 
-    void Kang::encode(const Bits &bits, Bits &out) {
+    void Kang::encode(const Bits &bits, Bits &out, float &p0) {
         uint64_t lo = 0, hi = RANGE_MAX;
-        double p0 = 1 - connect_probability;
         int pending = 0;
         for (int i = 0; i < bits.size; i++) {
             uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
@@ -84,10 +84,9 @@ namespace kang {
         }
     }
 
-    void Kang::decode(const Bits &code, Bits &out, int len) {
+    void Kang::decode(const Bits &code, Bits &out, float p0, int len) {
         uint64_t lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
-        double p0 = 1 - connect_probability;
 
         for (; code_cur < 32; code_cur++) {
             value <<= 1;
@@ -135,10 +134,11 @@ namespace kang {
         std::cout << "*********** ";
         bits.print();
         std::cout << " >> ";
-        encode(bits, out);
+        float p0 = 1 - connect_probability;
+        encode(bits, out, p0);
         out.print();
         std::cout << " >> ";
-        decode(out, res, bits.size);
+        decode(out, res, 1 - connect_probability, bits.size);
         res.print();
         std::cout << " ***********";
     }
@@ -153,7 +153,7 @@ namespace kang {
         this->graph = &graph;
         size_t n = graph.size();
         nodes.resize(n);
-        connect_probability = (double)graph.number_of_edges() / n / (n-1) * 2;
+        connect_probability = (float)graph.number_of_edges() / n / (n-1) * 2;
         
         std::queue<int> q;
         std::vector<size_t> out_degree(n);
@@ -170,12 +170,36 @@ namespace kang {
             int cur = q.front(); q.pop();
             nodes[cur].topo_order = topo_order++;
             // ****************** encode start *****************//
-            Bits res; res.init(nodes[cur].topo_order);
-            for (const int v : graph.getSuccessors(cur)) {
-                res.set(nodes[cur].topo_order - nodes[v].topo_order - 1);
-                decode(nodes[v].code, res, nodes[v].topo_order);
+            if (nodes[cur].topo_order) {
+                int chunks = (nodes[cur].topo_order+x-1)/x;
+                nodes[cur].codes = new Bits[chunks];
+                nodes[cur].p0_inits = new float[chunks];
+
+                Bits res[chunks]; 
+                for (int i = 0; i < chunks-1; i++) {
+                    res[i].init(x);
+                }
+                res[chunks-1].init(nodes[cur].topo_order - x*(chunks-1));
+
+                for (const int v : graph.getSuccessors(cur)) {
+                    res[nodes[v].topo_order/x].set(res[nodes[v].topo_order/x].size - nodes[v].topo_order%x - 1);
+                    if (nodes[v].topo_order) {
+                        int chunks_v = (nodes[v].topo_order+x-1)/x;
+                        for (int i = 0; i < chunks_v-1; i++) {
+                            decode(nodes[v].codes[i], res[i], nodes[v].p0_inits[i], x);
+                        }
+                        decode(nodes[v].codes[chunks_v-1], res[chunks_v-1], nodes[v].p0_inits[chunks_v-1], nodes[v].topo_order - x*(chunks_v-1));
+                    }
+                }
+
+                float p0 = 1 - connect_probability;
+                nodes[cur].p0_inits[chunks-1] = p0;
+                encode(res[chunks-1], nodes[cur].codes[chunks-1], p0);
+                for (int i = chunks-2; i >= 0 ; i--) {
+                    nodes[cur].p0_inits[i] = p0;
+                    encode(res[i], nodes[cur].codes[i], p0);
+                }
             }
-            encode(res, nodes[cur].code);
             // ****************** encode end *******************//
 
             for (const int u : graph.getPredecessors(cur)) {
@@ -186,15 +210,60 @@ namespace kang {
         }
     }
 
+    bool Kang::decode_check(const Bits &code, float p0, int pos) {
+        uint64_t lo = 0, hi = RANGE_MAX, value = 0;
+        int code_cur = 0;
+        bool ret = false;
+
+        for (; code_cur < 32; code_cur++) {
+            value <<= 1;
+            value |= (code_cur < code.size ? code.get(code_cur) : 0);
+        }
+        for (int i = 0; i < pos; i++) {
+            uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
+
+            if (value >= lo + range) {
+                lo = lo + range;
+                ret = true;
+                p0 *= (1-connect_probability);
+            } else {
+                hi = lo + range - 1;
+                ret = false;
+            }
+
+            while (true) {
+                if (hi < RANGE_HALF) {
+                } else if (lo >= RANGE_HALF) {
+                    lo -= RANGE_HALF;
+                    hi -= RANGE_HALF;
+                    value -= RANGE_HALF;
+                } else if (lo >= RANGE_ONE_QUAR && hi < RANGE_THREE_QUAR) {
+                    lo -= RANGE_ONE_QUAR;
+                    hi -= RANGE_ONE_QUAR;
+                    value -= RANGE_ONE_QUAR;
+                } else {
+                    break;
+                }
+                lo <<= 1;
+                hi <<= 1; hi |= 1;
+                value <<= 1; value |= (code_cur < code.size ? code.get(code_cur++) : 0);
+            }
+        }
+        return ret;
+    }
+
     bool Kang::TC_haspath(int source, int target) {
         if (source == target) {
             return true;
         } else if (nodes[source].topo_order < nodes[target].topo_order) {
             return false;
         } else {
-            Bits res; res.init(nodes[source].topo_order);
-            decode(nodes[source].code, res, nodes[source].topo_order - nodes[target].topo_order);
-            return res.get(nodes[source].topo_order - 1);
+            int chunks = (nodes[source].topo_order+x-1)/x, pos = nodes[target].topo_order/x;
+            if (pos == chunks-1) {
+                return decode_check(nodes[source].codes[pos], nodes[source].p0_inits[pos],  nodes[source].topo_order - (chunks-1)*x - nodes[target].topo_order%x);
+            } else {
+                return decode_check(nodes[source].codes[pos], nodes[source].p0_inits[pos],  x - nodes[target].topo_order%x);
+            }
         }
     }
 
@@ -203,13 +272,17 @@ namespace kang {
     }
 
     std::string Kang::getParams() const {
-        return "";
+        return "x=" + std::to_string(x);
     }
 
     long long Kang::getIndexSize() const {
         long long index_size = nodes.size() * sizeof(int);
         for (const auto &node: nodes) {
-            index_size += node.code.size_bytes;
+            int chunks = (node.topo_order+x-1)/x;
+            for (int i = 0; i < chunks; i++) {
+                index_size += node.codes[i].size_bytes;
+            }
+            index_size += chunks * sizeof(float);
         }
         return index_size;
     }

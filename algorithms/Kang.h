@@ -29,7 +29,7 @@ namespace kang {
     class Kang : public Algorithm {
     private:
         struct Bits {
-            unsigned char *data;
+            unsigned char *data = nullptr;
             int size;
             int size_bytes;
 
@@ -108,9 +108,17 @@ namespace kang {
 
         struct Node {
             int topo_order;
-            Bits code;
+            Bits *codes = nullptr;
+            float *p0_inits = nullptr;
 
             Node() {}
+
+            ~Node() {
+                if (codes)
+                    delete[] codes;
+                if (p0_inits)
+                    delete[] p0_inits;
+            }
         };
 
         static std::vector<Node> nodes; // TODO: 原生数组
@@ -118,11 +126,12 @@ namespace kang {
 
         const Graph* graph;
         
-        double connect_probability;
+        float connect_probability;
 
-        void encode(const Bits &bits, Bits &out);
-        void decode(const Bits &code, Bits &out, int len);
+        void encode(const Bits &bits, Bits &out, float &p0);
+        void decode(const Bits &code, Bits &out, float p0, int len);
         void encode_decode_correctness_test();
+        bool decode_check(const Bits &code, float p0, int pos);
     public:
         Kang(int x);
 

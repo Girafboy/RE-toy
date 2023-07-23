@@ -49,12 +49,14 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm* algorithm, int chec
 int main() {
     std::vector<Algorithm*> algorithms = {
         // Kang
-        new Kang(2),
-        new Kang(3),
-        new Kang(4),
-        new Kang(5),
-        new Kang(6),
-        new Kang(7),
+        new Kang(32),
+        new Kang(64),
+        new Kang(128),
+        new Kang(256),
+        new Kang(512),
+        new Kang(1024),
+        new Kang(2048),
+        new Kang(4096),
         // BFL
         new BFL(),
         // Grail
@@ -88,10 +90,17 @@ int main() {
     std::vector<Profile> profiles;
 
     std::vector<Graph> graphs = {
-        Graph(100, 10, "random-100-10"),
+        // Graph(100, 10, "random-100-10"),
+        // Graph(300, 10, "random-300-10"),
+        Graph(1000, 1, "random-1000-1"),
+        Graph(1000, 2, "random-1000-2"),
+        Graph(1000, 5, "random-1000-5"),
         Graph(1000, 10, "random-1000-10"),
-        Graph(10000, 10, "random-10000-10"),
-        Graph(100000, 10, "random-100000-10"),
+        Graph(1000, 20, "random-1000-20"),
+        Graph(1000, 50, "random-1000-50"),
+        Graph(1000, 100, "random-1000-100"),
+        // Graph(10000, 100, "random-10000-10"),
+        // Graph(100000, 10, "random-100000-10")
     };
     int check_reachable_times = 100000;
     bool check_only_reached = false;
