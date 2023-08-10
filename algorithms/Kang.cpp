@@ -275,7 +275,7 @@ namespace kang {
         return "x=" + std::to_string(x);
     }
 
-    long long Kang::getIndexSize() const {
+    unsigned long long Kang::getIndexSize() const {
         long long index_size = nodes.size() * sizeof(int);
         for (const auto &node: nodes) {
             int chunks = (node.topo_order+x-1)/x;

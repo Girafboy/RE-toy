@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2022/12/27.
-//
-
 #include "GrippGraph.h"
 
 namespace gripp {

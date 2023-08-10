@@ -146,7 +146,6 @@ namespace grail {
 
         void printMap(hash_map<int, vector<int> > &inlist, hash_map<int, vector<int> > &outlist);
 
-        long long indexSize() const;
     };
 }
 #endif

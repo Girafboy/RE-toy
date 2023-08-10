@@ -1,9 +1,5 @@
-//
-// Created by 王星力 on 2022/12/27.
-//
-
-#ifndef XJUMP_GRIPP_H
-#define XJUMP_GRIPP_H
+#ifndef TC_GRIPP_H
+#define TC_GRIPP_H
 
 #include "Util.h"
 #include "GrippGraph.h"
@@ -23,7 +19,7 @@ namespace gripp {
         list<unsigned> GetHopNodes(unsigned node);
         bool CanReach(unsigned nodeA,unsigned nodeB);
         void display();
-        long long getIndexSize() const;
+        unsigned long long getIndexSize() const;
     private:
         GrippGraph * graphp;
         unsigned entry_num;
@@ -38,4 +34,4 @@ namespace gripp {
 
 } // gripp
 
-#endif //XJUMP_GRIPP_H
+#endif

@@ -1,9 +1,5 @@
-//
-// Created by 王星力 on 2022/11/9.
-//
-
-#ifndef KANG_BFL_H
-#define KANG_BFL_H
+#ifndef TC_BFL_H
+#define TC_BFL_H
 
 #include <utility>
 #include <vector>
@@ -12,41 +8,62 @@
 
 namespace bfl {
 
-#ifndef K
-#define K 5  // 1 2 3 5 10 20 50 100 200 500 1000
-#endif
-#ifndef D
-#define D (320 * K)
-#endif
-
-
     class BFL : public Algorithm {
     private:
+        const int K;
+        const int D;
         struct node {
-            int N_O_SZ, N_I_SZ;
-            int *N_O, *N_I;
-            int vis;
-            union {
-                int L_in[K];
-#if K > 8
-                unsigned int h_in;
-#else
-                unsigned char h_in;
-#endif
-            };
-            union {
-                int L_out[K];
-#if K > 8
-                unsigned int h_out;
-#else
-                unsigned char h_out;
-#endif
-            };
+            const int K;
+            int N_O_SZ = 0, N_I_SZ = 0;
+            int *N_O = nullptr, *N_I = nullptr;
+            int vis = 0;
+            int *L_in = nullptr;
+            void *h_in = nullptr;
+            int *L_out = nullptr;
+            void *h_out = nullptr;
             std::pair<int, int> L_interval;
+
+            explicit node(int K) : K(K) {
+                L_in = new int[K];
+                L_out = new int[K];
+                if (K > 8) {
+                    h_in = new unsigned int(0);
+                    h_out = new unsigned int(0);
+                } else {
+                    h_in = new unsigned char(0);
+                    h_out = new unsigned char(0);
+                }
+            }
+
+            node(const node &other) : K(other.K) {
+                L_in = new int[K];
+                L_out = new int[K];
+                if (K > 8) {
+                    h_in = new unsigned int(0);
+                    h_out = new unsigned int(0);
+                } else {
+                    h_in = new unsigned char(0);
+                    h_out = new unsigned char(0);
+                }
+            }
+
+            ~node() {
+                delete[] N_O;
+                delete[] N_I;
+                delete[] L_in;
+                delete[] L_out;
+                if (K > 8) {
+                    delete static_cast<unsigned int *>(h_in);
+                    delete static_cast<unsigned int *>(h_out);
+                } else {
+                    delete static_cast<unsigned char *>(h_in);
+                    delete static_cast<unsigned char *>(h_out);
+                }
+            }
         };
 
         std::vector<node> nodes;
-        int vis_cur, cur;
+        int vis_cur = 0, cur = 0;
 
         void read_graph(const Graph *graph_ptr);
 
@@ -63,7 +80,7 @@ namespace bfl {
         bool reach(const node &u, const node &v);
 
     public:
-        explicit BFL();
+        explicit BFL(int K);
 
         std::string getName() const override;
 
@@ -75,8 +92,8 @@ namespace bfl {
 
         bool TC_haspath(int source, int target) override;
 
-        long long getIndexSize() const override;
+        unsigned long long getIndexSize() const override;
     };
 
 }
-#endif //KANG_BFL_H
+#endif

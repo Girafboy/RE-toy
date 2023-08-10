@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2022/12/27.
-//
-
 #include "Gripp.h"
 #include "Util.h"
 
@@ -174,9 +170,9 @@ namespace gripp {
         return false;
     }
 
-    long long Gripp::getIndexSize() const {
+    unsigned long long Gripp::getIndexSize() const {
         // Ind_table_p
-        long long index_size = Ind_table_p->size() * 4 * sizeof(unsigned);
+        unsigned long long index_size = Ind_table_p->size() * 4 * sizeof(unsigned);
         // Inst_p
         for (int i = 0; i < node_num; ++i) {
             index_size += (*Inst_p)[i].size() * sizeof(unsigned);

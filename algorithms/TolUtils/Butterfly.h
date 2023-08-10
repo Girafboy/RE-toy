@@ -1,9 +1,5 @@
-//
-// Created by 王星力 on 2022/12/23.
-//
-
-#ifndef XJUMP_BUTTERFLY_H
-#define XJUMP_BUTTERFLY_H
+#ifndef TC_BUTTERFLY_H
+#define TC_BUTTERFLY_H
 
 #include "utility1.h"
 #include "../Graph.h"
@@ -577,7 +573,7 @@ namespace tol {
             tstop = clock();
 
 //            printf( "\nOptimizing operations: %d with Time: %0.2lf\n",OPR,(double)(tstop-tstart)/CLOCKS_PER_SEC );
-
+//
 //            printf("Reconstruct Times: %d\n", levelhash.R);
 
         }
@@ -3645,4 +3641,4 @@ namespace tol {
     };
 }
 
-#endif //XJUMP_BUTTERFLY_H
+#endif

@@ -1,9 +1,5 @@
-//
-// Created by 王星力 on 2022/12/4.
-//
-
-#ifndef XJUMP_PATHTREEWRAPPER_H
-#define XJUMP_PATHTREEWRAPPER_H
+#ifndef TC_PATHTREEWRAPPER_H
+#define TC_PATHTREEWRAPPER_H
 
 
 #include "Algorithm.h"
@@ -20,7 +16,7 @@ namespace path_tree {
         int *sccmap;
 
     public:
-        PathTreeWrapper(int alg_type = 1);
+        explicit PathTreeWrapper(int alg_type = 1);
 
         std::string getName() const override;
 
@@ -32,8 +28,8 @@ namespace path_tree {
 
         bool TC_haspath(int source, int target) override;
 
-        long long getIndexSize() const override;
+        unsigned long long getIndexSize() const override;
     };
 }
 
-#endif //XJUMP_PATHTREEWRAPPER_H
+#endif
