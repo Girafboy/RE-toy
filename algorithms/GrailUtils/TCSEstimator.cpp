@@ -7,6 +7,8 @@ or their institutions liable under any circumstances.
 
 #include "TCSEstimator.h"
 
+#include <random>
+
 namespace grail {
     TCSEstimator::TCSEstimator(GrailGraph &g, int k) {
         int cnt = g.num_vertices();
@@ -21,7 +23,12 @@ namespace grail {
         }
 
         for (int i = 0; i < k; i++) {
-            random_shuffle(_index.begin(), _index.end());
+            // random shuffle is deprecated
+            // switch to shuffle
+//            random_shuffle(_index.begin(), _index.end());
+            std::random_device rd;
+            std::mt19937 gg(rd());
+            std::shuffle(_index.begin(), _index.end(), gg);
             for (int j = 0; j < cnt; j++) {
                 reverse[_index[j]] = j;
             }

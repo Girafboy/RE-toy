@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2022/11/9.
-//
-
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
@@ -12,7 +8,10 @@
 namespace bfl {
     void BFL::read_graph(const Graph *const graph_ptr) {
         auto n = graph_ptr->size();
-        nodes.resize(n);
+        nodes.resize(n, node(K));
+//        for (size_t i = 0; i < n; ++i) {
+//            nodes.emplace_back(K);
+//        }
 
         for (int u = 0; u < n; u++) {
             nodes[u].N_O_SZ = graph_ptr->getOutDegree(u);
@@ -50,7 +49,11 @@ namespace bfl {
         u.vis = vis_cur;
 
         if (u.N_I_SZ == 0) {
-            u.h_in = h_in() % (K * 32);
+            if (K > 8) {
+                *static_cast<unsigned int *>(u.h_in) = h_in() % (K * 32);
+            } else {
+                *static_cast<unsigned char *>(u.h_in) = h_in() % (K * 32);
+            }
         } else {
             for (int i = 0; i < K; i++) {
                 u.L_in[i] = 0;
@@ -62,7 +65,7 @@ namespace bfl {
                     dfs_in(v);
                 }
                 if (v.N_I_SZ == 0) {
-                    int hu = v.h_in;
+                    int hu = (K > 8 ? *static_cast<unsigned int *>(v.h_in) : *static_cast<unsigned char *>(v.h_in));
                     u.L_in[(hu >> 5) % K] |= 1 << (hu & 31);
                 } else {
                     for (int j = 0; j < K; j++) {
@@ -82,7 +85,11 @@ namespace bfl {
         u.L_interval.first = cur++;
 
         if (u.N_O_SZ == 0) {
-            u.h_out = h_out() % (K * 32);
+            if (K > 8) {
+                *static_cast<unsigned int *>(u.h_out) = h_out() % (K * 32);
+            } else {
+                *static_cast<unsigned char *>(u.h_out) = h_out() % (K * 32);
+            }
         } else {
             for (int i = 0; i < K; i++) {
                 u.L_out[i] = 0;
@@ -94,7 +101,7 @@ namespace bfl {
                     dfs_out(v);
                 }
                 if (v.N_O_SZ == 0) {
-                    int hu = v.h_out;
+                    int hu = (K > 8 ? *static_cast<unsigned int *>(v.h_out) : *static_cast<unsigned char *>(v.h_out));
                     u.L_out[(hu >> 5) % K] |= 1 << (hu & 31);
                 } else {
                     for (int j = 0; j < K; j++) {
@@ -157,7 +164,7 @@ namespace bfl {
             return false;
         }
         if (v.N_O_SZ == 0) {
-            if ((u.L_out[v.h_out >> 5] & (1 << (v.h_out & 31))) == 0) {
+            if ((u.L_out[(K > 8 ? *static_cast<unsigned int *>(v.h_out) : *static_cast<unsigned char *>(v.h_out)) >> 5] & (1 << ((K > 8 ? *static_cast<unsigned int *>(v.h_out) : *static_cast<unsigned char *>(v.h_out)) & 31))) == 0) {
                 return false;
             }
         } else {
@@ -168,7 +175,7 @@ namespace bfl {
             }
         }
         if (u.N_I_SZ == 0) {
-            if ((v.L_in[u.h_in >> 5] & (1 << (u.h_in & 31))) == 0) {
+            if ((v.L_in[(K > 8 ? *static_cast<unsigned int *>(u.h_in) : *static_cast<unsigned char *>(u.h_in)) >> 5] & (1 << ((K > 8 ? *static_cast<unsigned int *>(u.h_in) : *static_cast<unsigned char *>(u.h_in)) & 31))) == 0) {
                 return false;
             }
         } else {
@@ -191,7 +198,8 @@ namespace bfl {
         return false;
     }
 
-    BFL::BFL() {
+    BFL::BFL(int K) : K(K), D(320 * K) {
+
     }
 
     std::string BFL::getName() const {
@@ -199,7 +207,7 @@ namespace bfl {
     }
 
     std::string BFL::getParams() const {
-        return "s=" + std::to_string(K * 32);
+        return "";
     }
 
     void BFL::reset() {
@@ -218,13 +226,18 @@ namespace bfl {
         return reach(nodes[source], nodes[target]);
     }
 
-    long long BFL::getIndexSize() const {
-        long long index_size = 0;
+    unsigned long long BFL::getIndexSize() const {
+        // ignore variables introduced due to our modification of the original implementation
+        // not include the size of K in node since it is not needed in the original implementation
+        // calculate the size of L_in and L_out as unsigned int/unsigned char instead of pointer
+        // since the original implementation uses union
+        // only calculate the minimum size of what L_in/h_in and L_out/h_out point to
+        unsigned long long index_size = 0;
         for (int u = 0; u < nodes.size(); u++) {
             index_size +=
-                    nodes[u].N_I_SZ == 0 ? sizeof(nodes[u].h_in) : sizeof(nodes[u].L_in);
+                    nodes[u].N_I_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : sizeof(nodes[u].L_in);
             index_size +=
-                    nodes[u].N_O_SZ == 0 ? sizeof(nodes[u].h_out) : sizeof(nodes[u].L_out);
+                    nodes[u].N_O_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : sizeof(nodes[u].L_out);
             index_size += sizeof(nodes[u].L_interval);
 
             /* The author ignors the size of N_O and N_I, which is utilized in BFL::reach. */

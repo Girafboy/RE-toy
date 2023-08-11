@@ -1,11 +1,7 @@
-//
-// Created by 王星力 on 2022/12/27.
-//
+#ifndef TC_GRIPPGRAPH_H
+#define TC_GRIPPGRAPH_H
 
-#ifndef XJUMP_GRIPPGRAPH_H
-#define XJUMP_GRIPPGRAPH_H
-
-#include "Util.h"
+#include"Util.h"
 #include "../Graph.h"
 
 namespace gripp {
@@ -35,4 +31,4 @@ namespace gripp {
     };
 }
 
-#endif //XJUMP_GRIPPGRAPH_H
+#endif

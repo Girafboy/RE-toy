@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2022/12/4.
-//
-
 #include "PathTreeWrapper.h"
 #include "PathTreeUtils/PathTreeGraph.h"
 #include "PathTreeUtils/PathTreeGraphUtil.h"
@@ -18,12 +14,8 @@ namespace path_tree {
     void PathTreeWrapper::construction(const Graph &graph) {
         g = PathTreeGraph(graph);
 
-        int left = 0;
         int gsize = g.num_vertices();
 
-        bool r;
-        struct timeval after_time, before_time;
-        float labeling_time, query_time;
         sccmap = new int[gsize];    // store pair of orignal vertex and corresponding vertex in merged graph
         vector<int> reverse_topo_sort;
 
@@ -56,10 +48,10 @@ namespace path_tree {
         return pt_ptr->reach(s, t);
     }
 
-    long long PathTreeWrapper::getIndexSize() const {
+    unsigned long long PathTreeWrapper::getIndexSize() const {
         int *ind_size = new int[2];
         pt_ptr->index_size(ind_size);
-        long long ans = ind_size[0] * sizeof(int);
+        unsigned long long ans = ind_size[0] * sizeof(int);
         delete[]ind_size;
         return ans;
     }

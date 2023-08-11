@@ -34,7 +34,7 @@ namespace kang {
         uint64_t lo = 0, hi = RANGE_MAX;
         int pending = 0;
         for (int i = 0; i < bits.size; i++) {
-            uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
+            uint64_t range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (uint64_t) ((hi - lo + 1) * p0)));
 
             if (bits.get(i)) {
                 lo = lo + range;
@@ -93,7 +93,7 @@ namespace kang {
             value |= (code_cur < code.size ? code.get(code_cur) : 0);
         }
         for (int i = 0; i < len; i++) {
-            uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
+            uint64_t range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (uint64_t) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;
@@ -220,7 +220,7 @@ namespace kang {
             value |= (code_cur < code.size ? code.get(code_cur) : 0);
         }
         for (int i = 0; i < pos; i++) {
-            uint64_t range = std::min(RANGE_MAX, std::max(1UL, (uint64_t)((hi - lo + 1) * p0)));
+            uint64_t range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (uint64_t) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;
@@ -275,7 +275,7 @@ namespace kang {
         return "x=" + std::to_string(x);
     }
 
-    long long Kang::getIndexSize() const {
+    unsigned long long Kang::getIndexSize() const {
         long long index_size = nodes.size() * sizeof(int);
         for (const auto &node: nodes) {
             int chunks = (node.topo_order+x-1)/x;

@@ -145,7 +145,7 @@ namespace kang {
 
         bool TC_haspath(int source, int target) override;
 
-        long long getIndexSize() const override;
+        unsigned long long getIndexSize() const override;
     };
 }
 

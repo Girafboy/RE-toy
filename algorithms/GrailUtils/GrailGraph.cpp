@@ -339,18 +339,4 @@ namespace grail {
         }
         cout << "================================================" << endl;
     }
-
-    long long GrailGraph::indexSize() const {
-        long long size = vsize * sizeof(Grail_GRA);
-        for (auto in_out : graph) {
-            size += in_out.inList.size() * sizeof(int);
-            size += in_out.outList.size() * sizeof(int);
-        }
-        for (auto veretx : vl) {
-            size += veretx.pre->size() * sizeof(int);
-            size += veretx.post->size() * sizeof(int);
-            size += veretx.middle->size() * sizeof(int);
-        } 
-        return size;
-    }
 }

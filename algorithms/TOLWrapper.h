@@ -1,9 +1,5 @@
-//
-// Created by 王星力 on 2022/12/14.
-//
-
-#ifndef XJUMP_TOLWRAPPER_H
-#define XJUMP_TOLWRAPPER_H
+#ifndef TC_TOLWRAPPER_H
+#define TC_TOLWRAPPER_H
 
 #include <string>
 
@@ -14,18 +10,16 @@
 namespace tol {
     using namespace ::std;
 
-//    const int VectorDefaultSize = 20;
-
     class TOLWrapper : public Algorithm {
     private:
         int style;
         int opr;
         iVector<int> labels;
-        int** Index;
+        int **Index;
         int N = 0;
 
     public:
-        TOLWrapper(int style = 0, int opr = 2);
+        explicit TOLWrapper(int style = 0, int opr = 2);
 
         string getName() const override;
 
@@ -37,9 +31,9 @@ namespace tol {
 
         bool TC_haspath(int source, int target) override;
 
-        long long getIndexSize() const override;
+        unsigned long long getIndexSize() const override;
     };
 
 } // tol
 
-#endif //XJUMP_TOLWRAPPER_H
+#endif

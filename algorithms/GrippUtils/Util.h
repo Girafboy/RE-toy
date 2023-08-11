@@ -1,9 +1,5 @@
-//
-// Created by 王星力 on 2022/12/27.
-//
-
-#ifndef XJUMP_UTIL_H
-#define XJUMP_UTIL_H
+#ifndef TC_UTIL_H
+#define TC_UTIL_H
 // below are headers of C files;
 #include<time.h>
 // below are headers of C++ files
@@ -51,4 +47,4 @@ namespace gripp {
         }
     };
 }
-#endif //XJUMP_UTIL_H
+#endif

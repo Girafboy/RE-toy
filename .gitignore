@@ -3,3 +3,11 @@
 build
 output
 graphs
+/tmp/
+/graphs/
+/.idea/
+.DS_Store
+/cmake-build-debug/
+/cmake-build-release/
+/utils.py
+/datasets

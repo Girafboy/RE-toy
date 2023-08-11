@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2022/11/8.
-//
-
 #include <queue>
 #include <chrono>
 #include <iostream>
@@ -11,7 +7,8 @@
 
 #include "AutoTest.h"
 
-AutoTest::AutoTest(const Graph *graph_ptr, Algorithm *algorithm_ptr) : algorithm_ptr(algorithm_ptr), graph_ptr(graph_ptr) {
+AutoTest::AutoTest(const Graph *graph_ptr, Algorithm *algorithm_ptr) : algorithm_ptr(algorithm_ptr),
+                                                                       graph_ptr(graph_ptr) {
 
 }
 
@@ -25,7 +22,7 @@ std::pair<bool, std::pair<int, int>> AutoTest::checkCorrectness() {
         while (!q.empty()) {
             int tmp = q.front();
             q.pop();
-            for (const auto &j : graph_ptr->getSuccessors(tmp)) {
+            for (const auto &j: graph_ptr->getSuccessors(tmp)) {
                 if (!visited[j]) {
                     visited[j] = true;
                     q.push(j);
@@ -45,9 +42,17 @@ std::pair<bool, std::pair<int, int>> AutoTest::checkCorrectness() {
 double AutoTest::runAutoTest(int m, bool check_correctness, bool check_only_reached) {
     if (check_correctness) {
         auto tmp = checkCorrectness();
+        if (!tmp.first) {
+            std::cout << tmp.second.first << " to " << tmp.second.second
+                    << " should be "
+                    << (!algorithm_ptr->TC_haspath(tmp.second.first, tmp.second.second) ? "true" : "false")
+                    << " but return "
+                    << (algorithm_ptr->TC_haspath(tmp.second.first, tmp.second.second) ? "true" : "false")
+                    << std::endl;
+        }
         assert(tmp.first);
     }
-    int n = (int)graph_ptr->size();
+    int n = (int) graph_ptr->size();
 //    m = std::min(m, n * n);
     std::uniform_int_distribution<int> u(0, n - 1);
     std::default_random_engine e;
@@ -90,7 +95,7 @@ std::vector<std::pair<int, int>> AutoTest::getReachableQueries(int m) {
         while (!q.empty()) {
             int tmp = q.front();
             q.pop();
-            for (const auto &j : graph_ptr->getSuccessors(tmp)) {
+            for (const auto &j: graph_ptr->getSuccessors(tmp)) {
                 if (!visited[j]) {
                     visited[j] = true;
                     q.push(j);
@@ -99,7 +104,7 @@ std::vector<std::pair<int, int>> AutoTest::getReachableQueries(int m) {
         }
         for (int j = 0; j < n; ++j) {
             if (visited[j]) {
-                queries.emplace_back(i, j);  // todo: 无随机性，都是挨在一起的
+                queries.emplace_back(i, j);
             }
             if (queries.size() == m) {
                 return queries;
@@ -109,6 +114,6 @@ std::vector<std::pair<int, int>> AutoTest::getReachableQueries(int m) {
     return queries;
 }
 
-long long AutoTest::getIndexSize() {
+unsigned long long AutoTest::getIndexSize() {
     return algorithm_ptr->getIndexSize();
 }

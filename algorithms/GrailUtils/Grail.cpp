@@ -7,6 +7,7 @@ or their institutions liable under any circumstances.
 #include "Grail.h"
 #include "TCSEstimator.h"
 #include <queue>
+#include <random>
 
 namespace grail {
 
@@ -103,7 +104,10 @@ GRAIL LABELING :
                 _index.push_back(i);
             }
         } else if (traversal % 2 == 0) {
-            random_shuffle(_index.begin(), _index.end());
+            std::random_device rd;
+            std::mt19937 gg(rd());
+            std::shuffle(_index.begin(), _index.end(), gg);
+//            random_shuffle(_index.begin(), _index.end());
         }
     }
 
@@ -243,7 +247,10 @@ GRAIL LABELING :
         vector<int>::iterator sit;
         int pre_post = 0;
         vector<bool> visited(tree.num_vertices(), false);
-        random_shuffle(roots.begin(), roots.end());
+        std::random_device rd;
+        std::mt19937 gg(rd());
+        std::shuffle(roots.begin(), roots.end(), gg);
+//        random_shuffle(roots.begin(), roots.end());
         for (sit = roots.begin(); sit != roots.end(); sit++) {
             pre_post++;
             visit(tree, *sit, pre_post, visited);
@@ -255,7 +262,10 @@ GRAIL LABELING :
 //	cout << "entering " << vid << endl;
         visited[vid] = true;
         GrailEdgeList el = tree.out_edges(vid);
-        random_shuffle(el.begin(), el.end());
+        std::random_device rd;
+        std::mt19937 gg(rd());
+        std::shuffle(el.begin(), el.end(), gg);
+//        random_shuffle(el.begin(), el.end());
         GrailEdgeList::iterator eit;
         int pre_order = tree.num_vertices() + 1;
         tree[vid].middle->push_back(pre_post);
