@@ -31,10 +31,10 @@ namespace kang {
     Kang::Kang(int x) : x(x) {}
 
     void Kang::encode(const Bits &bits, Bits &out, float &p0) {
-        uint64_t lo = 0, hi = RANGE_MAX;
+        unsigned long long lo = 0, hi = RANGE_MAX;
         int pending = 0;
         for (int i = 0; i < bits.size; i++) {
-            uint64_t range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (uint64_t) ((hi - lo + 1) * p0)));
+            unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (bits.get(i)) {
                 lo = lo + range;
@@ -85,7 +85,7 @@ namespace kang {
     }
 
     void Kang::decode(const Bits &code, Bits &out, float p0, int len) {
-        uint64_t lo = 0, hi = RANGE_MAX, value = 0;
+        unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
 
         for (; code_cur < 32; code_cur++) {
@@ -93,7 +93,7 @@ namespace kang {
             value |= (code_cur < code.size ? code.get(code_cur) : 0);
         }
         for (int i = 0; i < len; i++) {
-            uint64_t range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (uint64_t) ((hi - lo + 1) * p0)));
+            unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;
@@ -211,7 +211,7 @@ namespace kang {
     }
 
     bool Kang::decode_check(const Bits &code, float p0, int pos) {
-        uint64_t lo = 0, hi = RANGE_MAX, value = 0;
+        unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
         bool ret = false;
 
@@ -220,7 +220,7 @@ namespace kang {
             value |= (code_cur < code.size ? code.get(code_cur) : 0);
         }
         for (int i = 0; i < pos; i++) {
-            uint64_t range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (uint64_t) ((hi - lo + 1) * p0)));
+            unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;

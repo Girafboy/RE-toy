@@ -5,6 +5,7 @@
 #include "Algorithm.h"
 #include "PreachUtils/QueryGraph.hh"
 
+#include <memory>
 #include <vector>
 #include <string>
 

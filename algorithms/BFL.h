@@ -13,7 +13,7 @@ namespace bfl {
         const int K;
         const int D;
         struct node {
-            const int K;
+            int K;
             int N_O_SZ = 0, N_I_SZ = 0;
             int *N_O = nullptr, *N_I = nullptr;
             int vis = 0;
