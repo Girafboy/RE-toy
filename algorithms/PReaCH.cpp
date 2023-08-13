@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2023/7/12.
-//
-
 #include "PReaCH.h"
 #include "PreachUtils/ConstructionGraph.hh"
 

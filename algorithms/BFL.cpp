@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
+#include <string>
 #include <vector>
 
 #include "BFL.h"
@@ -207,7 +208,7 @@ namespace bfl {
     }
 
     std::string BFL::getParams() const {
-        return "";
+        return "s=" + std::to_string(K*32);
     }
 
     void BFL::reset() {
@@ -235,9 +236,9 @@ namespace bfl {
         unsigned long long index_size = 0;
         for (int u = 0; u < nodes.size(); u++) {
             index_size +=
-                    nodes[u].N_I_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : sizeof(nodes[u].L_in);
+                    nodes[u].N_I_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : K * sizeof(int);
             index_size +=
-                    nodes[u].N_O_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : sizeof(nodes[u].L_out);
+                    nodes[u].N_O_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : K * sizeof(int);
             index_size += sizeof(nodes[u].L_interval);
 
             /* The author ignors the size of N_O and N_I, which is utilized in BFL::reach. */

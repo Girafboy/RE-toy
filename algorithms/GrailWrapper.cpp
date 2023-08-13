@@ -19,7 +19,7 @@ namespace grail {
     }
 
     string GrailWrapper::getName() const {
-        return "Grail";
+        return "GRAIL";
     }
 
     string GrailWrapper::getParams() const {

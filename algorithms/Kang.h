@@ -1,7 +1,3 @@
-//
-// Created by 王星力 on 2022/10/25.
-//
-
 #ifndef KANG_KANG_H
 #define KANG_KANG_H
 
@@ -110,6 +106,7 @@ namespace kang {
             int topo_order;
             Bits *codes = nullptr;
             float *p0_inits = nullptr;
+            bool *nonzeros = nullptr;
 
             Node() {}
 
@@ -118,6 +115,8 @@ namespace kang {
                     delete[] codes;
                 if (p0_inits)
                     delete[] p0_inits;
+                if (nonzeros)
+                    delete[] nonzeros;
             }
         };
 
@@ -126,12 +125,12 @@ namespace kang {
 
         const Graph* graph;
         
-        float connect_probability;
+        float *connect_probability = nullptr;
 
         void encode(const Bits &bits, Bits &out, float &p0);
         void decode(const Bits &code, Bits &out, float p0, int len);
         void encode_decode_correctness_test();
-        bool decode_check(const Bits &code, float p0, int pos);
+        bool decode_check(const Bits &code, float p0, int len, int pos);
     public:
         Kang(int x);
 

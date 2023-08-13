@@ -1,5 +1,6 @@
 #include "Graph.h"
 
+#include <cassert>
 #include <utility>
 #include <fstream>
 #include <sstream>
@@ -31,50 +32,15 @@ Graph::Graph(const std::string &input_file_path, std::string name) : name(std::m
         std::istringstream iss(line);
         int node = 0;
         iss >> node;
+        assert(node == adj_list.size() && "Error: Nodes in the graph file are not labeled as continuous natural numbers.");
+        node = iss.get();
+        assert(node == ':' && "Error: Miss colon.");
         adj_list.emplace_back();
         while (iss >> node) {
             adj_list.back().push_back(node);
         }
     }
     graph_file.close();
-    generateReverseAdjList();
-
-    n_node = adj_list.size();
-    n_edge = 0;
-    for (const auto& list : adj_list) {
-        n_edge += list.size();
-    }
-}
-
-Graph::Graph(std::istream &in, std::string name) : name(std::move(name)) {
-    std::string buf;
-    std::getline(in, buf);
-
-    strTrimRight(buf);
-
-    int n;
-    getline(in, buf);
-    std::istringstream(buf) >> n;
-
-    std::string sub;
-    int idx;
-    int sid = 0;
-    int tid = 0;
-    while (getline(in, buf)) {
-        adj_list.emplace_back();
-
-        strTrimRight(buf);
-        idx = buf.find(":");
-        buf.erase(0, idx + 2);
-        while (buf.find(" ") != std::string::npos) {
-            sub = buf.substr(0, buf.find(" "));
-            std::istringstream(sub) >> tid;
-            buf.erase(0, buf.find(" ") + 1);
-
-            adj_list.back().push_back(tid);
-        }
-        ++sid;
-    }
     generateReverseAdjList();
 
     n_node = adj_list.size();
