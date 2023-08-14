@@ -120,7 +120,7 @@ namespace kang {
             }
         };
 
-        static std::vector<Node> nodes; // TODO: 原生数组
+        std::vector<Node> nodes;
         int x;
 
         const Graph* graph;

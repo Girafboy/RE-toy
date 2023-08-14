@@ -24,8 +24,6 @@
 
 namespace kang {
 
-    std::vector<Kang::Node> Kang::nodes;
-
     Kang::Kang(int x) : x(x) {}
 
     void Kang::encode(const Bits &bits, Bits &out, float &p0) {
