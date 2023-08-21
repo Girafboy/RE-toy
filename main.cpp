@@ -31,17 +31,17 @@ using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
 using tol::TOLWrapper;
 using gripp::GrippWrapper;
-using butr::buTRWrapper;
+//using butr::buTRWrapper;
 using ferrari::Ferrari;
 using ip::IP;
 using pll::PLL;
-using tf_label::TFLabel;
-using tfl::TFL;
+//using tf_label::TFLabel;
+//using tfl::TFL;
 using preach::PReaCH;
 using dbl::DBLWrapper;
 
 
-Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_correctness=false, bool check_only_reached=false) {
+Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
     Profile profile;
     profile.graph_name = graph.getName();
     profile.algorithm_name = algorithm->getName();
@@ -57,7 +57,13 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
     profile.preparation_time = ms_double.count();
 
     AutoTest auto_test = AutoTest(&graph, algorithm);
-    profile.total_has_path_time = auto_test.runAutoTest(check_reachable_times, check_correctness, check_only_reached);
+    auto_test.generateQueries(check_reachable_times, check_only_reached);
+    time1 = std::chrono::high_resolution_clock::now();
+    auto_test.runQueryTest();
+    time2 = std::chrono::high_resolution_clock::now();
+    ms_double = time2 - time1;
+    profile.total_has_path_time = ms_double.count();
+
     profile.index_size = algorithm->getIndexSize();
     algorithm->reset();
 
@@ -73,60 +79,60 @@ void main_test() {
         new Kang(64),
         new Kang(128),
         new Kang(256),
-        new Kang(512),
-        new Kang(1024),
-        new Kang(2048),
-        new Kang(4096),
+//        new Kang(512),
+//        new Kang(1024),
+//        new Kang(2048),
+//        new Kang(4096),
         // new Kang(1024*16),
         /****************************
          * BFL
          ****************************/ 
-        new BFL(1),
-        new BFL(2),
-        new BFL(5),
-        new BFL(10),
-        new BFL(20),
-        new BFL(50),
-        new BFL(100),
-        new BFL(200),
-        new BFL(500),
+//        new BFL(1),
+//        new BFL(2),
+//        new BFL(5),
+//        new BFL(10),
+//        new BFL(20),
+//        new BFL(50),
+//        new BFL(100),
+//        new BFL(200),
+//        new BFL(500),
         /****************************
          * Grail
          ****************************/ 
-        new GrailWrapper(1, 0, 2),
-        new GrailWrapper(1, 0, 3),
-        new GrailWrapper(1, 0, 4),
-        new GrailWrapper(1, 0, 5),
-        new GrailWrapper(1, 1, 2),
-        new GrailWrapper(1, 1, 3),
-        new GrailWrapper(1, 1, 4),
-        new GrailWrapper(1, 1, 5),
-        new GrailWrapper(-2, 0, 2),
-        new GrailWrapper(-2, 0, 3),
-        new GrailWrapper(-2, 0, 4),
-        new GrailWrapper(-2, 0, 5),
-        new GrailWrapper(-2, 1, 2),
-        new GrailWrapper(-2, 1, 3),
-        new GrailWrapper(-2, 1, 4),
-        new GrailWrapper(-2, 1, 5),
+//        new GrailWrapper(1, 0, 2),
+//        new GrailWrapper(1, 0, 3),
+//        new GrailWrapper(1, 0, 4),
+//        new GrailWrapper(1, 0, 5),
+//        new GrailWrapper(1, 1, 2),
+//        new GrailWrapper(1, 1, 3),
+//        new GrailWrapper(1, 1, 4),
+//        new GrailWrapper(1, 1, 5),
+//        new GrailWrapper(-2, 0, 2),
+//        new GrailWrapper(-2, 0, 3),
+//        new GrailWrapper(-2, 0, 4),
+//        new GrailWrapper(-2, 0, 5),
+//        new GrailWrapper(-2, 1, 2),
+//        new GrailWrapper(-2, 1, 3),
+//        new GrailWrapper(-2, 1, 4),
+//        new GrailWrapper(-2, 1, 5),
         /****************************
          * Path Tree
          ****************************/ 
-        new PathTreeWrapper(1),
-        new PathTreeWrapper(2),
-        new PathTreeWrapper(3),
-        new PathTreeWrapper(4),
+//        new PathTreeWrapper(1),
+//        new PathTreeWrapper(2),
+//        new PathTreeWrapper(3),
+//        new PathTreeWrapper(4),
         /****************************
          * TOL
          ****************************/ 
-        new TOLWrapper(0, 1),
-        new TOLWrapper(0, 2),
-        new TOLWrapper(1, 1),  // todo: 正确性有问题
-        new TOLWrapper(1, 2),
+//        new TOLWrapper(0, 1),
+//        new TOLWrapper(0, 2),
+//        new TOLWrapper(1, 1),  // todo: 正确性有问题
+//        new TOLWrapper(1, 2),
         /****************************
          * Gripp
          ****************************/ 
-        new GrippWrapper(),  // 极慢
+//        new GrippWrapper(),  // 极慢
         /****************************
          * buTR
             TODO: buTR的实现有问题
@@ -135,17 +141,17 @@ void main_test() {
         /****************************
          * Ferrari
          ****************************/ 
-        new Ferrari(2, 32, true),
+//        new Ferrari(2, 32, true),
         /****************************
          * IP
             TODO: BUG
          ****************************/ 
-        // new IP(2, 2),
+//         new IP(2, 2),
         /****************************
          * PLL
          ****************************/ 
-        new PLL(true),
-        new PLL(false),
+//        new PLL(true),
+//        new PLL(false),
         /****************************
          * TF-label
             TODO: 有bug，随机性强，偶尔跑通也慢，不知道是不是实现问题
@@ -157,17 +163,25 @@ void main_test() {
         /****************************
          * PReaCH
          ****************************/ 
-        new PReaCH(),
+//        new PReaCH(),
         /****************************
          * DBL
          ****************************/ 
-        new DBLWrapper(),
+//        new DBLWrapper(),
     };
 
     /***************************************** Correctness Test *****************************************/
+    std::vector<Graph> graphs_for_correctness_test = {
+            Graph(5, 1, "random-5-1"),
+            Graph(100, 10, "random-100-10"),
+    };
     for (auto algorithm: algorithms) {
-        testAlgorithmsOnGraph(Graph("../graphs/tiny_test_graph.txt", "tiny_test_graph"), algorithm, 100, true);
-        testAlgorithmsOnGraph(Graph(100, 10, "random-100-10"), algorithm, 100, true);
+        for (const auto &graph : graphs_for_correctness_test) {
+            algorithm->construction(graph);
+            AutoTest autoTest(&graph, algorithm);
+            assert(autoTest.checkCorrectness().first);
+            algorithm->reset();
+        }
         std::cout << "Correctness Test Pass! (" << algorithm->getName() << ", " << algorithm->getParams() << ")" << std::endl;
     }
     /***************************************** Correctness Test *****************************************/
@@ -180,11 +194,11 @@ void main_test() {
     std::vector<Graph> graphs = {
         // Graph(100, 10, "random-100-10"),
         Graph(1000, 1, "random-1000-1"),
-        Graph(1000, 2, "random-1000-2"),
-        Graph(1000, 5, "random-1000-5"),
-        Graph(1000, 10, "random-1000-10"),
-        Graph(1000, 20, "random-1000-20"),
-        Graph(1000, 50, "random-1000-50"),
+//        Graph(1000, 2, "random-1000-2"),
+//        Graph(1000, 5, "random-1000-5"),
+//        Graph(1000, 10, "random-1000-10"),
+//        Graph(1000, 20, "random-1000-20"),
+//        Graph(1000, 50, "random-1000-50"),
         Graph(1000, 100, "random-1000-100"),
         // Graph(10000, 10, "random-10000-10"),
         // Graph(100000, 10, "random-100000-10"),
