@@ -38,14 +38,12 @@ std::pair<bool, std::pair<int, int>> AutoTest::checkCorrectness() {
     return std::make_pair(true, std::make_pair(0, 0));
 }
 
-void AutoTest::runQueryTest() {
-    for (const auto &query: queries) {
-        algorithm_ptr->TC_haspath(query.first, query.second);
-    }
+bool AutoTest::runQueryTest(const std::pair<int, int> &query) {
+    return algorithm_ptr->TC_haspath(query.first, query.second);
 }
 
-void AutoTest::generateQueries(int m, bool check_only_reached) {
-    queries.clear();
+std::vector<std::pair<int, int>> AutoTest::generateQueries(int m, bool check_only_reached) {
+    std::vector<std::pair<int, int>> queries;
     int n = (int)graph_ptr->size();
     if (check_only_reached) {
         for (int i = 0; i < n; ++i) {
@@ -68,7 +66,7 @@ void AutoTest::generateQueries(int m, bool check_only_reached) {
                     queries.emplace_back(i, j);
                 }
                 if (queries.size() == m) {
-                    return;
+                    return queries;
                 }
             }
         }
@@ -82,4 +80,5 @@ void AutoTest::generateQueries(int m, bool check_only_reached) {
             queries.emplace_back(r1, r2);
         }
     }
+    return queries;
 }
