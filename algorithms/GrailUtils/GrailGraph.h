@@ -59,11 +59,11 @@ namespace grail {
             visited = false;
         };
 
-        ~GrailVertex() {
-            delete pre;
-            delete post;
-            delete middle;
-        }
+//        ~GrailVertex() {
+//            delete pre;
+//            delete post;
+//            delete middle;
+//        }
     };
 
     struct VertexCompare {
