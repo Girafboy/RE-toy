@@ -3,7 +3,6 @@
 #include <iostream>
 #include <random>
 #include <utility>
-#include <cassert>
 
 #include "AutoTest.h"
 
@@ -39,81 +38,47 @@ std::pair<bool, std::pair<int, int>> AutoTest::checkCorrectness() {
     return std::make_pair(true, std::make_pair(0, 0));
 }
 
-double AutoTest::runAutoTest(int m, bool check_correctness, bool check_only_reached) {
-    if (check_correctness) {
-        auto tmp = checkCorrectness();
-        if (!tmp.first) {
-            std::cout << tmp.second.first << " to " << tmp.second.second
-                    << " should be "
-                    << (!algorithm_ptr->TC_haspath(tmp.second.first, tmp.second.second) ? "true" : "false")
-                    << " but return "
-                    << (algorithm_ptr->TC_haspath(tmp.second.first, tmp.second.second) ? "true" : "false")
-                    << std::endl;
-        }
-        assert(tmp.first);
-    }
-    int n = (int) graph_ptr->size();
-//    m = std::min(m, n * n);
-    std::uniform_int_distribution<int> u(0, n - 1);
-    std::default_random_engine e;
-    e.seed(std::chrono::system_clock::now().time_since_epoch().count());
+bool AutoTest::runQueryTest(const std::pair<int, int> &query) {
+    return algorithm_ptr->TC_haspath(query.first, query.second);
+}
+
+std::vector<std::pair<int, int>> AutoTest::generateQueries(int m, bool check_only_reached) {
     std::vector<std::pair<int, int>> queries;
-    if (!check_only_reached) {
+    int n = (int)graph_ptr->size();
+    if (check_only_reached) {
+        for (int i = 0; i < n; ++i) {
+            std::vector<bool> visited(n);
+            std::queue<int> q;
+            visited[i] = true;
+            q.push(i);
+            while (!q.empty()) {
+                int tmp = q.front();
+                q.pop();
+                for (const auto &j: graph_ptr->getSuccessors(tmp)) {
+                    if (!visited[j]) {
+                        visited[j] = true;
+                        q.push(j);
+                    }
+                }
+            }
+            for (int j = 0; j < n; ++j) {
+                if (visited[j]) {
+                    queries.emplace_back(i, j);
+                }
+                if (queries.size() == m) {
+                    return queries;
+                }
+            }
+        }
+    } else {
+        std::uniform_int_distribution<int> u(0, n - 1);
+        std::default_random_engine e;
+        e.seed(std::chrono::system_clock::now().time_since_epoch().count());
         for (int i = 0; i < m; ++i) {
             int r1 = u(e);
             int r2 = u(e);
             queries.emplace_back(r1, r2);
         }
-    } else {
-        queries = getReachableQueries(m);
-    }
-    auto t1 = std::chrono::high_resolution_clock::now();
-    for (const auto &query: queries) {
-        algorithm_ptr->TC_haspath(query.first, query.second);
-    }
-//    for (size_t i = 0; i < queries.size(); ++i) {
-//        auto query = queries[i];
-//        if (i % 1 == 0) {
-//            std::cout << "i = " << i;
-//            std::cout << ", source = " << query.first << ", target = " << query.second << std::endl;
-//        }
-//        algorithm_ptr->TC_haspath(query.first, query.second);
-//    }
-    auto t2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> ms_double = t2 - t1;
-    return ms_double.count();
-}
-
-std::vector<std::pair<int, int>> AutoTest::getReachableQueries(int m) {
-    std::vector<std::pair<int, int>> queries;
-    auto n = graph_ptr->size();
-    for (int i = 0; i < n; ++i) {
-        std::vector<bool> visited(n);
-        std::queue<int> q;
-        visited[i] = true;
-        q.push(i);
-        while (!q.empty()) {
-            int tmp = q.front();
-            q.pop();
-            for (const auto &j: graph_ptr->getSuccessors(tmp)) {
-                if (!visited[j]) {
-                    visited[j] = true;
-                    q.push(j);
-                }
-            }
-        }
-        for (int j = 0; j < n; ++j) {
-            if (visited[j]) {
-                queries.emplace_back(i, j);
-            }
-            if (queries.size() == m) {
-                return queries;
-            }
-        }
     }
     return queries;
-}
-
-unsigned long long AutoTest::getIndexSize() {
-    return algorithm_ptr->getIndexSize();
 }

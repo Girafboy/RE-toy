@@ -58,6 +58,12 @@ namespace grail {
             top_level = -1;
             visited = false;
         };
+
+//        ~GrailVertex() {
+//            delete pre;
+//            delete post;
+//            delete middle;
+//        }
     };
 
     struct VertexCompare {
