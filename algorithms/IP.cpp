@@ -5,7 +5,9 @@ namespace ip {
     extern int querycnt;
 
     IP::IP(int k, int h, int mu) : k(k), h(h), mu(mu) {
-
+        g.KEYNUM = k;
+        g.HUGENODENUM = h;
+        g.hugenode = mu;
     }
 
     std::string IP::getName() const {
