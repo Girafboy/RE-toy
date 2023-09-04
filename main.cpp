@@ -76,6 +76,20 @@ unsigned int max_time_second = 0;
 //    return profile;
 //}
 
+void testAccuracy() {
+    IP ip(2, 2, 100);
+    int n = 100, d = 10;
+    Graph graph(n, d, "random");
+    ip.construction(graph);
+    AutoTest autoTest(&graph, &ip);
+    auto ret = autoTest.checkCorrectness();
+    if (ret.first) {
+        std::cout << "Correctness test passed." << std::endl;
+    } else {
+        std::cout << "Correctness test failed." << std::endl;
+    }
+}
+
 Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
     Profile profile;
     profile.graph_name = graph.getName();
