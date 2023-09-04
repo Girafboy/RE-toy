@@ -75,12 +75,8 @@ namespace grail {
     }
 
     void GrailWrapper::reset() {
-        if (!grail_ptr) {
-            delete grail_ptr;
-        }
-        if (!el) {
-            delete el;
-        }
+        delete grail_ptr;
+        delete el;
     }
 
     unsigned long long GrailWrapper::getIndexSize() const {

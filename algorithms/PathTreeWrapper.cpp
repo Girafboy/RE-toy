@@ -29,12 +29,8 @@ namespace path_tree {
     }
 
     void PathTreeWrapper::reset() {
-        if (!pt_ptr) {
-            delete pt_ptr;
-        }
-        if (!sccmap) {
-            delete[]sccmap;
-        }
+        delete pt_ptr;
+        delete[]sccmap;
     }
 
     PathTreeWrapper::PathTreeWrapper(int alg_type) : alg_type(alg_type) {
