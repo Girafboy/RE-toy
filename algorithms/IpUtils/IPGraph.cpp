@@ -332,11 +332,11 @@ void IPGraph::readGraphFromInlist(istream& in) {
         return vl.size();
     }
 
-    int IPGraph::num_edges() {
+    unsigned long long IPGraph::num_edges() const {
         EdgeList el;
-        GRA::iterator git;
-        int num = 0;
-        for (git = graph.begin(); git != graph.end(); git++) {
+//        GRA::iterator git;
+        unsigned long long num = 0ull;
+        for (auto git = graph.begin(); git != graph.end(); git++) {
             el = git->outList;
             num += el.size();
         }

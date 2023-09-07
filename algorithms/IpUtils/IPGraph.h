@@ -132,7 +132,7 @@ namespace ip {
         void addVertex(int);
         void addEdge(int, int);
         int num_vertices();
-        int num_edges();
+        unsigned long long num_edges() const;
         VertexList& vertices();
         EdgeList& out_edges(int);
         EdgeList& in_edges(int);

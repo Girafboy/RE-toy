@@ -66,7 +66,9 @@ namespace path_tree {
         }
         isize += uncover_size;
         isize += g.num_vertices();
-        isize += pathMap.size() * 2;
+        // labels
+        isize += g.num_vertices() * 3;
+//        isize += pathMap.size() * 2;
 /*	
 	cout << "uncover set rate: " << uncover_size*1.00/(isize*1.00) << endl; 
 	cout << "path tree cover set size percentage: " << pathMap.size()*2.00/(isize*1.00) << endl;

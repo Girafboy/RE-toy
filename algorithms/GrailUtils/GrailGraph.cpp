@@ -204,11 +204,11 @@ namespace grail {
         return vl.size();
     }
 
-    int GrailGraph::num_edges() {
+    unsigned long long GrailGraph::num_edges() const {
         GrailEdgeList el;
-        Grail_GRA::iterator git;
-        int num = 0;
-        for (git = graph.begin(); git != graph.end(); git++) {
+//        Grail_GRA::iterator git;
+        unsigned long long num = 0ull;
+        for (auto git = graph.begin(); git != graph.end(); git++) {
             el = git->outList;
             num += el.size();
         }

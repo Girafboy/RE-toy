@@ -86,6 +86,10 @@ namespace grail {
         } else {
             totalIndexSize = gsize * DIM * 2;
         }
+        // visited in Grail
+//        totalIndexSize += gsize;
+        // g.out_edges, i.e. outList in Grail_GRA
+        totalIndexSize += g.num_edges();
         return totalIndexSize * sizeof(int);
     }
 }

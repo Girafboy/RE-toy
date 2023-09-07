@@ -76,6 +76,8 @@ namespace ip {
             count2 += g.ProLabelOut[i].size();
             count2 += g.ProLabelIn[i].size();
         }
-        return 4 * (count1 + count2 + g.vsize);
+//        return 4 * (count1 + count2 + g.vsize);
+        // query uses original graph
+        return (count1 + count2 + g.num_edges()) * sizeof(int);
     }
 } // ip
