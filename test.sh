@@ -4,12 +4,12 @@ cd ./cmake-build-release || exit
 out_put_file="../output/result.csv"
 max_time="1000"  # second
 
-echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_stdev" > ${out_put_file}
+echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${out_put_file}
 
 graphs=(
 # random graphs
 # "--random 1000 10"
-# "--random 10000 10"
+ "--random 10000 10"
 # "--random 100000 10"
 # graphs from files
 # small real sparse
@@ -41,52 +41,52 @@ graphs=(
 
 algorithms=(
 # XJump
-"xjump 32"
-"xjump 64"
-"xjump 128"
-"xjump 256"
-"xjump 512"
-"xjump 1024"
-"xjump 2048"
-"xjump 4096"
+#"xjump 32"
+#"xjump 64"
+#"xjump 128"
+#"xjump 256"
+#"xjump 512"
+#"xjump 1024"
+#"xjump 2048"
+#"xjump 4096"
 # BFL
 "bfl 1"
-"bfl 2"
-"bfl 5"
-"bfl 10"
-"bfl 20"
-"bfl 50"
-"bfl 100"
-"bfl 200"
-"bfl 500"
+#"bfl 2"
+#"bfl 5"
+#"bfl 10"
+#"bfl 20"
+#"bfl 50"
+#"bfl 100"
+#"bfl 200"
+#"bfl 500"
 # Grail
-"grail 1 0 2"
-"grail 1 0 3"
-"grail 1 0 4"
-"grail 1 0 5"
-"grail 1 1 2"
-"grail 1 1 3"
-"grail 1 1 4"
-"grail 1 1 5"
-"grail -2 0 2"
-"grail -2 0 3"
-"grail -2 0 4"
-"grail -2 0 5"
-"grail -2 1 2"
-"grail -2 1 3"
-"grail -2 1 4"
-"grail -2 1 5"
+#"grail 1 0 2"
+#"grail 1 0 3"
+#"grail 1 0 4"
+#"grail 1 0 5"
+#"grail 1 1 2"
+#"grail 1 1 3"
+#"grail 1 1 4"
+#"grail 1 1 5"
+#"grail -2 0 2"
+#"grail -2 0 3"
+#"grail -2 0 4"
+#"grail -2 0 5"
+#"grail -2 1 2"
+#"grail -2 1 3"
+#"grail -2 1 4"
+#"grail -2 1 5"
 # PathTree
-"pathtree 1"
-"pathtree 2"
-"pathtree 3"
-"pathtree 4"
+#"pathtree 1"
+#"pathtree 2"
+#"pathtree 3"
+#"pathtree 4"
 # TOL
-"tol 0 1"
-"tol 0 2"
-"tol 1 2"
+#"tol 0 1"
+#"tol 0 2"
+#"tol 1 2"
 # Gripp
-"gripp"
+#"gripp"
 # Ferrari
 "ferrari 2 32 1"
 # IP
