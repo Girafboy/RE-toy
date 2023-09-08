@@ -118,7 +118,7 @@ namespace grail {
 
         int num_vertices();
 
-        int num_edges();
+        unsigned long long num_edges() const;
 
         GrailVertexList &vertices();
 

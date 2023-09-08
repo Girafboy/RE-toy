@@ -75,12 +75,8 @@ namespace grail {
     }
 
     void GrailWrapper::reset() {
-        if (!grail_ptr) {
-            delete grail_ptr;
-        }
-        if (!el) {
-            delete el;
-        }
+        delete grail_ptr;
+        delete el;
     }
 
     unsigned long long GrailWrapper::getIndexSize() const {
@@ -90,6 +86,10 @@ namespace grail {
         } else {
             totalIndexSize = gsize * DIM * 2;
         }
+        // visited in Grail
+//        totalIndexSize += gsize;
+        // g.out_edges, i.e. outList in Grail_GRA
+        totalIndexSize += g.num_edges();
         return totalIndexSize * sizeof(int);
     }
 }

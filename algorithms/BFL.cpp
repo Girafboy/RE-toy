@@ -240,10 +240,11 @@ namespace bfl {
             index_size +=
                     nodes[u].N_O_SZ == 0 ? (K > 8 ? sizeof(unsigned int) : sizeof(unsigned char)) : K * sizeof(int);
             index_size += sizeof(nodes[u].L_interval);
+//            index_size += sizeof(nodes[u].vis);
 
             /* The author ignors the size of N_O and N_I, which is utilized in BFL::reach. */
             index_size += nodes[u].N_O_SZ * sizeof(*nodes[u].N_O);
-            index_size += nodes[u].N_I_SZ * sizeof(*nodes[u].N_I);
+//            index_size += nodes[u].N_I_SZ * sizeof(*nodes[u].N_I);
             /* The author ignors the size of N_O and N_I, which is utilized in BFL::reach. */
         }
         return index_size;

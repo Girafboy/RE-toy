@@ -178,7 +178,7 @@ namespace gripp {
             index_size += (*Inst_p)[i].size() * sizeof(unsigned);
         }
         // vis
-        index_size += node_num * sizeof(bool);
+//        index_size += node_num * sizeof(bool);
         return index_size;
     }
 } // gripp

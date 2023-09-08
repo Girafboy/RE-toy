@@ -35,25 +35,25 @@ namespace dbl {
     unsigned long long DBLWrapper::getIndexSize() const {
         unsigned long long sz = 0ull;
         // V, E, csr_size
-        sz += 3 * sizeof(int);
-        for (const auto &s : dbl.adj) {
-            sz += s.size() * sizeof(int);
-        }
-        for (const auto &s : dbl.rev_adj) {
-            sz += s.size() * sizeof(int);
-        }
-        sz += dbl.ord.size() * sizeof(int);
-        sz += dbl.rev_ord.size() * sizeof(int);
+//        sz += 3 * sizeof(int);
+//        for (const auto &s : dbl.adj) {
+//            sz += s.size() * sizeof(int);
+//        }
+//        for (const auto &s : dbl.rev_adj) {
+//            sz += s.size() * sizeof(int);
+//        }
+//        sz += dbl.ord.size() * sizeof(int);
+//        sz += dbl.rev_ord.size() * sizeof(int);
         sz += dbl.dl_in.size() * (dl / 8);
         sz += dbl.dl_out.size() * (dl / 8);
         sz += dbl.bl_in.size() * (bl / 8);
         sz += dbl.bl_out.size() * (bl / 8);
-        sz += dbl.scc.size() * sizeof(int);
+//        sz += dbl.scc.size() * sizeof(int);
         sz += dbl.csr.size() * sizeof(int);
         sz += dbl.prefixsum.size() * sizeof(int);
-        sz += dbl.rev_csr.size() * sizeof(int);
-        sz += dbl.rev_prefixsum.size() * sizeof(int);
-        sz += dbl.dl_hash.size() * sizeof(int);
+//        sz += dbl.rev_csr.size() * sizeof(int);
+//        sz += dbl.rev_prefixsum.size() * sizeof(int);
+//        sz += dbl.dl_hash.size() * sizeof(int);
         return sz;
     }
 } // dbl

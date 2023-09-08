@@ -33,9 +33,9 @@ namespace preach {
         // Fifo ff;
         index_size += 4 * sizeof(int) + qg->nodes.size() * sizeof(int);
         // std::valarray<int> runs;
-        index_size += qg->runs.size() * sizeof(int);
+//        index_size += qg->runs.size() * sizeof(int);
         // int run
-        index_size += sizeof(int);
+//        index_size += sizeof(int);
         // EdgeSlices fwd_edge_slices;
         index_size += qg->fwd_edge_slices.size() * (2 * sizeof(const int*));
         // EdgeSlices bwd_edge_slices;

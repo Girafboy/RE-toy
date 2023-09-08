@@ -7,6 +7,8 @@ include_directories(.)
 include_directories(algorithms)
 include_directories(/opt/homebrew/include)
 include_directories(/opt/homebrew/opt/libomp/include)
+include_directories(/home/xingliwang/program_installation/boost_1_83_0)
+
 
 add_executable(
   tc

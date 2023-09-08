@@ -5,7 +5,9 @@ namespace ip {
     extern int querycnt;
 
     IP::IP(int k, int h, int mu) : k(k), h(h), mu(mu) {
-
+        g.KEYNUM = k;
+        g.HUGENODENUM = h;
+        g.hugenode = mu;
     }
 
     std::string IP::getName() const {
@@ -74,6 +76,8 @@ namespace ip {
             count2 += g.ProLabelOut[i].size();
             count2 += g.ProLabelIn[i].size();
         }
-        return 4 * (count1 + count2 + g.vsize);
+//        return 4 * (count1 + count2 + g.vsize);
+        // query uses original graph
+        return (count1 + count2 + g.num_edges()) * sizeof(int);
     }
 } // ip

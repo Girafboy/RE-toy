@@ -11,7 +11,7 @@ struct Profile {
     unsigned long long preparation_time_ns;
     unsigned long long query_num;
     double average_has_path_time_ns;
-    double standard_deviation_of_has_path_times_ns;
+    std::vector<long long> has_path_time_samples;
     unsigned long long index_size;
 };
 

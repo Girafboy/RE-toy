@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <cstring>
 #include <numeric>
+#include <sstream>
 
 #include "Graph.h"
 #include "AutoTest.h"
@@ -47,7 +48,50 @@ decltype(std::chrono::high_resolution_clock::now()) start_time;
 unsigned int max_time_second = 0;
 
 
-Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
+//Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
+//    Profile profile;
+//    profile.graph_name = graph.getName();
+//    profile.algorithm_name = algorithm->getName();
+//    profile.params = algorithm->getParams();
+//
+//    decltype(std::chrono::high_resolution_clock::now()) time1, time2;
+//    std::chrono::duration<double, std::milli> ms_double{};
+//
+//    time1 = std::chrono::high_resolution_clock::now();
+//    algorithm->construction(graph);
+//    time2 = std::chrono::high_resolution_clock::now();
+//    ms_double = time2 - time1;
+//    profile.preparation_time = ms_double.count();
+//
+//    AutoTest auto_test = AutoTest(&graph, algorithm);
+//    auto_test.generateQueries(check_reachable_times, check_only_reached);
+//    time1 = std::chrono::high_resolution_clock::now();
+//    auto_test.runQueryTest();
+//    time2 = std::chrono::high_resolution_clock::now();
+//    ms_double = time2 - time1;
+//    profile.total_has_path_time = ms_double.count();
+//
+//    profile.index_size = algorithm->getIndexSize();
+//    algorithm->reset();
+//
+//    return profile;
+//}
+
+void testAccuracy() {
+    IP ip(2, 2, 100);
+    int n = 100, d = 10;
+    Graph graph(n, d, "random");
+    ip.construction(graph);
+    AutoTest autoTest(&graph, &ip);
+    auto ret = autoTest.checkCorrectness();
+    if (ret.first) {
+        std::cout << "Correctness test passed." << std::endl;
+    } else {
+        std::cout << "Correctness test failed." << std::endl;
+    }
+}
+
+Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, int sample_num, bool check_only_reached=false) {
     Profile profile;
     profile.graph_name = graph.getName();
     profile.algorithm_name = algorithm->getName();
@@ -61,6 +105,8 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
     time2 = std::chrono::high_resolution_clock::now();
     ms_nano = time2 - time1;
     profile.preparation_time_ns = ms_nano.count();
+
+    profile.index_size = algorithm->getIndexSize();
 
     std::vector<long long> has_path_times_ns;
     AutoTest auto_test = AutoTest(&graph, algorithm);
@@ -77,18 +123,31 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
         }
     }
     profile.query_num = has_path_times_ns.size();
+    if (has_path_times_ns.empty()) {
+        return profile;
+    }
 
     long long sum = std::accumulate(has_path_times_ns.begin(), has_path_times_ns.end(), 0ll);
     double mean = (double)sum / (double)has_path_times_ns.size();
     profile.average_has_path_time_ns = mean;
 
-    std::vector<double> diff(has_path_times_ns.size());
-    std::transform(has_path_times_ns.begin(), has_path_times_ns.end(), diff.begin(), [mean](double x) { return x - mean; });
-    double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-    double stdev = std::sqrt(sq_sum / (double)has_path_times_ns.size());
-    profile.standard_deviation_of_has_path_times_ns = stdev;
+//    std::vector<double> diff(has_path_times_ns.size());
+//    std::transform(has_path_times_ns.begin(), has_path_times_ns.end(), diff.begin(), [mean](double x) { return x - mean; });
+//    double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+//    double stdev = std::sqrt(sq_sum / (double)has_path_times_ns.size());
+//    profile.standard_deviation_of_has_path_times_ns = stdev;
 
-    profile.index_size = algorithm->getIndexSize();
+    auto left = has_path_times_ns.begin();
+    for (int i = 1; i < sample_num - 1; ++i) {
+        auto mid = left + has_path_times_ns.size() / (sample_num - 1);
+        std::nth_element(left, mid, has_path_times_ns.end());
+        if (i == 1) {
+            profile.has_path_time_samples.push_back(*min_element(has_path_times_ns.begin(), mid + 1));
+        }
+        profile.has_path_time_samples.push_back(*mid);
+        left = mid;
+    }
+    profile.has_path_time_samples.push_back(*max_element(left, has_path_times_ns.end()));
 
     return profile;
 }
@@ -317,7 +376,15 @@ int main(int argc, char* argv[]) {
     }
 
     int check_reachable_times = 100000;
-    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times);
+    int sample_num = 5;
+    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times, sample_num);
+
+    std::stringstream ss;
+    ss << '[';
+    for (const auto &t : profile.has_path_time_samples) {
+        ss << t << "; ";
+    }
+    ss << ']';
 
     std::ofstream myfile;
     myfile.open("../output/result.csv", std::ios_base::app);
@@ -328,7 +395,7 @@ int main(int argc, char* argv[]) {
            << profile.index_size << ","
            << profile.query_num << ","
            << profile.average_has_path_time_ns << ","
-           << profile.standard_deviation_of_has_path_times_ns << "\n";
+           << ss.str() << "\n";
     myfile.close();
 
     algorithm->reset();
