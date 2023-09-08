@@ -1,10 +1,11 @@
 #!/bin/bash
 
 cd ./cmake-build-release || exit
-out_put_file="../output/result.csv"
+input_directory="/Users/xingliwang/Documents/研究生/研一/研一夏/实验室/亢虎权/图/converted_graphs"
+output_file="../output/result.csv"
 max_time="1000"  # second
 
-echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${out_put_file}
+echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
 
 graphs=(
 # random graphs
@@ -13,30 +14,30 @@ graphs=(
 # "--random 100000 10"
 # graphs from files
 # small real sparse
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/human_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/anthra_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/amaze_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/agrocyc_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/xmark_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/ecoo_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/nasa_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/kegg_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/vchocyc_dag_uniq.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_sparse/mtbrv_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/human_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/anthra_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/amaze_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/agrocyc_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/xmark_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/ecoo_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/nasa_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/kegg_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/vchocyc_dag_uniq.txt"
+# "--file ${input_directory}/small_real_sparse/mtbrv_dag_uniq.txt"
 # small real dense
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_dense/go_sub_6793.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_dense/citeseer_sub_10720.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_dense/arXiv_sub_6000-1.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_dense/pubmed_sub_9000-1.txt"
-# "--file /home/xingliwang/data/kanghuquan/tc_graphs/small_real_dense/yago_sub_6642.txt"
+# "--file ${input_directory}/small_real_dense/go_sub_6793.txt"
+# "--file ${input_directory}/small_real_dense/citeseer_sub_10720.txt"
+# "--file ${input_directory}/small_real_dense/arXiv_sub_6000-1.txt"
+# "--file ${input_directory}/small_real_dense/pubmed_sub_9000-1.txt"
+# "--file ${input_directory}/small_real_dense/yago_sub_6642.txt"
 # large real
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/citeseer.scc.txt"
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/uniprotenc_22m.scc.txt"
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/cit-Patents.scc.txt"
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/citeseerx.txt"
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/uniprotenc_100m.scc.txt"
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/go_uniprot.txt"
-#"--file /home/xingliwang/data/kanghuquan/tc_graphs/large_real/uniprotenc_150m.scc.txt"
+#"--file ${input_directory}/large_real/citeseer.scc.txt"
+#"--file ${input_directory}/large_real/uniprotenc_22m.scc.txt"
+#"--file ${input_directory}/large_real/cit-Patents.scc.txt"
+#"--file ${input_directory}/large_real/citeseerx.txt"
+#"--file ${input_directory}/large_real/uniprotenc_100m.scc.txt"
+#"--file ${input_directory}/large_real/go_uniprot.txt"
+#"--file ${input_directory}/large_real/uniprotenc_150m.scc.txt"
 )
 
 algorithms=(
