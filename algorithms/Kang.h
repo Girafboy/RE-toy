@@ -127,10 +127,10 @@ namespace kang {
         
         float *connect_probability = nullptr;
 
-        void encode(const Bits &bits, Bits &out, float &p0);
-        void decode(const Bits &code, Bits &out, float p0, int len);
+        void encode(const Bits &bits, Bits &out, float &p0, int cur);
+        void decode(const Bits &code, Bits &out, float p0, int len, int cur);
         void encode_decode_correctness_test();
-        bool decode_check(const Bits &code, float p0, int len, int pos);
+        bool decode_check(const Bits &code, float p0, int len, int pos, int cur);
     public:
         Kang(int x);
 

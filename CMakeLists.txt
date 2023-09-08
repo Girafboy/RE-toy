@@ -72,4 +72,41 @@ add_executable(
   algorithms/buTRUtils/graph.h
   algorithms/buTRUtils/hopLabel.h
   algorithms/buTRUtils/interval.h
-  algorithms/buTRUtils/transitiveReduction.h algorithms/Ferrari.cpp algorithms/Ferrari.h algorithms/FerrariUtils/FerrariGraph.cpp algorithms/FerrariUtils/FerrariGraph.h algorithms/FerrariUtils/Index.cpp algorithms/FerrariUtils/Index.h algorithms/FerrariUtils/IntervalList.cpp algorithms/FerrariUtils/IntervalList.h algorithms/IP.cpp algorithms/IP.h algorithms/IpUtils/IPGraph.cpp algorithms/IpUtils/IPGraph.h algorithms/IpUtils/Util.cpp algorithms/IpUtils/Util.h algorithms/PLL.cpp algorithms/PLL.h algorithms/PllUtils/PrunedLabeling.h algorithms/PllUtils/PrunedLabeling.cpp algorithms/TFLabel.cpp algorithms/TFLabel.h algorithms/TfLabelUtils/Util.h algorithms/TFL.cpp algorithms/TFL.h algorithms/TflUtils/pre_check.h algorithms/TflUtils/runtimecounter.h algorithms/TflUtils/queryscc.h algorithms/PReaCH.cpp algorithms/PReaCH.h algorithms/PreachUtils/ConstructionGraph.cc algorithms/PreachUtils/ConstructionGraph.hh algorithms/PreachUtils/Fifo.cc algorithms/PreachUtils/Fifo.hh algorithms/PreachUtils/QueryGraph.cc algorithms/PreachUtils/QueryGraph.hh algorithms/DblUtils/DBL.cc algorithms/DblUtils/DBL.h algorithms/DBLWrapper.cpp algorithms/DBLWrapper.h)
+  algorithms/buTRUtils/transitiveReduction.h 
+  algorithms/Ferrari.cpp algorithms/Ferrari.h 
+  algorithms/FerrariUtils/FerrariGraph.cpp 
+  algorithms/FerrariUtils/FerrariGraph.h
+  algorithms/FerrariUtils/Index.cpp
+  algorithms/FerrariUtils/Index.h
+  algorithms/FerrariUtils/IntervalList.cpp
+  algorithms/FerrariUtils/IntervalList.h
+  algorithms/IP.cpp
+  algorithms/IP.h
+  algorithms/IpUtils/IPGraph.cpp
+  algorithms/IpUtils/IPGraph.h
+  algorithms/IpUtils/Util.cpp
+  algorithms/IpUtils/Util.h
+  algorithms/PLL.cpp
+  algorithms/PLL.h
+  algorithms/PllUtils/PrunedLabeling.h
+  algorithms/PllUtils/PrunedLabeling.cpp
+  algorithms/TFLabel.cpp
+  algorithms/TFLabel.h
+  algorithms/TfLabelUtils/Util.h
+  algorithms/TFL.cpp
+  algorithms/TFL.h
+  algorithms/TflUtils/pre_check.h
+  algorithms/TflUtils/runtimecounter.h
+  algorithms/TflUtils/queryscc.h
+  algorithms/PReaCH.cpp
+  algorithms/PReaCH.h
+  algorithms/PreachUtils/ConstructionGraph.cc
+  algorithms/PreachUtils/ConstructionGraph.hh
+  algorithms/PreachUtils/Fifo.cc
+  algorithms/PreachUtils/Fifo.hh
+  algorithms/PreachUtils/QueryGraph.cc
+  algorithms/PreachUtils/QueryGraph.hh
+  algorithms/DblUtils/DBL.cc
+  algorithms/DblUtils/DBL.h
+  algorithms/DBLWrapper.cpp
+  algorithms/DBLWrapper.h)
