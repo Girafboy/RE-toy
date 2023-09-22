@@ -65,7 +65,7 @@ namespace path_tree {
             uncover_size += mit->size();
         }
         isize += uncover_size;
-        isize += g.num_vertices();
+//        isize += g.num_vertices();
         // labels
         isize += g.num_vertices() * 3;
 //        isize += pathMap.size() * 2;
