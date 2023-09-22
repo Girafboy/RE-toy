@@ -7,6 +7,7 @@
 #include <random>
 #include <unordered_set>
 #include <stack>
+#include <algorithm>
 
 Graph::Graph(const std::vector<std::vector<int>>& original_adj_list, std::string name) : name(std::move(name)) {
     mergeScc(original_adj_list);
@@ -179,7 +180,7 @@ void Graph::mergeScc(const std::vector<std::vector<int>> &original_adj_list) {
     }
 
     for (int i = 0; i < scc_count; ++i) {
-        sort(adj_list[i].begin(), adj_list[i].end());
+        std::sort(adj_list[i].begin(), adj_list[i].end());
         adj_list[i].erase(std::unique(adj_list[i].begin(), adj_list[i].end()), adj_list[i].end());
     }
 }
