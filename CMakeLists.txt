@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(tc)
+project(reachability)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -11,7 +11,7 @@ include_directories(/home/xingliwang/program_installation/boost_1_83_0)
 
 
 add_executable(
-  tc
+  reachability
   algorithms/GrailUtils/exception_list.h
   algorithms/GrailUtils/exception_list_incremental_base.h
   algorithms/GrailUtils/exception_list_incremental_plus.h

@@ -383,7 +383,13 @@ int main(int argc, char* argv[]) {
         auto ret2 = autoTest2.checkCorrectness();
         algorithm->reset();
 
-        if (ret1.first && ret2.first) {
+        Graph graph3(1000, 10, "random");
+        algorithm->construction(graph3);
+        AutoTest autoTest3(&graph3, algorithm);
+        auto ret3 = autoTest3.checkCorrectness();
+        algorithm->reset();
+
+        if (ret1.first && ret2.first && ret3.first) {
             std::cout << "Correctness test passed." << std::endl;
         } else {
             std::cout << "Correctness test failed." << std::endl;

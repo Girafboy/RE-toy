@@ -106,7 +106,7 @@ do
   echo "Start testing ${algorithm}"
   for graph in "${graphs[@]}"
   do
-    tmp_command="timeout ${max_time} ./tc --time ${max_time} ${graph} --algorithm ${algorithm}"
+    tmp_command="timeout ${max_time} ./reachability --time ${max_time} ${graph} --algorithm ${algorithm}"
     eval "${tmp_command}"
     exit_status=$?
     if [[ $exit_status -eq 124 ]]; then

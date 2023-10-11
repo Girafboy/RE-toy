@@ -56,11 +56,11 @@ namespace rc {
             }
 
             void set(int pos) {
-                data[pos >> 3] |= (1 << (pos & 7));
+                data[pos >> 3] |= (0x80 >> (pos & 7));
             }
 
             bool get(int pos) const {
-                return data[pos >> 3] & (1 << (pos & 7));
+                return data[pos >> 3] & (0x80 >> (pos & 7));
             }
 
             void bits_or(const Bits &other) {
@@ -141,10 +141,17 @@ namespace rc {
             return connect_p0;
         }
 
+        inline int get_chunk_num(int topo_order) const {
+            return (topo_order + chunk_size - 1) / chunk_size;
+        }
+
+        inline int get_p0_pos_num(int topo_order) const {
+            return log2(topo_order + 1) + 1;
+        }
+
         std::vector<Node> nodes;
-        int chunk_size;
-        
         float *connect_p0 = nullptr;
+        int chunk_size;
 
         int encode(const Bits &bits, Bits &out, float p0, int cur);
         void decode(const Bits &code, Bits &out, float p0, int cur, int len);

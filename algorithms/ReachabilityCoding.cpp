@@ -84,13 +84,10 @@ namespace rc {
     }
 
     void ReachabilityCoding::decode(const Bits &code, Bits &out, float p0, int cur, int len) {
-        unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
-        int code_cur = 0;
+        unsigned long long lo = 0, hi = RANGE_MAX;
+        unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
+        int code_cur = 32;
 
-        for (; code_cur < 32; code_cur++) {
-            value <<= 1;
-            value |= (code_cur < code.size ? code.get(code_cur) : 0);
-        }
         for (int i = 0; i < len; i++) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
@@ -144,24 +141,23 @@ namespace rc {
         int topo_order = 0;
         while (!q.empty()) {
             int cur = q.front(); q.pop();
-            nodes[cur].topo_order = topo_order++;
             // ****************** encode start *****************//
-            if (nodes[cur].topo_order) {
-                connect_p0[nodes[cur].topo_order] = 1.0 - (float)graph.getOutDegree(cur) / nodes[cur].topo_order;
-                int chunks = (nodes[cur].topo_order+chunk_size-1)/chunk_size;
+            if (topo_order) {
+                connect_p0[topo_order] = 1.0 - (float)graph.getOutDegree(cur) / topo_order;
+                int chunks = get_chunk_num(topo_order);
                 nodes[cur].codes = new Bits[chunks];
-                nodes[cur].p0_pos = new int[log2(nodes[cur].topo_order+1)+1];
+                nodes[cur].p0_pos = new int[get_p0_pos_num(topo_order)];
 
                 Bits res[chunks]; 
                 for (int i = 0; i < chunks-1; i++) {
                     res[i].init(chunk_size);
                 }
-                res[chunks-1].init(nodes[cur].topo_order - chunk_size*(chunks-1));
+                res[chunks-1].init(topo_order - chunk_size*(chunks-1));
 
                 for (const int v : graph.getSuccessors(cur)) {
                     res[nodes[v].topo_order/chunk_size].set(res[nodes[v].topo_order/chunk_size].size - nodes[v].topo_order%chunk_size - 1);
                     if (nodes[v].topo_order) {
-                        int chunks_v = (nodes[v].topo_order+chunk_size-1)/chunk_size;
+                        int chunks_v = get_chunk_num(nodes[v].topo_order);
                         for (int i = 0; i < chunks_v-1; i++) {
                             decode(nodes[v].codes[i], res[i], get_p0(connect_p0[nodes[v].topo_order], i, nodes[v].p0_pos), (i+1)*chunk_size, chunk_size);
                         }
@@ -169,27 +165,28 @@ namespace rc {
                     }
                 }
 
-                int ones = 1 + encode(res[chunks-1], nodes[cur].codes[chunks-1], connect_p0[nodes[cur].topo_order], nodes[cur].topo_order);
-                for (int j=0; j<log2(1+nodes[cur].topo_order)+1; j++) {
+                int ones = 1 + encode(res[chunks-1], nodes[cur].codes[chunks-1], connect_p0[topo_order], topo_order);
+                for (int j=0; j<get_p0_pos_num(topo_order); j++) {
                     nodes[cur].p0_pos[j] = chunks-1;
                 }
                 for (int i = chunks-2; i >= 0 ; i--) {
-                    for (int j=log2(ones); j<log2(nodes[cur].topo_order+1)+1; j++) {
+                    for (int j=log2(ones); j<get_p0_pos_num(topo_order); j++) {
                         nodes[cur].p0_pos[j] = i;
                     }
-                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[nodes[cur].topo_order], ones), (i+1)*chunk_size);
+                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[topo_order], ones), (i+1)*chunk_size);
                 }
             }
             // ****************** encode end *******************//
 #ifdef DEBUG
-            std::cout << nodes[cur].topo_order << " " << connect_p0[nodes[cur].topo_order] << ":";
-            for (int i = 0; i < (nodes[cur].topo_order+x-1)/x; i++)
-                std::cout << " " << get_p0(connect_p0[nodes[cur].topo_order], i, nodes[cur].p0_pos) << " " << nodes[cur].codes[i].size;
+            std::cout << topo_order << " " << connect_p0[topo_order] << ":";
+            for (int i = 0; i < (topo_order+x-1)/x; i++)
+                std::cout << " " << get_p0(connect_p0[topo_order], i, nodes[cur].p0_pos) << " " << nodes[cur].codes[i].size;
             std::cout << std::endl;
-            for (int i = 0; i < log2(nodes[cur].topo_order)+1; i++)
+            for (int i = 0; i < log2(topo_order)+1; i++)
                 std::cout << " " << nodes[cur].p0_pos[i];
             std::cout << std::endl;
 #endif
+            nodes[cur].topo_order = topo_order++;
             for (const int u : graph.getPredecessors(cur)) {
                 if (--out_degree[u] == 0) {
                     q.push(u);
@@ -199,14 +196,11 @@ namespace rc {
     }
 
     bool ReachabilityCoding::decode_check(const Bits &code, float p0, int cur, int len) {
-        unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
-        int code_cur = 0;
         bool ret = false;
+        unsigned long long lo = 0, hi = RANGE_MAX;
+        unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
+        int code_cur = 32;
 
-        for (; code_cur < 32; code_cur++) {
-            value <<= 1;
-            value |= (code_cur < code.size ? code.get(code_cur) : 0);
-        }
         for (int i = 0; i < len; i++) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
@@ -246,7 +240,7 @@ namespace rc {
         } else if (nodes[source].topo_order < nodes[target].topo_order) {
             return false;
         } else {
-            int chunks = (nodes[source].topo_order+chunk_size-1)/chunk_size, pos = nodes[target].topo_order/chunk_size;
+            int chunks = get_chunk_num(nodes[source].topo_order), pos = nodes[target].topo_order/chunk_size;
             if (pos == chunks-1) {
                 return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - (chunks-1)*chunk_size - nodes[target].topo_order%chunk_size);
             } else {
@@ -270,7 +264,7 @@ namespace rc {
             for (int i = 0; i < chunks; i++) {
                 index_size += node.codes[i].size_bytes;
             }
-            index_size += (log2(node.topo_order+1)+1) * sizeof(int);
+            index_size += get_p0_pos_num(node.topo_order) * sizeof(int);
         }
         return index_size;
     }
