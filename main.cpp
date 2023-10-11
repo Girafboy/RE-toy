@@ -371,8 +371,23 @@ int main(int argc, char* argv[]) {
     }
 
     if (test_accuracy) {
-        // todo: test accuracy
-        std::cout << "Not implemented yet." << std::endl;
+        Graph graph1(10, 3, "random");
+        algorithm->construction(graph1);
+        AutoTest autoTest1(&graph1, algorithm);
+        auto ret1 = autoTest1.checkCorrectness();
+        algorithm->reset();
+
+        Graph graph2(100, 10, "random");
+        algorithm->construction(graph2);
+        AutoTest autoTest2(&graph2, algorithm);
+        auto ret2 = autoTest2.checkCorrectness();
+        algorithm->reset();
+
+        if (ret1.first && ret2.first) {
+            std::cout << "Correctness test passed." << std::endl;
+        } else {
+            std::cout << "Correctness test failed." << std::endl;
+        }
     }
 
     int check_reachable_times = 100000;

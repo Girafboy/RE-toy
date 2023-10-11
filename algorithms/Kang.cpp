@@ -26,15 +26,17 @@ namespace kang {
 
     Kang::Kang(int x) : x(x) {}
 
-    void Kang::encode(const Bits &bits, Bits &out, float &p0, int cur) {
+    int Kang::encode(const Bits &bits, Bits &out, float p0, int cur) {
         unsigned long long lo = 0, hi = RANGE_MAX;
         int pending = 0;
+        int ones = 0;
         for (int i = 0; i < bits.size; i++) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (bits.get(i)) {
                 lo = lo + range;
-                p0 *= (1-connect_probability[cur-i-1]);
+                p0 *= connect_p0[cur-i-1];
+                ones++;
             } else {
                 hi = lo + range - 1;
             }
@@ -78,9 +80,10 @@ namespace kang {
                 pending--;
             }
         }
+        return ones;
     }
 
-    void Kang::decode(const Bits &code, Bits &out, float p0, int len, int cur) {
+    void Kang::decode(const Bits &code, Bits &out, float p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
 
@@ -94,7 +97,7 @@ namespace kang {
             if (value >= lo + range) {
                 lo = lo + range;
                 out.set(out.size - len + i);
-                p0 *= (1-connect_probability[cur-i-1]);
+                p0 *= connect_p0[cur-i-1];
             } else {
                 hi = lo + range - 1;
             }
@@ -149,8 +152,7 @@ namespace kang {
         this->graph = &graph;
         size_t n = graph.size();
         nodes.resize(n);
-        connect_probability = new float[n];
-        std::memset(connect_probability, 0, sizeof(float)*n);
+        connect_p0 = new float[n];
         
         std::queue<int> q;
         std::vector<size_t> out_degree(n);
@@ -168,11 +170,10 @@ namespace kang {
             nodes[cur].topo_order = topo_order++;
             // ****************** encode start *****************//
             if (nodes[cur].topo_order) {
-                connect_probability[nodes[cur].topo_order] = (float)graph.getOutDegree(cur) / nodes[cur].topo_order;
+                connect_p0[nodes[cur].topo_order] = 1.0 - (float)graph.getOutDegree(cur) / nodes[cur].topo_order;
                 int chunks = (nodes[cur].topo_order+x-1)/x;
                 nodes[cur].codes = new Bits[chunks];
-                nodes[cur].p0_inits = new float[chunks];
-                nodes[cur].nonzeros = new bool[chunks]; std::memset(nodes[cur].nonzeros, 0, sizeof(bool)*chunks);
+                nodes[cur].p0_pos = new int[log2(nodes[cur].topo_order+1)+1];
 
                 Bits res[chunks]; 
                 for (int i = 0; i < chunks-1; i++) {
@@ -182,39 +183,34 @@ namespace kang {
 
                 for (const int v : graph.getSuccessors(cur)) {
                     res[nodes[v].topo_order/x].set(res[nodes[v].topo_order/x].size - nodes[v].topo_order%x - 1);
-                    nodes[cur].nonzeros[nodes[v].topo_order/x] = true;
                     if (nodes[v].topo_order) {
                         int chunks_v = (nodes[v].topo_order+x-1)/x;
                         for (int i = 0; i < chunks_v-1; i++) {
-                            if (nodes[v].nonzeros[i]) {
-                                decode(nodes[v].codes[i], res[i], nodes[v].p0_inits[i], x, (i+1)*x);
-                                nodes[cur].nonzeros[i] = true;
-                            }
+                            decode(nodes[v].codes[i], res[i], get_p0(connect_p0[nodes[v].topo_order], i, nodes[v].p0_pos), (i+1)*x, x);
                         }
-                        if (nodes[v].nonzeros[chunks_v-1]) {
-                            decode(nodes[v].codes[chunks_v-1], res[chunks_v-1], nodes[v].p0_inits[chunks_v-1], nodes[v].topo_order - x*(chunks_v-1), nodes[v].topo_order);
-                            nodes[cur].nonzeros[chunks_v-1] = true;
-                        }
+                        decode(nodes[v].codes[chunks_v-1], res[chunks_v-1], get_p0(connect_p0[nodes[v].topo_order], chunks_v-1, nodes[v].p0_pos), nodes[v].topo_order, nodes[v].topo_order - x*(chunks_v-1));
                     }
                 }
 
-                float p0 = 1 - connect_probability[nodes[cur].topo_order];
-                nodes[cur].p0_inits[chunks-1] = p0;
-                if (nodes[cur].nonzeros[chunks-1]) {
-                    encode(res[chunks-1], nodes[cur].codes[chunks-1], p0, nodes[cur].topo_order);
+                int ones = 1 + encode(res[chunks-1], nodes[cur].codes[chunks-1], connect_p0[nodes[cur].topo_order], nodes[cur].topo_order);
+                for (int j=0; j<log2(1+nodes[cur].topo_order)+1; j++) {
+                    nodes[cur].p0_pos[j] = chunks-1;
                 }
                 for (int i = chunks-2; i >= 0 ; i--) {
-                    nodes[cur].p0_inits[i] = p0;
-                    if (nodes[cur].nonzeros[i]) {
-                        encode(res[i], nodes[cur].codes[i], p0, (i+1)*x);
+                    for (int j=log2(ones); j<log2(nodes[cur].topo_order+1)+1; j++) {
+                        nodes[cur].p0_pos[j] = i;
                     }
+                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[nodes[cur].topo_order], ones), (i+1)*x);
                 }
             }
             // ****************** encode end *******************//
 #ifdef DEBUG
-            std::cout << nodes[cur].topo_order << " " << connect_probability[nodes[cur].topo_order] << ":";
+            std::cout << nodes[cur].topo_order << " " << connect_p0[nodes[cur].topo_order] << ":";
             for (int i = 0; i < (nodes[cur].topo_order+x-1)/x; i++)
-                std::cout << " " << nodes[cur].codes[i].size;
+                std::cout << " " << get_p0(connect_p0[nodes[cur].topo_order], i, nodes[cur].p0_pos) << " " << nodes[cur].codes[i].size;
+            std::cout << std::endl;
+            for (int i = 0; i < log2(nodes[cur].topo_order)+1; i++)
+                std::cout << " " << nodes[cur].p0_pos[i];
             std::cout << std::endl;
 #endif
             for (const int u : graph.getPredecessors(cur)) {
@@ -225,7 +221,7 @@ namespace kang {
         }
     }
 
-    bool Kang::decode_check(const Bits &code, float p0, int len, int pos, int cur) {
+    bool Kang::decode_check(const Bits &code, float p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
         bool ret = false;
@@ -234,13 +230,13 @@ namespace kang {
             value <<= 1;
             value |= (code_cur < code.size ? code.get(code_cur) : 0);
         }
-        for (int i = 0; i < pos; i++) {
+        for (int i = 0; i < len; i++) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;
                 ret = true;
-                p0 *= (1-connect_probability[cur-i-1]);
+                p0 *= connect_p0[cur-i-1];
             } else {
                 hi = lo + range - 1;
                 ret = false;
@@ -274,14 +270,10 @@ namespace kang {
             return false;
         } else {
             int chunks = (nodes[source].topo_order+x-1)/x, pos = nodes[target].topo_order/x;
-            if (nodes[source].nonzeros[pos]) {
-                if (pos == chunks-1) {
-                    return decode_check(nodes[source].codes[pos], nodes[source].p0_inits[pos], nodes[source].topo_order - (chunks-1)*x, nodes[source].topo_order - (chunks-1)*x - nodes[target].topo_order%x, nodes[source].topo_order);
-                } else {
-                    return decode_check(nodes[source].codes[pos], nodes[source].p0_inits[pos], x,  x - nodes[target].topo_order%x, (pos+1)*x);
-                }
+            if (pos == chunks-1) {
+                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - (chunks-1)*x - nodes[target].topo_order%x);
             } else {
-                return false;
+                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), (pos+1)*x,  x - nodes[target].topo_order%x);
             }
         }
     }
@@ -301,8 +293,7 @@ namespace kang {
             for (int i = 0; i < chunks; i++) {
                 index_size += node.codes[i].size_bytes;
             }
-            index_size += chunks * sizeof(float);
-            index_size += chunks * sizeof(bool);
+            index_size += (log2(node.topo_order+1)+1) * sizeof(int);
         }
         return index_size;
     }

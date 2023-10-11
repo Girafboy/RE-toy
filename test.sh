@@ -1,9 +1,9 @@
 #!/bin/bash
 
-cd ./cmake-build-release || exit
+cd ./build || exit
 input_directory="/Users/xingliwang/Documents/研究生/研一/研一夏/实验室/亢虎权/图/converted_graphs"
 output_file="../output/result.csv"
-max_time="1000"  # second
+max_time="20"  # second
 
 echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
 
@@ -42,19 +42,19 @@ graphs=(
 
 algorithms=(
 # XJump
-#"xjump 32"
-#"xjump 64"
-#"xjump 128"
-#"xjump 256"
-#"xjump 512"
-#"xjump 1024"
+"xjump 32"
+"xjump 64"
+"xjump 128"
+"xjump 256"
+"xjump 512"
+"xjump 1024"
 #"xjump 2048"
 #"xjump 4096"
 # BFL
-"bfl 1"
+# "bfl 1"
 #"bfl 2"
-#"bfl 5"
-#"bfl 10"
+"bfl 5"
+# "bfl 10"
 #"bfl 20"
 #"bfl 50"
 #"bfl 100"
@@ -83,9 +83,9 @@ algorithms=(
 #"pathtree 3"
 #"pathtree 4"
 # TOL
-#"tol 0 1"
-#"tol 0 2"
-#"tol 1 2"
+"tol 0 1"
+"tol 0 2"
+"tol 1 2"
 # Gripp
 #"gripp"
 # Ferrari

@@ -21,6 +21,14 @@
 #define RANGE_MID_MIN 0x00000001UL
 
 namespace kang {
+    static int log2(int val) {
+        int ret = 0;
+        while (val > 1) {
+            val >>= 1;
+            ret++;
+        }
+        return ret;
+    }
 
     class Kang : public Algorithm {
     private:
@@ -105,32 +113,45 @@ namespace kang {
         struct Node {
             int topo_order;
             Bits *codes = nullptr;
-            float *p0_inits = nullptr;
-            bool *nonzeros = nullptr;
+            int *p0_pos = nullptr;
 
             Node() {}
 
             ~Node() {
                 if (codes)
                     delete[] codes;
-                if (p0_inits)
-                    delete[] p0_inits;
-                if (nonzeros)
-                    delete[] nonzeros;
+                if (p0_pos)
+                    delete[] p0_pos;
             }
         };
+
+        inline float get_p0(float connect_p0, int pos, int*p0_pos) {
+            while (pos < *p0_pos) {
+                connect_p0 = connect_p0 * connect_p0;
+                p0_pos++;
+            }
+            return connect_p0;
+        }
+
+        inline float get_p0(float connect_p0, int ones) {
+            while (ones > 1) {
+                ones >>= 1;
+                connect_p0 = connect_p0 * connect_p0;
+            }
+            return connect_p0;
+        }
 
         std::vector<Node> nodes;
         int x;
 
         const Graph* graph;
         
-        float *connect_probability = nullptr;
+        float *connect_p0 = nullptr;
 
-        void encode(const Bits &bits, Bits &out, float &p0, int cur);
-        void decode(const Bits &code, Bits &out, float p0, int len, int cur);
+        int encode(const Bits &bits, Bits &out, float p0, int cur);
+        void decode(const Bits &code, Bits &out, float p0, int cur, int len);
         void encode_decode_correctness_test();
-        bool decode_check(const Bits &code, float p0, int len, int pos, int cur);
+        bool decode_check(const Bits &code, float p0, int cur, int len);
     public:
         Kang(int x);
 
