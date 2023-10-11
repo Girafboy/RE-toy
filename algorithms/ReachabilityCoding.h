@@ -153,7 +153,7 @@ namespace rc {
         float *connect_p0 = nullptr;
         int chunk_size;
 
-        int encode(const Bits &bits, Bits &out, float p0, int cur);
+        int encode(const Bits &bits, Bits &out, float p0, int cur, int len);
         void decode(const Bits &code, Bits &out, float p0, int cur, int len);
         void encode_decode_correctness_test();
         bool decode_check(const Bits &code, float p0, int cur, int len);

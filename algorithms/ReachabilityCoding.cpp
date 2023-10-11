@@ -26,16 +26,16 @@ namespace rc {
 
     ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x) {}
 
-    int ReachabilityCoding::encode(const Bits &bits, Bits &out, float p0, int cur) {
+    int ReachabilityCoding::encode(const Bits &bits, Bits &out, float p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX;
         int pending = 0;
         int ones = 0;
-        for (int i = 0; i < bits.size; i++) {
+        for (int i = len-1; i >=0; i--) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (bits.get(i)) {
                 lo = lo + range;
-                p0 *= connect_p0[cur-i-1];
+                p0 *= connect_p0[cur-len+i];
                 ones++;
             } else {
                 hi = lo + range - 1;
@@ -88,13 +88,13 @@ namespace rc {
         unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
         int code_cur = 32;
 
-        for (int i = 0; i < len; i++) {
+        for (int i = len-1; i >= 0; i--) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;
-                out.set(out.size - len + i);
-                p0 *= connect_p0[cur-i-1];
+                out.set(i);
+                p0 *= connect_p0[cur-len+i];
             } else {
                 hi = lo + range - 1;
             }
@@ -155,7 +155,7 @@ namespace rc {
                 res[chunks-1].init(topo_order - chunk_size*(chunks-1));
 
                 for (const int v : graph.getSuccessors(cur)) {
-                    res[nodes[v].topo_order/chunk_size].set(res[nodes[v].topo_order/chunk_size].size - nodes[v].topo_order%chunk_size - 1);
+                    res[nodes[v].topo_order/chunk_size].set(nodes[v].topo_order%chunk_size);
                     if (nodes[v].topo_order) {
                         int chunks_v = get_chunk_num(nodes[v].topo_order);
                         for (int i = 0; i < chunks_v-1; i++) {
@@ -165,15 +165,15 @@ namespace rc {
                     }
                 }
 
-                int ones = 1 + encode(res[chunks-1], nodes[cur].codes[chunks-1], connect_p0[topo_order], topo_order);
                 for (int j=0; j<get_p0_pos_num(topo_order); j++) {
                     nodes[cur].p0_pos[j] = chunks-1;
                 }
+                int ones = 1 + encode(res[chunks-1], nodes[cur].codes[chunks-1], connect_p0[topo_order], topo_order, topo_order - chunk_size*(chunks-1));
                 for (int i = chunks-2; i >= 0 ; i--) {
                     for (int j=log2(ones); j<get_p0_pos_num(topo_order); j++) {
                         nodes[cur].p0_pos[j] = i;
                     }
-                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[topo_order], ones), (i+1)*chunk_size);
+                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[topo_order], ones), (i+1)*chunk_size, chunk_size);
                 }
             }
             // ****************** encode end *******************//
@@ -201,13 +201,13 @@ namespace rc {
         unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
         int code_cur = 32;
 
-        for (int i = 0; i < len; i++) {
+        for (int i = len-1; i >= 0; i--) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (value >= lo + range) {
                 lo = lo + range;
                 ret = true;
-                p0 *= connect_p0[cur-i-1];
+                p0 *= connect_p0[cur-len+i];
             } else {
                 hi = lo + range - 1;
                 ret = false;
@@ -242,7 +242,7 @@ namespace rc {
         } else {
             int chunks = get_chunk_num(nodes[source].topo_order), pos = nodes[target].topo_order/chunk_size;
             if (pos == chunks-1) {
-                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - (chunks-1)*chunk_size - nodes[target].topo_order%chunk_size);
+                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - nodes[target].topo_order);
             } else {
                 return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
             }
