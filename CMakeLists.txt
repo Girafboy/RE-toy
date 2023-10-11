@@ -43,8 +43,8 @@ add_executable(
   algorithms/BFL.h
   algorithms/GrailWrapper.cpp
   algorithms/GrailWrapper.h
-  algorithms/Kang.cpp
-  algorithms/Kang.h
+  algorithms/ReachabilityCoding.cpp
+  algorithms/ReachabilityCoding.h
   algorithms/PathTreeWrapper.cpp
   algorithms/PathTreeWrapper.h
   AutoTest.cpp

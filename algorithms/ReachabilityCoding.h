@@ -1,5 +1,5 @@
-#ifndef KANG_KANG_H
-#define KANG_KANG_H
+#ifndef REACHABILITY_CODING_H
+#define REACHABILITY_CODING_H
 
 #include <cstddef>
 #include <cstring>
@@ -20,7 +20,7 @@
 #define RANGE_THREE_QUAR 0xC0000000UL
 #define RANGE_MID_MIN 0x00000001UL
 
-namespace kang {
+namespace rc {
     static int log2(int val) {
         int ret = 0;
         while (val > 1) {
@@ -30,7 +30,7 @@ namespace kang {
         return ret;
     }
 
-    class Kang : public Algorithm {
+    class ReachabilityCoding : public Algorithm {
     private:
         struct Bits {
             unsigned char *data = nullptr;
@@ -142,9 +142,7 @@ namespace kang {
         }
 
         std::vector<Node> nodes;
-        int x;
-
-        const Graph* graph;
+        int chunk_size;
         
         float *connect_p0 = nullptr;
 
@@ -153,7 +151,7 @@ namespace kang {
         void encode_decode_correctness_test();
         bool decode_check(const Bits &code, float p0, int cur, int len);
     public:
-        Kang(int x);
+        ReachabilityCoding(int x);
 
         std::string getName() const override;
 
@@ -169,4 +167,4 @@ namespace kang {
     };
 }
 
-#endif //KANG_KANG_H
+#endif //REACHABILITY_CODING_H

@@ -13,7 +13,7 @@
 #include "AutoTest.h"
 #include "Profile.h"
 
-#include "algorithms/Kang.h"
+#include "algorithms/ReachabilityCoding.h"
 #include "algorithms/BFL.h"
 #include "algorithms/GrailWrapper.h"
 #include "algorithms/PathTreeWrapper.h"
@@ -28,7 +28,7 @@
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
-using kang::Kang;
+using rc::ReachabilityCoding;
 using bfl::BFL;
 using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                algorithm = new Kang(x);
+                algorithm = new ReachabilityCoding(x);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);

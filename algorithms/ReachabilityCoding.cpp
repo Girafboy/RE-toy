@@ -1,4 +1,4 @@
-#include "Kang.h"
+#include "ReachabilityCoding.h"
 
 #include <cassert>
 #include <cmath>
@@ -22,11 +22,11 @@
 
 // #define DEBUG
 
-namespace kang {
+namespace rc {
 
-    Kang::Kang(int x) : x(x) {}
+    ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x) {}
 
-    int Kang::encode(const Bits &bits, Bits &out, float p0, int cur) {
+    int ReachabilityCoding::encode(const Bits &bits, Bits &out, float p0, int cur) {
         unsigned long long lo = 0, hi = RANGE_MAX;
         int pending = 0;
         int ones = 0;
@@ -83,7 +83,7 @@ namespace kang {
         return ones;
     }
 
-    void Kang::decode(const Bits &code, Bits &out, float p0, int cur, int len) {
+    void ReachabilityCoding::decode(const Bits &code, Bits &out, float p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
 
@@ -122,34 +122,11 @@ namespace kang {
         }
     }
 
-    // void Kang::encode_decode_correctness_test() {
-    //     connect_probability = 0.001;
-    //     Bits bits, out, res;
-    //     for (int i=0; i<100; i++) {
-    //         bits.append_zero();
-    //         bits.append_one();
-    //     }
-    //     res.init(bits.size);
-    //     std::cout << "*********** ";
-    //     bits.print();
-    //     std::cout << " >> ";
-    //     float p0 = 1 - connect_probability;
-    //     encode(bits, out, p0);
-    //     out.print();
-    //     std::cout << " >> ";
-    //     decode(out, res, 1 - connect_probability, bits.size);
-    //     res.print();
-    //     std::cout << " ***********";
-    // }
-
-    void Kang::reset() {
+    void ReachabilityCoding::reset() {
         nodes.clear();
     }
 
-    void Kang::construction(const Graph &graph) {
-        // encode_decode_correctness_test();
-
-        this->graph = &graph;
+    void ReachabilityCoding::construction(const Graph &graph) {
         size_t n = graph.size();
         nodes.resize(n);
         connect_p0 = new float[n];
@@ -171,24 +148,24 @@ namespace kang {
             // ****************** encode start *****************//
             if (nodes[cur].topo_order) {
                 connect_p0[nodes[cur].topo_order] = 1.0 - (float)graph.getOutDegree(cur) / nodes[cur].topo_order;
-                int chunks = (nodes[cur].topo_order+x-1)/x;
+                int chunks = (nodes[cur].topo_order+chunk_size-1)/chunk_size;
                 nodes[cur].codes = new Bits[chunks];
                 nodes[cur].p0_pos = new int[log2(nodes[cur].topo_order+1)+1];
 
                 Bits res[chunks]; 
                 for (int i = 0; i < chunks-1; i++) {
-                    res[i].init(x);
+                    res[i].init(chunk_size);
                 }
-                res[chunks-1].init(nodes[cur].topo_order - x*(chunks-1));
+                res[chunks-1].init(nodes[cur].topo_order - chunk_size*(chunks-1));
 
                 for (const int v : graph.getSuccessors(cur)) {
-                    res[nodes[v].topo_order/x].set(res[nodes[v].topo_order/x].size - nodes[v].topo_order%x - 1);
+                    res[nodes[v].topo_order/chunk_size].set(res[nodes[v].topo_order/chunk_size].size - nodes[v].topo_order%chunk_size - 1);
                     if (nodes[v].topo_order) {
-                        int chunks_v = (nodes[v].topo_order+x-1)/x;
+                        int chunks_v = (nodes[v].topo_order+chunk_size-1)/chunk_size;
                         for (int i = 0; i < chunks_v-1; i++) {
-                            decode(nodes[v].codes[i], res[i], get_p0(connect_p0[nodes[v].topo_order], i, nodes[v].p0_pos), (i+1)*x, x);
+                            decode(nodes[v].codes[i], res[i], get_p0(connect_p0[nodes[v].topo_order], i, nodes[v].p0_pos), (i+1)*chunk_size, chunk_size);
                         }
-                        decode(nodes[v].codes[chunks_v-1], res[chunks_v-1], get_p0(connect_p0[nodes[v].topo_order], chunks_v-1, nodes[v].p0_pos), nodes[v].topo_order, nodes[v].topo_order - x*(chunks_v-1));
+                        decode(nodes[v].codes[chunks_v-1], res[chunks_v-1], get_p0(connect_p0[nodes[v].topo_order], chunks_v-1, nodes[v].p0_pos), nodes[v].topo_order, nodes[v].topo_order - chunk_size*(chunks_v-1));
                     }
                 }
 
@@ -200,7 +177,7 @@ namespace kang {
                     for (int j=log2(ones); j<log2(nodes[cur].topo_order+1)+1; j++) {
                         nodes[cur].p0_pos[j] = i;
                     }
-                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[nodes[cur].topo_order], ones), (i+1)*x);
+                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[nodes[cur].topo_order], ones), (i+1)*chunk_size);
                 }
             }
             // ****************** encode end *******************//
@@ -221,7 +198,7 @@ namespace kang {
         }
     }
 
-    bool Kang::decode_check(const Bits &code, float p0, int cur, int len) {
+    bool ReachabilityCoding::decode_check(const Bits &code, float p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, value = 0;
         int code_cur = 0;
         bool ret = false;
@@ -263,33 +240,33 @@ namespace kang {
         return ret;
     }
 
-    bool Kang::TC_haspath(int source, int target) {
+    bool ReachabilityCoding::TC_haspath(int source, int target) {
         if (source == target) {
             return true;
         } else if (nodes[source].topo_order < nodes[target].topo_order) {
             return false;
         } else {
-            int chunks = (nodes[source].topo_order+x-1)/x, pos = nodes[target].topo_order/x;
+            int chunks = (nodes[source].topo_order+chunk_size-1)/chunk_size, pos = nodes[target].topo_order/chunk_size;
             if (pos == chunks-1) {
-                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - (chunks-1)*x - nodes[target].topo_order%x);
+                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - (chunks-1)*chunk_size - nodes[target].topo_order%chunk_size);
             } else {
-                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), (pos+1)*x,  x - nodes[target].topo_order%x);
+                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
             }
         }
     }
 
-    std::string Kang::getName() const {
+    std::string ReachabilityCoding::getName() const {
         return "x-Jump";
     }
 
-    std::string Kang::getParams() const {
-        return "x=" + std::to_string(x);
+    std::string ReachabilityCoding::getParams() const {
+        return "x=" + std::to_string(chunk_size);
     }
 
-    unsigned long long Kang::getIndexSize() const {
+    unsigned long long ReachabilityCoding::getIndexSize() const {
         long long index_size = nodes.size() * sizeof(int);
         for (const auto &node: nodes) {
-            int chunks = (node.topo_order+x-1)/x;
+            int chunks = (node.topo_order+chunk_size-1)/chunk_size;
             for (int i = 0; i < chunks; i++) {
                 index_size += node.codes[i].size_bytes;
             }
