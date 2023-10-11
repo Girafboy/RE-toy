@@ -83,42 +83,6 @@ namespace rc {
         return ones;
     }
 
-    void ReachabilityCoding::decode(const Bits &code, Bits &out, float p0, int cur, int len) {
-        unsigned long long lo = 0, hi = RANGE_MAX;
-        unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
-        int code_cur = 32;
-
-        for (int i = len-1; i >= 0; i--) {
-            unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
-
-            if (value >= lo + range) {
-                lo = lo + range;
-                out.set(i);
-                p0 *= connect_p0[cur-len+i];
-            } else {
-                hi = lo + range - 1;
-            }
-
-            while (true) {
-                if (hi < RANGE_HALF) {
-                } else if (lo >= RANGE_HALF) {
-                    lo -= RANGE_HALF;
-                    hi -= RANGE_HALF;
-                    value -= RANGE_HALF;
-                } else if (lo >= RANGE_ONE_QUAR && hi < RANGE_THREE_QUAR) {
-                    lo -= RANGE_ONE_QUAR;
-                    hi -= RANGE_ONE_QUAR;
-                    value -= RANGE_ONE_QUAR;
-                } else {
-                    break;
-                }
-                lo <<= 1;
-                hi <<= 1; hi |= 1;
-                value <<= 1; value |= (code_cur < code.size ? code.get(code_cur++) : 0);
-            }
-        }
-    }
-
     void ReachabilityCoding::reset() {
         nodes.clear();
     }
@@ -129,9 +93,10 @@ namespace rc {
         connect_p0 = new float[n];
         
         std::queue<int> q;
-        std::vector<size_t> out_degree(n);
+        std::vector<size_t> out_degree(n), in_degree(n);
         for (int i = 0; i < n; ++i) {
             out_degree[i] = graph.getOutDegree(i);
+            in_degree[i] = graph.getInDegree(i);
         }
         for (int i = 0; i < n; ++i) {
             if (out_degree[i] == 0) {
@@ -141,42 +106,67 @@ namespace rc {
         int topo_order = 0;
         while (!q.empty()) {
             int cur = q.front(); q.pop();
-            // ****************** encode start *****************//
+
             if (topo_order) {
-                connect_p0[topo_order] = 1.0 - (float)graph.getOutDegree(cur) / topo_order;
                 int chunks = get_chunk_num(topo_order);
                 nodes[cur].codes = new Bits[chunks];
-                nodes[cur].p0_pos = new int[get_p0_pos_num(topo_order)];
+                connect_p0[topo_order] = 1.0 - (float)graph.getOutDegree(cur) / topo_order;
 
-                Bits res[chunks]; 
                 for (int i = 0; i < chunks-1; i++) {
-                    res[i].init(chunk_size);
+                    nodes[cur].codes[i].init(chunk_size);
                 }
-                res[chunks-1].init(topo_order - chunk_size*(chunks-1));
+                nodes[cur].codes[chunks-1].init(topo_order - chunk_size*(chunks-1));
 
                 for (const int v : graph.getSuccessors(cur)) {
-                    res[nodes[v].topo_order/chunk_size].set(nodes[v].topo_order%chunk_size);
+                    nodes[cur].codes[nodes[v].topo_order/chunk_size].set(nodes[v].topo_order%chunk_size);
                     if (nodes[v].topo_order) {
                         int chunks_v = get_chunk_num(nodes[v].topo_order);
-                        for (int i = 0; i < chunks_v-1; i++) {
-                            decode(nodes[v].codes[i], res[i], get_p0(connect_p0[nodes[v].topo_order], i, nodes[v].p0_pos), (i+1)*chunk_size, chunk_size);
+                        for (int i = 0; i < chunks_v; i++) {
+                            nodes[cur].codes[i].bits_or(nodes[v].codes[i]);
                         }
-                        decode(nodes[v].codes[chunks_v-1], res[chunks_v-1], get_p0(connect_p0[nodes[v].topo_order], chunks_v-1, nodes[v].p0_pos), nodes[v].topo_order, nodes[v].topo_order - chunk_size*(chunks_v-1));
+                        if (--in_degree[v] == 0) {
+                            // ****************** encode start *****************//
+                            Bits *code_raw = nodes[v].codes;
+
+                            nodes[v].codes = new Bits[chunks_v];
+                            nodes[v].p0_pos = new int[get_p0_pos_num(nodes[v].topo_order)];
+                            for (int j=0; j<get_p0_pos_num(nodes[v].topo_order); j++) {
+                                nodes[v].p0_pos[j] = chunks_v-1;
+                            }
+                            int ones = 1 + encode(code_raw[chunks_v-1], nodes[v].codes[chunks_v-1], connect_p0[nodes[v].topo_order], nodes[v].topo_order, nodes[v].topo_order - chunk_size*(chunks_v-1));
+                            for (int i = chunks_v-2; i >= 0 ; i--) {
+                                for (int j=log2(ones); j<get_p0_pos_num(nodes[v].topo_order); j++) {
+                                    nodes[v].p0_pos[j] = i;
+                                }
+                                ones += encode(code_raw[i], nodes[v].codes[i], get_p0(connect_p0[nodes[v].topo_order], ones), (i+1)*chunk_size, chunk_size);
+                            }
+                            delete [] code_raw;
+                            // ****************** encode end *******************//
+                        }
                     }
+                }
+                if (graph.getInDegree(cur) == 0) {
+                    // ****************** encode start *****************//
+                    Bits *code_raw = nodes[cur].codes;
+
+                    nodes[cur].codes = new Bits[chunks];
+                    nodes[cur].p0_pos = new int[get_p0_pos_num(topo_order)];
+                    for (int j=0; j<get_p0_pos_num(topo_order); j++) {
+                        nodes[cur].p0_pos[j] = chunks-1;
+                    }
+                    int ones = 1 + encode(code_raw[chunks-1], nodes[cur].codes[chunks-1], connect_p0[topo_order], topo_order, topo_order - chunk_size*(chunks-1));
+                    for (int i = chunks-2; i >= 0 ; i--) {
+                        for (int j=log2(ones); j<get_p0_pos_num(topo_order); j++) {
+                            nodes[cur].p0_pos[j] = i;
+                        }
+                        ones += encode(code_raw[i], nodes[cur].codes[i], get_p0(connect_p0[topo_order], ones), (i+1)*chunk_size, chunk_size);
+                    }
+                    delete [] code_raw;
+                    // ****************** encode end *******************//
                 }
 
-                for (int j=0; j<get_p0_pos_num(topo_order); j++) {
-                    nodes[cur].p0_pos[j] = chunks-1;
-                }
-                int ones = 1 + encode(res[chunks-1], nodes[cur].codes[chunks-1], connect_p0[topo_order], topo_order, topo_order - chunk_size*(chunks-1));
-                for (int i = chunks-2; i >= 0 ; i--) {
-                    for (int j=log2(ones); j<get_p0_pos_num(topo_order); j++) {
-                        nodes[cur].p0_pos[j] = i;
-                    }
-                    ones += encode(res[i], nodes[cur].codes[i], get_p0(connect_p0[topo_order], ones), (i+1)*chunk_size, chunk_size);
-                }
             }
-            // ****************** encode end *******************//
+
 #ifdef DEBUG
             std::cout << topo_order << " " << connect_p0[topo_order] << ":";
             for (int i = 0; i < (topo_order+x-1)/x; i++)

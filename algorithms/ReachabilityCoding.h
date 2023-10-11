@@ -64,7 +64,7 @@ namespace rc {
             }
 
             void bits_or(const Bits &other) {
-                for (int i = 0; i < size_bytes; i++) {
+                for (int i = 0; i < other.size_bytes; i++) {
                     data[i] |= other.data[i];
                 }
             }
@@ -154,8 +154,6 @@ namespace rc {
         int chunk_size;
 
         int encode(const Bits &bits, Bits &out, float p0, int cur, int len);
-        void decode(const Bits &code, Bits &out, float p0, int cur, int len);
-        void encode_decode_correctness_test();
         bool decode_check(const Bits &code, float p0, int cur, int len);
     public:
         ReachabilityCoding(int x);
