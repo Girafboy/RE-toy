@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd ./build || exit
-input_directory="/Users/xingliwang/Documents/研究生/研一/研一夏/实验室/亢虎权/图/converted_graphs"
+input_directory="../graphs"
 output_file="../output/result.csv"
 max_time="20"  # second
 
@@ -13,6 +13,7 @@ graphs=(
  "--random 10000 10"
 # "--random 100000 10"
 # graphs from files
+ "--file ${input_directory}/kasthuri_graph_v4.txt"
 # small real sparse
 # "--file ${input_directory}/small_real_sparse/human_dag_uniq.txt"
 # "--file ${input_directory}/small_real_sparse/anthra_dag_uniq.txt"

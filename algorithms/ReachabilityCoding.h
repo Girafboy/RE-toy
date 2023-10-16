@@ -1,6 +1,7 @@
 #ifndef REACHABILITY_CODING_H
 #define REACHABILITY_CODING_H
 
+#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <iostream>
@@ -113,47 +114,56 @@ namespace rc {
         struct Node {
             int topo_order;
             Bits *codes = nullptr;
-            int *p0_pos = nullptr;
+            struct pair {
+                int pos;
+                float p0;
+
+                pair(int pos, float p0) : pos(pos), p0(p0) {}
+            };
+            std::vector<pair> p0_pos;
 
             Node() {}
 
             ~Node() {
                 if (codes)
                     delete[] codes;
-                if (p0_pos)
-                    delete[] p0_pos;
             }
         };
 
-        inline float get_p0(float connect_p0, int pos, int*p0_pos) {
-            while (pos < *p0_pos) {
-                connect_p0 = connect_p0 * connect_p0;
-                p0_pos++;
+        inline float get_p0(std::vector<Node::pair> &p0_pos, int pos, float p0_base) {
+            for (auto &pair : p0_pos) {
+                if (pair.pos >= pos) {
+                    p0_base = pair.p0;
+                } else {
+                    break;
+                }
             }
-            return connect_p0;
-        }
+            return p0_base;
+            // auto len = p0_pos.size();
+            // const Node::pair *first = &p0_pos[0], *mid;
+            // while (len) {
+            //     mid = first + (len >> 1);
+            //     if (pos > mid->pos)
+            //         len = (len >> 1);
+            //     else {
+            //         first = mid + 1;
+            //         len -= (len >> 1) + 1;
+            //     }
+            // }
 
-        inline float get_p0(float connect_p0, int ones) {
-            while (ones > 1) {
-                ones >>= 1;
-                connect_p0 = connect_p0 * connect_p0;
-            }
-            return connect_p0;
+            // return first->p0;
         }
 
         inline int get_chunk_num(int topo_order) const {
             return (topo_order + chunk_size - 1) / chunk_size;
         }
 
-        inline int get_p0_pos_num(int topo_order) const {
-            return log2(topo_order + 1) + 1;
-        }
-
         std::vector<Node> nodes;
         float *connect_p0 = nullptr;
         int chunk_size;
 
-        int encode(const Bits &bits, Bits &out, float p0, int cur, int len);
+        float encode(const Bits &bits, Bits &out, float p0, int cur, int len);
+        void encode(Node &node);
         bool decode_check(const Bits &code, float p0, int cur, int len);
     public:
         ReachabilityCoding(int x);

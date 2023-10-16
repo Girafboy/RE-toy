@@ -26,17 +26,15 @@ namespace rc {
 
     ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x) {}
 
-    int ReachabilityCoding::encode(const Bits &bits, Bits &out, float p0, int cur, int len) {
+    float ReachabilityCoding::encode(const Bits &bits, Bits &out, float p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX;
         int pending = 0;
-        int ones = 0;
         for (int i = len-1; i >=0; i--) {
             unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
 
             if (bits.get(i)) {
                 lo = lo + range;
                 p0 *= connect_p0[cur-len+i];
-                ones++;
             } else {
                 hi = lo + range - 1;
             }
@@ -80,7 +78,25 @@ namespace rc {
                 pending--;
             }
         }
-        return ones;
+        return p0;
+    }
+
+    void ReachabilityCoding::encode(ReachabilityCoding::Node &node) {
+        int chunks = get_chunk_num(node.topo_order);
+
+        Bits *code_raw = node.codes;
+
+        node.codes = new Bits[chunks];
+        float p0_base = connect_p0[node.topo_order];
+        float p0 = encode(code_raw[chunks-1], node.codes[chunks-1], p0_base, node.topo_order, node.topo_order - chunk_size*(chunks-1));
+        for (int i = chunks-2; i >= 0 ; i--) {
+            if ((-p0*std::log2(p0_base)-(1-p0)*std::log2(1-p0_base))/(-p0*std::log2(p0)-(1-p0)*std::log2(1-p0)) > 2) {
+                p0_base = p0;
+                node.p0_pos.emplace_back(i, p0_base);
+            }
+            p0 *= encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size) / p0_base;
+        }
+        delete [] code_raw;
     }
 
     void ReachabilityCoding::reset() {
@@ -106,16 +122,17 @@ namespace rc {
         int topo_order = 0;
         while (!q.empty()) {
             int cur = q.front(); q.pop();
+            nodes[cur].topo_order = topo_order++;
 
-            if (topo_order) {
-                int chunks = get_chunk_num(topo_order);
+            if (nodes[cur].topo_order) {
+                int chunks = get_chunk_num(nodes[cur].topo_order);
                 nodes[cur].codes = new Bits[chunks];
-                connect_p0[topo_order] = 1.0 - (float)graph.getOutDegree(cur) / topo_order;
+                connect_p0[nodes[cur].topo_order] = 1.0 - (float)graph.getOutDegree(cur) / nodes[cur].topo_order;
 
                 for (int i = 0; i < chunks-1; i++) {
                     nodes[cur].codes[i].init(chunk_size);
                 }
-                nodes[cur].codes[chunks-1].init(topo_order - chunk_size*(chunks-1));
+                nodes[cur].codes[chunks-1].init(nodes[cur].topo_order - chunk_size*(chunks-1));
 
                 for (const int v : graph.getSuccessors(cur)) {
                     nodes[cur].codes[nodes[v].topo_order/chunk_size].set(nodes[v].topo_order%chunk_size);
@@ -125,44 +142,12 @@ namespace rc {
                             nodes[cur].codes[i].bits_or(nodes[v].codes[i]);
                         }
                         if (--in_degree[v] == 0) {
-                            // ****************** encode start *****************//
-                            Bits *code_raw = nodes[v].codes;
-
-                            nodes[v].codes = new Bits[chunks_v];
-                            nodes[v].p0_pos = new int[get_p0_pos_num(nodes[v].topo_order)];
-                            for (int j=0; j<get_p0_pos_num(nodes[v].topo_order); j++) {
-                                nodes[v].p0_pos[j] = chunks_v-1;
-                            }
-                            int ones = 1 + encode(code_raw[chunks_v-1], nodes[v].codes[chunks_v-1], connect_p0[nodes[v].topo_order], nodes[v].topo_order, nodes[v].topo_order - chunk_size*(chunks_v-1));
-                            for (int i = chunks_v-2; i >= 0 ; i--) {
-                                for (int j=log2(ones); j<get_p0_pos_num(nodes[v].topo_order); j++) {
-                                    nodes[v].p0_pos[j] = i;
-                                }
-                                ones += encode(code_raw[i], nodes[v].codes[i], get_p0(connect_p0[nodes[v].topo_order], ones), (i+1)*chunk_size, chunk_size);
-                            }
-                            delete [] code_raw;
-                            // ****************** encode end *******************//
+                            encode(nodes[v]);
                         }
                     }
                 }
                 if (graph.getInDegree(cur) == 0) {
-                    // ****************** encode start *****************//
-                    Bits *code_raw = nodes[cur].codes;
-
-                    nodes[cur].codes = new Bits[chunks];
-                    nodes[cur].p0_pos = new int[get_p0_pos_num(topo_order)];
-                    for (int j=0; j<get_p0_pos_num(topo_order); j++) {
-                        nodes[cur].p0_pos[j] = chunks-1;
-                    }
-                    int ones = 1 + encode(code_raw[chunks-1], nodes[cur].codes[chunks-1], connect_p0[topo_order], topo_order, topo_order - chunk_size*(chunks-1));
-                    for (int i = chunks-2; i >= 0 ; i--) {
-                        for (int j=log2(ones); j<get_p0_pos_num(topo_order); j++) {
-                            nodes[cur].p0_pos[j] = i;
-                        }
-                        ones += encode(code_raw[i], nodes[cur].codes[i], get_p0(connect_p0[topo_order], ones), (i+1)*chunk_size, chunk_size);
-                    }
-                    delete [] code_raw;
-                    // ****************** encode end *******************//
+                    encode(nodes[cur]);
                 }
 
             }
@@ -176,7 +161,6 @@ namespace rc {
                 std::cout << " " << nodes[cur].p0_pos[i];
             std::cout << std::endl;
 #endif
-            nodes[cur].topo_order = topo_order++;
             for (const int u : graph.getPredecessors(cur)) {
                 if (--out_degree[u] == 0) {
                     q.push(u);
@@ -232,9 +216,9 @@ namespace rc {
         } else {
             int chunks = get_chunk_num(nodes[source].topo_order), pos = nodes[target].topo_order/chunk_size;
             if (pos == chunks-1) {
-                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), nodes[source].topo_order, nodes[source].topo_order - nodes[target].topo_order);
+                return decode_check(nodes[source].codes[pos], get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), nodes[source].topo_order, nodes[source].topo_order - nodes[target].topo_order);
             } else {
-                return decode_check(nodes[source].codes[pos], get_p0(connect_p0[nodes[source].topo_order], pos, nodes[source].p0_pos), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
+                return decode_check(nodes[source].codes[pos], get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
             }
         }
     }
@@ -248,13 +232,13 @@ namespace rc {
     }
 
     unsigned long long ReachabilityCoding::getIndexSize() const {
-        long long index_size = nodes.size() * sizeof(int);
+        long long index_size = nodes.size() * sizeof(int) * 2;
         for (const auto &node: nodes) {
             int chunks = (node.topo_order+chunk_size-1)/chunk_size;
             for (int i = 0; i < chunks; i++) {
                 index_size += node.codes[i].size_bytes;
             }
-            index_size += get_p0_pos_num(node.topo_order) * sizeof(int);
+            index_size += node.p0_pos.size() * sizeof(Node::pair);
         }
         return index_size;
     }
