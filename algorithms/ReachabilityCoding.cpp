@@ -24,17 +24,17 @@
 
 namespace rc {
 
-    ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x) {}
+    ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x-1) {}
 
-    float ReachabilityCoding::encode(const Bits &bits, Bits &out, float p0, int cur, int len) {
+    ReachabilityCoding::FastFloat ReachabilityCoding::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX;
         int pending = 0;
         for (int i = len-1; i >=0; i--) {
-            unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
+            unsigned long long range = std::min( RANGE_MAX, std::max(1U, p0 * (hi - lo)));
 
             if (bits.get(i)) {
                 lo = lo + range;
-                p0 *= connect_p0[cur-len+i];
+                p0 = p0 * connect_p0[cur-len+i];
             } else {
                 hi = lo + range - 1;
             }
@@ -78,6 +78,13 @@ namespace rc {
                 pending--;
             }
         }
+
+        if (out.size >= bits.size) {
+            out = bits;
+            out.append_one();
+        } else {
+            out.append_zero();
+        }
         return p0;
     }
 
@@ -87,26 +94,27 @@ namespace rc {
         Bits *code_raw = node.codes;
 
         node.codes = new Bits[chunks];
-        float p0_base = connect_p0[node.topo_order];
-        float p0 = encode(code_raw[chunks-1], node.codes[chunks-1], p0_base, node.topo_order, node.topo_order - chunk_size*(chunks-1));
+        FastFloat p0_base = connect_p0[node.topo_order];
+        FastFloat p0 = encode(code_raw[chunks-1], node.codes[chunks-1], p0_base, node.topo_order, node.topo_order - chunk_size*(chunks-1));
         for (int i = chunks-2; i >= 0 ; i--) {
-            if ((-p0*std::log2(p0_base)-(1-p0)*std::log2(1-p0_base))/(-p0*std::log2(p0)-(1-p0)*std::log2(1-p0)) > 2) {
+            if (approximation_ratio(p0, p0_base) > 2) {
                 p0_base = p0;
                 node.p0_pos.emplace_back(i, p0_base);
             }
-            p0 *= encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size) / p0_base;
+            p0 = p0 * encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size) / p0_base;
         }
         delete [] code_raw;
     }
 
     void ReachabilityCoding::reset() {
-        nodes.clear();
+        delete [] nodes;
+        delete [] connect_p0;
     }
 
     void ReachabilityCoding::construction(const Graph &graph) {
-        size_t n = graph.size();
-        nodes.resize(n);
-        connect_p0 = new float[n];
+        n = graph.size();
+        nodes = new Node[n];
+        connect_p0 = new FastFloat[n];
         
         std::queue<int> q;
         std::vector<size_t> out_degree(n), in_degree(n);
@@ -127,7 +135,7 @@ namespace rc {
             if (nodes[cur].topo_order) {
                 int chunks = get_chunk_num(nodes[cur].topo_order);
                 nodes[cur].codes = new Bits[chunks];
-                connect_p0[nodes[cur].topo_order] = 1.0 - (float)graph.getOutDegree(cur) / nodes[cur].topo_order;
+                connect_p0[nodes[cur].topo_order] = FastFloat(nodes[cur].topo_order - graph.getOutDegree(cur), nodes[cur].topo_order);
 
                 for (int i = 0; i < chunks-1; i++) {
                     nodes[cur].codes[i].init(chunk_size);
@@ -152,15 +160,6 @@ namespace rc {
 
             }
 
-#ifdef DEBUG
-            std::cout << topo_order << " " << connect_p0[topo_order] << ":";
-            for (int i = 0; i < (topo_order+x-1)/x; i++)
-                std::cout << " " << get_p0(connect_p0[topo_order], i, nodes[cur].p0_pos) << " " << nodes[cur].codes[i].size;
-            std::cout << std::endl;
-            for (int i = 0; i < log2(topo_order)+1; i++)
-                std::cout << " " << nodes[cur].p0_pos[i];
-            std::cout << std::endl;
-#endif
             for (const int u : graph.getPredecessors(cur)) {
                 if (--out_degree[u] == 0) {
                     q.push(u);
@@ -169,19 +168,19 @@ namespace rc {
         }
     }
 
-    bool ReachabilityCoding::decode_check(const Bits &code, float p0, int cur, int len) {
+    bool ReachabilityCoding::decode_check(const Bits &code, FastFloat p0, int cur, int len) {
         bool ret = false;
         unsigned long long lo = 0, hi = RANGE_MAX;
         unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
         int code_cur = 32;
 
         for (int i = len-1; i >= 0; i--) {
-            unsigned long long range = std::min((unsigned long long) RANGE_MAX, std::max(1ULL, (unsigned long long) ((hi - lo + 1) * p0)));
+            unsigned long long range = std::min(RANGE_MAX, std::max(1U, p0 * (hi - lo)));
 
             if (value >= lo + range) {
                 lo = lo + range;
                 ret = true;
-                p0 *= connect_p0[cur-len+i];
+                p0 = p0 * connect_p0[cur-len+i];
             } else {
                 hi = lo + range - 1;
                 ret = false;
@@ -202,7 +201,7 @@ namespace rc {
                 }
                 lo <<= 1;
                 hi <<= 1; hi |= 1;
-                value <<= 1; value |= (code_cur < code.size ? code.get(code_cur++) : 0);
+                value <<= 1; value |= (code_cur < code.size-1 ? code.get(code_cur++) : 0);
             }
         }
         return ret;
@@ -215,10 +214,15 @@ namespace rc {
             return false;
         } else {
             int chunks = get_chunk_num(nodes[source].topo_order), pos = nodes[target].topo_order/chunk_size;
+            Bits *bits = &nodes[source].codes[pos];
+            int size = bits->size;
+            if (bits->get(size-1)) {
+                return bits->get(nodes[target].topo_order%chunk_size);
+            }
             if (pos == chunks-1) {
-                return decode_check(nodes[source].codes[pos], get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), nodes[source].topo_order, nodes[source].topo_order - nodes[target].topo_order);
+                return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), nodes[source].topo_order, nodes[source].topo_order - nodes[target].topo_order);
             } else {
-                return decode_check(nodes[source].codes[pos], get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
+                return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
             }
         }
     }
@@ -228,17 +232,26 @@ namespace rc {
     }
 
     std::string ReachabilityCoding::getParams() const {
-        return "x=" + std::to_string(chunk_size);
+        return "x=" + std::to_string(chunk_size+1);
     }
 
     unsigned long long ReachabilityCoding::getIndexSize() const {
-        long long index_size = nodes.size() * sizeof(int) * 2;
-        for (const auto &node: nodes) {
-            int chunks = (node.topo_order+chunk_size-1)/chunk_size;
-            for (int i = 0; i < chunks; i++) {
-                index_size += node.codes[i].size_bytes;
+        long long index_size = n * sizeof(int) * 2;
+        for (int i = 0; i < n; i++) {
+            int chunks = (nodes[i].topo_order+chunk_size-1)/chunk_size;
+            for (int j = 0; j < chunks; j++) {
+                index_size += nodes[i].codes[j].size_bytes;
             }
-            index_size += node.p0_pos.size() * sizeof(Node::pair);
+            index_size += nodes[i].p0_pos.size() * sizeof(Node::pair);
+#ifdef DEBUG
+            std::cout << nodes[i].topo_order << " " << connect_p0[nodes[i].topo_order].val << ":";
+            for (int j = 0; j < get_chunk_num(nodes[i].topo_order); j++)
+                std::cout << " " << nodes[i].codes[j].size;
+            std::cout << std::endl;
+            for (auto pair: nodes[i].p0_pos)
+                std::cout << " " << pair.pos << "/" << pair.p0.val;
+            std::cout << std::endl;
+#endif
         }
         return index_size;
     }

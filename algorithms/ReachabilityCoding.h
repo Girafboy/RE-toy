@@ -2,6 +2,7 @@
 #define REACHABILITY_CODING_H
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <iostream>
@@ -15,11 +16,13 @@
 #include "../Graph.h"
 
 
-#define RANGE_MAX 0xFFFFFFFFUL
-#define RANGE_HALF 0x80000000UL
-#define RANGE_ONE_QUAR 0x40000000UL
-#define RANGE_THREE_QUAR 0xC0000000UL
-#define RANGE_MID_MIN 0x00000001UL
+#define RANGE_MAX 0xFFFFFFFFU
+#define RANGE_HALF 0x80000000U
+#define RANGE_ONE_QUAR 0x40000000U
+#define RANGE_THREE_QUAR 0xC0000000U
+#define RANGE_MID_MIN 0x00000001U
+
+typedef unsigned int fastfloat_t;
 
 namespace rc {
     static int log2(int val) {
@@ -41,6 +44,13 @@ namespace rc {
             Bits() : data(nullptr), size(0), size_bytes(0) {}
 
             Bits(const Bits& other) : data(new unsigned char[other.size_bytes]), size(other.size), size_bytes(other.size_bytes) {
+                std::memcpy(data, other.data, size_bytes);
+            }
+
+            void operator=(const Bits &other) {
+                data = new unsigned char[other.size_bytes];
+                size = other.size;
+                size_bytes = other.size_bytes;
                 std::memcpy(data, other.data, size_bytes);
             }
 
@@ -111,14 +121,34 @@ namespace rc {
             }
         };
 
+        struct FastFloat { // from 0 to 1
+            unsigned int val;
+
+            FastFloat() {};
+            FastFloat(unsigned int val) : val(val) {};
+            FastFloat(unsigned int numerator, unsigned int denominator) : val((unsigned long long)numerator * 0xFFFFFFFFU / denominator) {};
+
+            FastFloat operator*(const FastFloat other) const {
+                return FastFloat(((unsigned long long)val * other.val) >> 32);
+            }
+
+            unsigned int operator*(const unsigned int other) const {
+                return ((unsigned long long)val * other) >> 32;
+            }
+
+            FastFloat operator/(const FastFloat other) const {
+                return FastFloat(((unsigned long long)val * 0xFFFFFFFFU) / other.val);
+            }
+        };
+
         struct Node {
             int topo_order;
             Bits *codes = nullptr;
             struct pair {
                 int pos;
-                float p0;
+                FastFloat p0;
 
-                pair(int pos, float p0) : pos(pos), p0(p0) {}
+                pair(int pos, FastFloat p0) : pos(pos), p0(p0) {}
             };
             std::vector<pair> p0_pos;
 
@@ -130,41 +160,40 @@ namespace rc {
             }
         };
 
-        inline float get_p0(std::vector<Node::pair> &p0_pos, int pos, float p0_base) {
-            for (auto &pair : p0_pos) {
-                if (pair.pos >= pos) {
-                    p0_base = pair.p0;
-                } else {
-                    break;
+        inline FastFloat get_p0(std::vector<Node::pair> &p0_pos, int pos, FastFloat p0_base) {
+            auto len = p0_pos.size();
+            const Node::pair *first = &p0_pos[0], *mid;
+            while (len) {
+                mid = first + (len >> 1);
+                if (pos > mid->pos)
+                    len = (len >> 1);
+                else {
+                    p0_base = mid->p0;
+                    first = mid + 1;
+                    len -= (len >> 1) + 1;
                 }
             }
-            return p0_base;
-            // auto len = p0_pos.size();
-            // const Node::pair *first = &p0_pos[0], *mid;
-            // while (len) {
-            //     mid = first + (len >> 1);
-            //     if (pos > mid->pos)
-            //         len = (len >> 1);
-            //     else {
-            //         first = mid + 1;
-            //         len -= (len >> 1) + 1;
-            //     }
-            // }
 
-            // return first->p0;
+            return p0_base;
         }
 
         inline int get_chunk_num(int topo_order) const {
             return (topo_order + chunk_size - 1) / chunk_size;
         }
 
-        std::vector<Node> nodes;
-        float *connect_p0 = nullptr;
+        inline float approximation_ratio(FastFloat p0, FastFloat p0_base) const {
+            return ((32ULL<<32) + p0.val*std::log2(1.0/p0_base.val) + (0xFFFFFFFFU-p0.val)*std::log2(1.0/(0xFFFFFFFFU-p0_base.val))) / 
+                   ((32ULL<<32) + p0.val*std::log2(1.0/p0.val) + (0xFFFFFFFFU-p0.val)*std::log2(1.0/(0xFFFFFFFFU-p0.val)));
+        }
+
+        size_t n;
+        Node* nodes;
+        FastFloat *connect_p0 = nullptr;
         int chunk_size;
 
-        float encode(const Bits &bits, Bits &out, float p0, int cur, int len);
+        FastFloat encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len);
         void encode(Node &node);
-        bool decode_check(const Bits &code, float p0, int cur, int len);
+        bool decode_check(const Bits &code, FastFloat p0, int cur, int len);
     public:
         ReachabilityCoding(int x);
 
