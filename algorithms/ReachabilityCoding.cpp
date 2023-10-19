@@ -23,20 +23,26 @@
 // #define DEBUG
 
 namespace rc {
-
     ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x-1) {}
 
     ReachabilityCoding::FastFloat ReachabilityCoding::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
-        unsigned long long lo = 0, hi = RANGE_MAX;
+        unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len-1; i >=0; i--) {
-            unsigned long long range = std::min( RANGE_MAX, std::max(1U, p0 * (hi - lo)));
+            mid = p0 * (hi - lo);
+            if (mid < 1) {
+                mid = 1;
+            }
+            mid += lo;
+            if (mid > RANGE_MAX) {
+                mid = RANGE_MAX;
+            }
 
             if (bits.get(i)) {
-                lo = lo + range;
+                lo = mid;
                 p0 = p0 * connect_p0[cur-len+i];
             } else {
-                hi = lo + range - 1;
+                hi = mid - 1;
             }
             while (true) {
                 if (hi < RANGE_HALF) {
@@ -168,21 +174,37 @@ namespace rc {
         }
     }
 
-    bool ReachabilityCoding::decode_check(const Bits &code, FastFloat p0, int cur, int len) {
+    bool ReachabilityCoding::decode_check(const Bits &code, fastfloat_t p0, int cur, int len) const {
+        unsigned long long lo = 0, hi = RANGE_MAX, mid;
         bool ret = false;
-        unsigned long long lo = 0, hi = RANGE_MAX;
-        unsigned long long value = ((code.data[0] << 24) | (code.data[1] << 16) | (code.data[2] << 8) | (code.data[3])) & (0xFFFFFFFF << (code.size<32 ? 32-code.size : 0));
-        int code_cur = 32;
+        int size = code.size-1;
+        fastfloat_t *p0_cur = (fastfloat_t *) connect_p0 + cur;
+        unsigned int value = bswap(*(unsigned int *)code.data);
 
-        for (int i = len-1; i >= 0; i--) {
-            unsigned long long range = std::min(RANGE_MAX, std::max(1U, p0 * (hi - lo)));
+        int code_cur = 32 - size;
+        if (code_cur > 0) {
+            value >>= code_cur;
+            value <<= code_cur;
+        }
+        code_cur = 32;
 
-            if (value >= lo + range) {
-                lo = lo + range;
+        for (int i=0; i<len; i++) {
+            mid = ((unsigned long long)p0 * (hi - lo)) >> 32;
+            if (mid < 1) {
+                mid = 1;
+            }
+            mid += lo;
+            if (mid > RANGE_MAX) {
+                mid = RANGE_MAX;
+            }
+
+            p0_cur--;
+            if (value >= mid) {
+                lo = mid;
                 ret = true;
-                p0 = p0 * connect_p0[cur-len+i];
+                p0 = (((unsigned long long)p0 * (*p0_cur)) >> 32);
             } else {
-                hi = lo + range - 1;
+                hi = mid - 1;
                 ret = false;
             }
 
@@ -201,7 +223,7 @@ namespace rc {
                 }
                 lo <<= 1;
                 hi <<= 1; hi |= 1;
-                value <<= 1; value |= (code_cur < code.size-1 ? code.get(code_cur++) : 0);
+                value <<= 1; value |= (code_cur < size ? code.get(code_cur++) : 0);
             }
         }
         return ret;
@@ -210,20 +232,22 @@ namespace rc {
     bool ReachabilityCoding::TC_haspath(int source, int target) {
         if (source == target) {
             return true;
-        } else if (nodes[source].topo_order < nodes[target].topo_order) {
+        }
+        int source_topo = nodes[source].topo_order;
+        int target_topo = nodes[target].topo_order;
+        if (source_topo < target_topo) {
             return false;
+        } 
+        
+        int pos = target_topo / chunk_size;
+        Bits *bits = &nodes[source].codes[pos];
+        if (bits->get(bits->size-1)) {
+            return bits->get(target_topo%chunk_size);
+        }
+        if (pos == (source_topo - 1) / chunk_size) {
+            return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[source_topo]).val, source_topo, source_topo - target_topo);
         } else {
-            int chunks = get_chunk_num(nodes[source].topo_order), pos = nodes[target].topo_order/chunk_size;
-            Bits *bits = &nodes[source].codes[pos];
-            int size = bits->size;
-            if (bits->get(size-1)) {
-                return bits->get(nodes[target].topo_order%chunk_size);
-            }
-            if (pos == chunks-1) {
-                return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), nodes[source].topo_order, nodes[source].topo_order - nodes[target].topo_order);
-            } else {
-                return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[nodes[source].topo_order]), (pos+1)*chunk_size,  chunk_size - nodes[target].topo_order%chunk_size);
-            }
+            return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[source_topo]).val, (pos+1)*chunk_size,  chunk_size - target_topo%chunk_size);
         }
     }
 

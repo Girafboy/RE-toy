@@ -22,6 +22,13 @@
 #define RANGE_THREE_QUAR 0xC0000000U
 #define RANGE_MID_MIN 0x00000001U
 
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define bswap(x) __builtin_bswap32(x)
+#else
+#define bswap(x) x
+#endif
+
 typedef unsigned int fastfloat_t;
 
 namespace rc {
@@ -193,7 +200,7 @@ namespace rc {
 
         FastFloat encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len);
         void encode(Node &node);
-        bool decode_check(const Bits &code, FastFloat p0, int cur, int len);
+        bool decode_check(const Bits &code, fastfloat_t p0, int cur, int len) const;
     public:
         ReachabilityCoding(int x);
 
