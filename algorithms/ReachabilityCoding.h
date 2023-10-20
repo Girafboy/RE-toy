@@ -151,13 +151,6 @@ namespace rc {
         struct Node {
             int topo_order;
             Bits *codes = nullptr;
-            struct pair {
-                int pos;
-                FastFloat p0;
-
-                pair(int pos, FastFloat p0) : pos(pos), p0(p0) {}
-            };
-            std::vector<pair> p0_pos;
 
             Node() {}
 
@@ -167,21 +160,28 @@ namespace rc {
             }
         };
 
-        inline FastFloat get_p0(std::vector<Node::pair> &p0_pos, int pos, FastFloat p0_base) {
+        struct pair {
+            int pos;
+            FastFloat p0;
+
+            pair(int pos, FastFloat p0) : pos(pos), p0(p0) {}
+        };
+
+        inline FastFloat get_p0(std::vector<pair> &p0_pos, int pos, FastFloat p0_default) {
             auto len = p0_pos.size();
-            const Node::pair *first = &p0_pos[0], *mid;
+            const pair *first = &p0_pos[0], *mid;
             while (len) {
                 mid = first + (len >> 1);
                 if (pos > mid->pos)
                     len = (len >> 1);
                 else {
-                    p0_base = mid->p0;
+                    p0_default = mid->p0;
                     first = mid + 1;
                     len -= (len >> 1) + 1;
                 }
             }
 
-            return p0_base;
+            return p0_default;
         }
 
         inline int get_chunk_num(int topo_order) const {
@@ -189,18 +189,19 @@ namespace rc {
         }
 
         inline float approximation_ratio(FastFloat p0, FastFloat p0_base) const {
-            return ((32ULL<<32) + p0.val*std::log2(1.0/p0_base.val) + (0xFFFFFFFFU-p0.val)*std::log2(1.0/(0xFFFFFFFFU-p0_base.val))) / 
-                   ((32ULL<<32) + p0.val*std::log2(1.0/p0.val) + (0xFFFFFFFFU-p0.val)*std::log2(1.0/(0xFFFFFFFFU-p0.val)));
+            return ((32ULL<<32) + p0.val*std::log2(1.0/p0_base.val) + ((1ULL<<32)-p0.val)*std::log2(1.0/((1ULL<<32)-p0_base.val))) / 
+                   ((32ULL<<32) + p0.val*std::log2(1.0/p0.val) + ((1ULL<<32)-p0.val)*std::log2(1.0/((1ULL<<32)-p0.val)));
         }
 
-        size_t n;
         Node* nodes;
         FastFloat *connect_p0 = nullptr;
+        std::vector<pair>* p0_pos;
         int chunk_size;
+        size_t n;
 
         FastFloat encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len);
         void encode(Node &node);
-        bool decode_check(const Bits &code, fastfloat_t p0, int cur, int len) const;
+        bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const;
     public:
         ReachabilityCoding(int x);
 

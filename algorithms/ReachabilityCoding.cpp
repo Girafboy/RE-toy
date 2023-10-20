@@ -105,7 +105,7 @@ namespace rc {
         for (int i = chunks-2; i >= 0 ; i--) {
             if (approximation_ratio(p0, p0_base) > 2) {
                 p0_base = p0;
-                node.p0_pos.emplace_back(i, p0_base);
+                p0_pos[node.topo_order].emplace_back(i, p0_base);
             }
             p0 = p0 * encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size) / p0_base;
         }
@@ -115,12 +115,14 @@ namespace rc {
     void ReachabilityCoding::reset() {
         delete [] nodes;
         delete [] connect_p0;
+        delete [] p0_pos;
     }
 
     void ReachabilityCoding::construction(const Graph &graph) {
         n = graph.size();
         nodes = new Node[n];
         connect_p0 = new FastFloat[n];
+        p0_pos = new std::vector<pair>[n];
         
         std::queue<int> q;
         std::vector<size_t> out_degree(n), in_degree(n);
@@ -174,11 +176,8 @@ namespace rc {
         }
     }
 
-    bool ReachabilityCoding::decode_check(const Bits &code, fastfloat_t p0, int cur, int len) const {
-        unsigned long long lo = 0, hi = RANGE_MAX, mid;
-        bool ret = false;
+    bool ReachabilityCoding::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const {
         int size = code.size-1;
-        fastfloat_t *p0_cur = (fastfloat_t *) connect_p0 + cur;
         unsigned int value = bswap(*(unsigned int *)code.data);
 
         int code_cur = 32 - size;
@@ -188,7 +187,8 @@ namespace rc {
         }
         code_cur = 32;
 
-        for (int i=0; i<len; i++) {
+        unsigned long long lo = 0, hi = RANGE_MAX, mid;
+        for (len--; len; len--) {
             mid = ((unsigned long long)p0 * (hi - lo)) >> 32;
             if (mid < 1) {
                 mid = 1;
@@ -201,11 +201,9 @@ namespace rc {
             p0_cur--;
             if (value >= mid) {
                 lo = mid;
-                ret = true;
                 p0 = (((unsigned long long)p0 * (*p0_cur)) >> 32);
             } else {
                 hi = mid - 1;
-                ret = false;
             }
 
             while (true) {
@@ -223,10 +221,26 @@ namespace rc {
                 }
                 lo <<= 1;
                 hi <<= 1; hi |= 1;
-                value <<= 1; value |= (code_cur < size ? code.get(code_cur++) : 0);
+                value <<= 1;
+                if (code_cur < size) {
+                    value |= code.get(code_cur++);
+                }
             }
         }
-        return ret;
+
+        mid = ((unsigned long long)p0 * (hi - lo)) >> 32;
+        if (mid < 1) {
+            mid = 1;
+        }
+        mid += lo;
+        if (mid > RANGE_MAX) {
+            mid = RANGE_MAX;
+        }
+        if (value >= mid) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     bool ReachabilityCoding::TC_haspath(int source, int target) {
@@ -245,9 +259,9 @@ namespace rc {
             return bits->get(target_topo%chunk_size);
         }
         if (pos == (source_topo - 1) / chunk_size) {
-            return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[source_topo]).val, source_topo, source_topo - target_topo);
+            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]).val, (fastfloat_t *) connect_p0 + source_topo, source_topo - target_topo);
         } else {
-            return decode_check(*bits, get_p0(nodes[source].p0_pos, pos, connect_p0[source_topo]).val, (pos+1)*chunk_size,  chunk_size - target_topo%chunk_size);
+            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]).val, (fastfloat_t *) connect_p0 + (pos+1)*chunk_size,  chunk_size - target_topo%chunk_size);
         }
     }
 
@@ -266,13 +280,13 @@ namespace rc {
             for (int j = 0; j < chunks; j++) {
                 index_size += nodes[i].codes[j].size_bytes;
             }
-            index_size += nodes[i].p0_pos.size() * sizeof(Node::pair);
+            index_size += p0_pos[nodes[i].topo_order].size() * sizeof(pair);
 #ifdef DEBUG
             std::cout << nodes[i].topo_order << " " << connect_p0[nodes[i].topo_order].val << ":";
             for (int j = 0; j < get_chunk_num(nodes[i].topo_order); j++)
                 std::cout << " " << nodes[i].codes[j].size;
-            std::cout << std::endl;
-            for (auto pair: nodes[i].p0_pos)
+            std::cout << "\t\t\t\t";
+            for (auto pair: p0_pos[nodes[i].topo_order])
                 std::cout << " " << pair.pos << "/" << pair.p0.val;
             std::cout << std::endl;
 #endif

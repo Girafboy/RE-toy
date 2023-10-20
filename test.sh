@@ -9,8 +9,8 @@ echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),
 
 graphs=(
 # random graphs
-# "--random 1000 10"
- "--random 10000 10"
+"--random 1000 10"
+#  "--random 10000 10"
 # "--random 100000 10"
 # graphs from files
  "--file ${input_directory}/kasthuri_graph_v4.txt"
