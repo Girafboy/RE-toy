@@ -13,7 +13,7 @@
 #include "AutoTest.h"
 #include "Profile.h"
 
-#include "algorithms/ReachabilityCoding.h"
+#include "algorithms/ReachCode.h"
 #include "algorithms/BFL.h"
 #include "algorithms/GrailWrapper.h"
 #include "algorithms/PathTreeWrapper.h"
@@ -28,7 +28,7 @@
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
-using rc::ReachabilityCoding;
+using rc::ReachCode;
 using bfl::BFL;
 using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
@@ -78,7 +78,7 @@ unsigned int max_time_second = 0;
 //}
 
 void testAccuracy() {
-    ReachabilityCoding algorithm(64);
+    ReachCode algorithm(64);
     int n = 1000, d = 10;
     Graph graph(n, d, "random");
     algorithm.construction(graph);
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                algorithm = new ReachabilityCoding(x);
+                algorithm = new ReachCode(x);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
