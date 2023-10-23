@@ -148,6 +148,7 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
         left = mid;
     }
     profile.has_path_time_samples.push_back(*max_element(left, has_path_times_ns.end()));
+    profile.has_path_times_ns = std::move(has_path_times_ns);
 
     return profile;
 }
@@ -418,6 +419,13 @@ int main(int argc, char* argv[]) {
            << profile.query_num << ","
            << profile.average_has_path_time_ns << ","
            << ss.str() << "\n";
+    myfile.close();
+
+    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.graph_name + ".csv";
+    myfile.open(query_file_name);
+    for (const auto &x : profile.has_path_times_ns) {
+        myfile << x << '\n';
+    }
     myfile.close();
 
     algorithm->reset();
