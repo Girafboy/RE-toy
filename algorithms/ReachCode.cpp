@@ -23,7 +23,7 @@
 // #define DEBUG
 
 namespace rc {
-    ReachCode::ReachCode(int x) : chunk_size(x-1) {}
+    ReachCode::ReachCode(int x, int r) : chunk_size(x-1), ratio(r) {}
 
     ReachCode::FastFloat ReachCode::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
@@ -103,7 +103,7 @@ namespace rc {
         FastFloat p0_base = connect_p0[node.topo_order];
         FastFloat p0 = encode(code_raw[chunks-1], node.codes[chunks-1], p0_base, node.topo_order, node.topo_order - chunk_size*(chunks-1));
         for (int i = chunks-2; i >= 0 ; i--) {
-            if (approximation_ratio(p0, p0_base) > 2) {
+            if (approximation_ratio(p0, p0_base) > ratio) {
                 p0_base = p0;
                 p0_pos[node.topo_order].emplace_back(i, p0_base);
             }

@@ -78,7 +78,7 @@ unsigned int max_time_second = 0;
 //}
 
 void testAccuracy() {
-    ReachCode algorithm(64);
+    ReachCode algorithm(32, 3);
     int n = 1000, d = 10;
     Graph graph(n, d, "random");
     algorithm.construction(graph);
@@ -275,13 +275,14 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
             std::string algorithm_name = argv[i++];
-            if (algorithm_name == "xjump") {
+            if (algorithm_name == "reachcode") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                algorithm = new ReachCode(x);
+                int r = atoi(argv[i++]);
+                algorithm = new ReachCode(x, r);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
