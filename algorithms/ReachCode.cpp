@@ -1,4 +1,4 @@
-#include "ReachabilityCoding.h"
+#include "ReachCode.h"
 
 #include <cassert>
 #include <cmath>
@@ -23,9 +23,9 @@
 // #define DEBUG
 
 namespace rc {
-    ReachabilityCoding::ReachabilityCoding(int x) : chunk_size(x-1) {}
+    ReachCode::ReachCode(int x, int r) : chunk_size(x-1), ratio(r) {}
 
-    ReachabilityCoding::FastFloat ReachabilityCoding::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
+    ReachCode::FastFloat ReachCode::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len-1; i >=0; i--) {
@@ -94,7 +94,7 @@ namespace rc {
         return p0;
     }
 
-    void ReachabilityCoding::encode(ReachabilityCoding::Node &node) {
+    void ReachCode::encode(ReachCode::Node &node) {
         int chunks = get_chunk_num(node.topo_order);
 
         Bits *code_raw = node.codes;
@@ -103,7 +103,7 @@ namespace rc {
         FastFloat p0_base = connect_p0[node.topo_order];
         FastFloat p0 = encode(code_raw[chunks-1], node.codes[chunks-1], p0_base, node.topo_order, node.topo_order - chunk_size*(chunks-1));
         for (int i = chunks-2; i >= 0 ; i--) {
-            if (approximation_ratio(p0, p0_base) > 2) {
+            if (approximation_ratio(p0, p0_base) > ratio) {
                 p0_base = p0;
                 p0_pos[node.topo_order].emplace_back(i, p0_base);
             }
@@ -112,13 +112,13 @@ namespace rc {
         delete [] code_raw;
     }
 
-    void ReachabilityCoding::reset() {
+    void ReachCode::reset() {
         delete [] nodes;
         delete [] connect_p0;
         delete [] p0_pos;
     }
 
-    void ReachabilityCoding::construction(const Graph &graph) {
+    void ReachCode::construction(const Graph &graph) {
         n = graph.size();
         nodes = new Node[n];
         connect_p0 = new FastFloat[n];
@@ -176,7 +176,7 @@ namespace rc {
         }
     }
 
-    bool ReachabilityCoding::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const {
+    bool ReachCode::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const {
         int size = code.size-1;
         unsigned int value = bswap(*(unsigned int *)code.data);
 
@@ -243,7 +243,7 @@ namespace rc {
         }
     }
 
-    bool ReachabilityCoding::TC_haspath(int source, int target) {
+    bool ReachCode::TC_haspath(int source, int target) {
         if (source == target) {
             return true;
         }
@@ -265,15 +265,15 @@ namespace rc {
         }
     }
 
-    std::string ReachabilityCoding::getName() const {
+    std::string ReachCode::getName() const {
         return "x-Jump";
     }
 
-    std::string ReachabilityCoding::getParams() const {
-        return "x=" + std::to_string(chunk_size+1);
+    std::string ReachCode::getParams() const {
+        return "x=" + std::to_string(chunk_size+1) + " r=" + std::to_string(ratio);
     }
 
-    unsigned long long ReachabilityCoding::getIndexSize() const {
+    unsigned long long ReachCode::getIndexSize() const {
         long long index_size = n * sizeof(int) * 2;
         for (int i = 0; i < n; i++) {
             int chunks = (nodes[i].topo_order+chunk_size-1)/chunk_size;

@@ -41,7 +41,7 @@ namespace rc {
         return ret;
     }
 
-    class ReachabilityCoding : public Algorithm {
+    class ReachCode : public Algorithm {
     private:
         struct Bits {
             unsigned char *data = nullptr;
@@ -197,13 +197,14 @@ namespace rc {
         FastFloat *connect_p0 = nullptr;
         std::vector<pair>* p0_pos;
         int chunk_size;
+        int ratio;
         size_t n;
 
         FastFloat encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len);
         void encode(Node &node);
         bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const;
     public:
-        ReachabilityCoding(int x);
+        ReachCode(int x, int r);
 
         std::string getName() const override;
 

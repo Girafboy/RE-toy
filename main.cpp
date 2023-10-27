@@ -13,7 +13,7 @@
 #include "AutoTest.h"
 #include "Profile.h"
 
-#include "algorithms/ReachabilityCoding.h"
+#include "algorithms/ReachCode.h"
 #include "algorithms/BFL.h"
 #include "algorithms/GrailWrapper.h"
 #include "algorithms/PathTreeWrapper.h"
@@ -28,7 +28,7 @@
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
-using rc::ReachabilityCoding;
+using rc::ReachCode;
 using bfl::BFL;
 using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
@@ -78,7 +78,7 @@ unsigned int max_time_second = 0;
 //}
 
 void testAccuracy() {
-    ReachabilityCoding algorithm(64);
+    ReachCode algorithm(32, 3);
     int n = 1000, d = 10;
     Graph graph(n, d, "random");
     algorithm.construction(graph);
@@ -148,6 +148,7 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
         left = mid;
     }
     profile.has_path_time_samples.push_back(*max_element(left, has_path_times_ns.end()));
+    profile.has_path_times_ns = std::move(has_path_times_ns);
 
     return profile;
 }
@@ -275,13 +276,14 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
             std::string algorithm_name = argv[i++];
-            if (algorithm_name == "xjump") {
+            if (algorithm_name == "reachcode") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                algorithm = new ReachabilityCoding(x);
+                int r = atoi(argv[i++]);
+                algorithm = new ReachCode(x, r);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
@@ -417,6 +419,13 @@ int main(int argc, char* argv[]) {
            << profile.query_num << ","
            << profile.average_has_path_time_ns << ","
            << ss.str() << "\n";
+    myfile.close();
+
+    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.graph_name + ".csv";
+    myfile.open(query_file_name);
+    for (const auto &x : profile.has_path_times_ns) {
+        myfile << x << '\n';
+    }
     myfile.close();
 
     algorithm->reset();
