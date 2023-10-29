@@ -107,7 +107,11 @@ namespace rc {
                 p0_base = p0;
                 p0_pos[node.topo_order].emplace_back(i, p0_base);
             }
-            p0 = p0 * encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size) / p0_base;
+            if (p0_base.val) {
+                p0 = p0 * encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size) / p0_base;
+            } else {
+                p0 = encode(code_raw[i], node.codes[i], p0_base, (i+1)*chunk_size, chunk_size);
+            }
         }
         delete [] code_raw;
     }
@@ -236,11 +240,7 @@ namespace rc {
         if (mid > RANGE_MAX) {
             mid = RANGE_MAX;
         }
-        if (value >= mid) {
-            return true;
-        } else {
-            return false;
-        }
+        return value >= mid;
     }
 
     bool ReachCode::TC_haspath(int source, int target) {
