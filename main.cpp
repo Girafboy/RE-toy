@@ -369,6 +369,7 @@ int main(int argc, char* argv[]) {
     } else {
         auto pos = file_path.find_last_of('/');
         auto graph_name = file_path.substr(pos + 1);
+        graph_name = graph_name.substr(0, graph_name.size() - 4);
         graph = new Graph(file_path, graph_name);
     }
 
@@ -421,7 +422,7 @@ int main(int argc, char* argv[]) {
            << ss.str() << "\n";
     myfile.close();
 
-    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.graph_name + ".csv";
+    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.graph_name + ".txt";
     myfile.open(query_file_name);
     for (const auto &x : profile.has_path_times_ns) {
         myfile << x << '\n';
