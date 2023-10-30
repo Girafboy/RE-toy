@@ -533,7 +533,6 @@ namespace butr {
 
 
     bool queryImpImp(const int &sid, const int &tid) {
-        // xJump modify rule
         if (sid == tid) {
             reachable++;
             return true;

@@ -23,7 +23,7 @@
 // #define DEBUG
 
 namespace rc {
-    ReachCode::ReachCode(int x, int r) : chunk_size(x-1), ratio(r) {}
+    ReachCode::ReachCode(int x, float r) : chunk_size(x-1), ratio(r) {}
 
     ReachCode::FastFloat ReachCode::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
@@ -266,7 +266,7 @@ namespace rc {
     }
 
     std::string ReachCode::getName() const {
-        return "x-Jump";
+        return "ReachCode";
     }
 
     std::string ReachCode::getParams() const {

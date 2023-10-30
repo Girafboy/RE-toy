@@ -78,7 +78,7 @@ unsigned int max_time_second = 0;
 //}
 
 void testAccuracy() {
-    ReachCode algorithm(32, 3);
+    ReachCode algorithm(32, 2.0);
     int n = 1000, d = 10;
     Graph graph(n, d, "random");
     algorithm.construction(graph);
@@ -164,8 +164,8 @@ void usage() {
 }
 
 void algorithmUsage(const std::string& algorithm_name) {
-    if (algorithm_name == "xjump") {
-        std::cout << "Usage of xjump:\n"
+    if (algorithm_name == "reachcode") {
+        std::cout << "Usage of reachcode:\n"
                      "Total: 1 argument(s)\n"
                      "arg[0]: x\n"
                   << std::endl;
