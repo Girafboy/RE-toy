@@ -282,7 +282,7 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                int r = atoi(argv[i++]);
+                float r = atof(argv[i++]);
                 algorithm = new ReachCode(x, r);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
