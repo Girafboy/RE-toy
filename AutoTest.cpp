@@ -73,7 +73,7 @@ std::vector<std::pair<int, int>> AutoTest::generateQueries(int m, bool check_onl
     } else {
         std::uniform_int_distribution<int> u(0, (int)graph_ptr->number_of_original_nodes() - 1);
         std::default_random_engine e;
-        e.seed(std::chrono::system_clock::now().time_since_epoch().count());
+//        e.seed(std::chrono::system_clock::now().time_since_epoch().count());
         for (int i = 0; i < m; ++i) {
             int r1 = u(e);
             int r2 = u(e);
