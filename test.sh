@@ -3,12 +3,15 @@
 cd ./build || cd ./cmake-build-debug || exit
 #input_directory="/Users/xingliwang/Documents/研究生/研一/研一夏/实验室/亢虎权/图/converted_graphs"
 # input_directory="/home/xingliwang/data/kanghuquan/tc_graphs"
-input_directory="/home/xingliwang/data/kanghuquan/tc_graphs_grouped_by_factor"
+input_directory="/home/kang/xingliwang/data/tc_graphs_grouped_by_factor"
 output_file="../output/result.csv"
+output_graph_statistic_file="../output/graph.csv"  # graph information including number of nodes, edges, and factor
 output_query_time_dir="../output/query_time"
 max_time="1000"  # second
+conda_environment="tc"  # Python environment which include networkx package
 
 echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
+echo "graph,n,m,factor" > ${output_graph_statistic_file}
 rm "${output_query_time_dir}"/*.txt
 
 graphs=(
@@ -243,26 +246,26 @@ graphs=(
 
 algorithms=(
 # ReachCode
-#  "reachcode 8 2"
- "reachcode 16 2"
-#  "reachcode 32 2"
-#  "reachcode 64 2"
-#  "reachcode 128 2"
-#  "reachcode 256 2"
-#  "reachcode 512 2"
-#  "reachcode 1024 2"
-#  "reachcode 2048 2"
-#  "reachcode 4096 2"
-#  "reachcode 32 1"
-#  "reachcode 32 2"
-#  "reachcode 32 3"
-#  "reachcode 32 4"
-#  "reachcode 32 5"
-#  "reachcode 32 6"
-#  "reachcode 32 7"
-#  "reachcode 32 8"
-#  "reachcode 32 9"
-#  "reachcode 32 10"
+#  "reachcode 8 2.0"
+#  "reachcode 16 2.0"
+  "reachcode 32 2.0"
+#  "reachcode 64 2.0"
+#  "reachcode 128 2.0"
+#  "reachcode 256 2.0"
+#  "reachcode 512 2.0"
+#  "reachcode 1024 2.0"
+#  "reachcode 2048 2.0"
+#  "reachcode 4096 2.0"
+  # "reachcode 32 1.2"
+  # "reachcode 32 1.4"
+  # "reachcode 32 1.6"
+  # "reachcode 32 1.8"
+  # "reachcode 32 2.0"
+  # "reachcode 32 2.2"
+  # "reachcode 32 2.4"
+  # "reachcode 32 2.6"
+  # "reachcode 32 2.8"
+  # "reachcode 32 3.0"
 # BFL
  "bfl 1"
 #  "bfl 2"
@@ -313,6 +316,13 @@ algorithms=(
 # DBL
  "dbl"
 )
+
+echo "Start calculating graph statistics"
+source /home/kang/anaconda3/etc/profile.d/conda.sh
+for graph in "${graphs[@]}"
+do
+  conda run -n ${conda_environment} python ../utils/graph_statistics.py "${graph}"
+done
 
 for algorithm in "${algorithms[@]}"
 do
