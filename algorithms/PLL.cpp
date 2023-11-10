@@ -12,7 +12,7 @@ namespace pll {
     }
 
     std::string PLL::getParams() const {
-        return use_RQPrunedLandmarkLabeling ? "RQPrunedLandmarkLabeling" : "RQPrunedPathLabeling";
+        return use_RQPrunedLandmarkLabeling ? "PLL" : "PPL";
     }
 
     void PLL::reset() {

@@ -270,7 +270,9 @@ namespace rc {
     }
 
     std::string ReachCode::getParams() const {
-        return "x=" + std::to_string(chunk_size+1) + " r=" + std::to_string(ratio);
+        std::stringstream stream;
+        stream << "x=" << chunk_size + 1 << " r=" << std::fixed << std::setprecision(1) << ratio;
+        return stream.str();
     }
 
     unsigned long long ReachCode::getIndexSize() const {
