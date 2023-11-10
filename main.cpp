@@ -427,7 +427,7 @@ int main(int argc, char* argv[]) {
            << ss.str() << "\n";
     myfile.close();
 
-    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.graph_name + ".txt";
+    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
     myfile.open(query_file_name);
     for (const auto &x : profile.has_path_times_ns) {
         myfile << x << '\n';
