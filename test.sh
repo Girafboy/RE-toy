@@ -2,12 +2,12 @@
 
 cd ./build || cd ./cmake-build-debug || exit
 #input_directory="/Users/xingliwang/Documents/研究生/研一/研一夏/实验室/亢虎权/图/converted_graphs"
-# input_directory="/home/xingliwang/data/kanghuquan/tc_graphs"
-input_directory="/home/kang/xingliwang/data/tc_graphs_grouped_by_factor"
+input_directory="/home/kang/xingliwang/data/converted_graphs"
+#input_directory="/home/kang/xingliwang/data/tc_graphs_grouped_by_factor"
 output_file="../output/result.csv"
 output_graph_statistic_file="../output/graph.csv"  # graph information including number of nodes, edges, and factor
 output_query_time_dir="../output/query_time"
-max_time="1000"  # second
+max_time="100"  # second
 conda_environment="tc"  # Python environment which include networkx package
 
 echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
@@ -221,41 +221,53 @@ graphs=(
 #  "--file ${input_directory}/9/moreno_sampson.txt"
 #  "--file ${input_directory}/9/rgg010.txt"
 
-# factor sample
- # 0
- "--file ${input_directory}/0/scc_rt_obama.txt"
- # 1
- "--file ${input_directory}/1/scc_rt_tcot.txt"
- # 2
- "--file ${input_directory}/2/scc_rt_mittromney.txt"
- # 3
- "--file ${input_directory}/3/scc_rt_alwefaq.txt"
- # 4
- "--file ${input_directory}/4/scc_rt_lolgop.txt"
- # 5
- "--file ${input_directory}/5/email-dnc.txt"
- # 6
- "--file ${input_directory}/6/arXiv_sub_6000-1.txt"
- # 7
- "--file ${input_directory}/7/c.elegans_neural.male_1.txt"
- # 8
- "--file ${input_directory}/8/econ-mbeause.txt"
- # 9
- "--file ${input_directory}/9/scc_enron-only.txt"
+## factor sample
+# # 0
+# "--file ${input_directory}/0/scc_rt_obama.txt"
+# # 1
+# "--file ${input_directory}/1/scc_rt_tcot.txt"
+# # 2
+# "--file ${input_directory}/2/scc_rt_mittromney.txt"
+# # 3
+# "--file ${input_directory}/3/scc_rt_alwefaq.txt"
+# # 4
+# "--file ${input_directory}/4/scc_rt_lolgop.txt"
+# # 5
+# "--file ${input_directory}/5/email-dnc.txt"
+# # 6
+# "--file ${input_directory}/6/arXiv_sub_6000-1.txt"
+# # 7
+# "--file ${input_directory}/7/c.elegans_neural.male_1.txt"
+# # 8
+# "--file ${input_directory}/8/econ-mbeause.txt"
+# # 9
+# "--file ${input_directory}/9/scc_enron-only.txt"
+
+# factor after merging sample
+"--file ${input_directory}/econ/econ-poli.txt"
+"--file ${input_directory}/brain/mouse_visual.cortex_1.txt"
+"--file ${input_directory}/small_real_dense/yago_sub_6642.txt"
+"--file ${input_directory}/econ/econ-beaflw.txt"
+"--file ${input_directory}/tscc/scc_twitter-copen.txt"
+"--file ${input_directory}/misc/qc2534.txt"
+"--file ${input_directory}/brain/mouse_retina_1.txt"
+"--file ${input_directory}/tscc/scc_fb-messages.txt"
+"--file ${input_directory}/tscc/scc_infect-hyper.txt"
+"--file ${input_directory}/artificial/complete-10000.txt"
 )
 
 algorithms=(
 # ReachCode
-#  "reachcode 8 2.0"
-#  "reachcode 16 2.0"
+  "reachcode 8 2.0"
+  "reachcode 16 2.0"
   "reachcode 32 2.0"
-#  "reachcode 64 2.0"
-#  "reachcode 128 2.0"
-#  "reachcode 256 2.0"
-#  "reachcode 512 2.0"
-#  "reachcode 1024 2.0"
-#  "reachcode 2048 2.0"
-#  "reachcode 4096 2.0"
+  "reachcode 64 2.0"
+  "reachcode 128 2.0"
+  "reachcode 256 2.0"
+  "reachcode 512 2.0"
+  "reachcode 1024 2.0"
+  "reachcode 2048 2.0"
+  "reachcode 4096 2.0"
   # "reachcode 32 1.2"
   # "reachcode 32 1.4"
   # "reachcode 32 1.6"
@@ -267,54 +279,60 @@ algorithms=(
   # "reachcode 32 2.8"
   # "reachcode 32 3.0"
 # BFL
- "bfl 1"
-#  "bfl 2"
-#  "bfl 5"
-#  "bfl 10"
-#  "bfl 20"
-#  "bfl 50"
-#  "bfl 100"
-#  "bfl 200"
-#  "bfl 500"
+  "bfl 1"
+  "bfl 2"
+  "bfl 5"
+  "bfl 10"
+  "bfl 20"
+  "bfl 50"
+  "bfl 100"
+  "bfl 200"
+  "bfl 500"
 # Grail
-#  "grail 1 0 2"
-#  "grail 1 0 3"
-#  "grail 1 0 4"
-#  "grail 1 0 5"
-#  "grail 1 1 2"
-#  "grail 1 1 3"
-#  "grail 1 1 4"
-#  "grail 1 1 5"
-#  "grail -2 0 2"
-#  "grail -2 0 3"
-#  "grail -2 0 4"
-#  "grail -2 0 5"
- "grail -2 1 2"
-#  "grail -2 1 3"
-#  "grail -2 1 4"
-#  "grail -2 1 5"
+  "grail 1 0 2"
+  "grail 1 0 3"
+  "grail 1 0 4"
+  "grail 1 0 5"
+  "grail 1 1 2"
+  "grail 1 1 3"
+  "grail 1 1 4"
+  "grail 1 1 5"
+  "grail -2 0 2"
+  "grail -2 0 3"
+  "grail -2 0 4"
+  "grail -2 0 5"
+  "grail -2 1 2"
+  "grail -2 1 3"
+  "grail -2 1 4"
+  "grail -2 1 5"
 # PathTree
- "pathtree 1"
-#  "pathtree 2"
-#  "pathtree 3"
-#  "pathtree 4"
+  "pathtree 1"
+  "pathtree 2"
+  "pathtree 3"
+  "pathtree 4"
 # TOL
-#  "tol 0 1"
-#  "tol 0 2"
- "tol 1 2"
+  "tol 0 1"
+  "tol 0 2"
+  "tol 1 2"
 # Gripp
- "gripp"
+  "gripp"
 # Ferrari
- "ferrari 2 32 1"
+  "ferrari 2 32 1"
+  "ferrari 2 2 1"
+  "ferrari 5 5 1"
+  "ferrari 2 32 0"
+  "ferrari 2 2 0"
+  "ferrari 5 5 0"
 # IP
- "ip 2 2 100"
+  "ip 2 2 100"
+  "ip 5 5 100"
 # PLL
- "pll 1"
-#  "pll 0"
+  "pll 1"
+  "pll 0"
 # PReaCH
- "preach"
+  "preach"
 # DBL
- "dbl"
+  "dbl"
 )
 
 echo "Start calculating graph statistics"

@@ -112,11 +112,16 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
     AutoTest auto_test = AutoTest(&graph, algorithm);
     auto queries = auto_test.generateQueries(check_reachable_times, check_only_reached);
     for (const auto &query : queries) {
-        time1 = std::chrono::high_resolution_clock::now();
-        algorithm->TC_haspath(query.first, query.second);
-        time2 = std::chrono::high_resolution_clock::now();
-        ms_nano = time2 - time1;
-        has_path_times_ns.push_back(ms_nano.count());
+        std::vector<long long> tmp_has_path_times_ns;
+        for (int _ = 0; _ < 5; ++_) {
+            time1 = std::chrono::high_resolution_clock::now();
+            algorithm->TC_haspath(query.first, query.second);
+            time2 = std::chrono::high_resolution_clock::now();
+            ms_nano = time2 - time1;
+            tmp_has_path_times_ns.push_back(ms_nano.count());
+        }
+        std::nth_element(tmp_has_path_times_ns.begin(), tmp_has_path_times_ns.begin() + tmp_has_path_times_ns.size() / 2, tmp_has_path_times_ns.end());
+        has_path_times_ns.push_back(tmp_has_path_times_ns[tmp_has_path_times_ns.size() / 2]);
         ms_nano = time2 - start_time;
         if ((unsigned long long)max_time_second * 1000000000 - ms_nano.count() < 2000000000) {
             break;
