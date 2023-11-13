@@ -23,9 +23,9 @@ namespace grail {
     }
 
     string GrailWrapper::getParams() const {
-        return "alg_type=" + to_string(alg_type)
-               + " LABELINGTYPE=" + to_string(LABELINGTYPE)
-               + " DIM=" + to_string(DIM);
+        return "t=" + to_string(alg_type)
+               + " ltype=" + to_string(LABELINGTYPE)
+               + " dim=" + to_string(DIM);
     }
 
     void GrailWrapper::construction(const Graph &graph) {

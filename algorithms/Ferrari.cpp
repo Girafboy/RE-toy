@@ -14,7 +14,7 @@ namespace ferrari {
     }
 
     std::string Ferrari::getParams() const {
-        return "k = " + std::to_string(k) + " seeds = " + std::to_string(seeds) + " " + (global ? "global" : "local");
+        return "k=" + std::to_string(k) + " seeds=" + std::to_string(seeds) + " " + (global ? "global" : "local");
     }
 
     void Ferrari::construction(const Graph &graph) {
