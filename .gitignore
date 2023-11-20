@@ -11,3 +11,4 @@ graphs
 /cmake-build-release/
 /utils.py
 /datasets
+/utils/

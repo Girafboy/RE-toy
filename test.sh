@@ -7,7 +7,7 @@ input_directory="/home/kang/xingliwang/data/converted_graphs"
 output_file="../output/result.csv"
 output_graph_statistic_file="../output/graph.csv"  # graph information including number of nodes, edges, and factor
 output_query_time_dir="../output/query_time"
-max_time="100"  # second
+max_time="1000"  # second
 conda_environment="tc"  # Python environment which include networkx package
 
 echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
@@ -248,10 +248,10 @@ graphs=(
 "--file ${input_directory}/brain/mouse_visual.cortex_1.txt"
 "--file ${input_directory}/small_real_dense/yago_sub_6642.txt"
 "--file ${input_directory}/econ/econ-beaflw.txt"
-"--file ${input_directory}/tscc/scc_twitter-copen.txt"
-"--file ${input_directory}/misc/qc2534.txt"
-"--file ${input_directory}/brain/mouse_retina_1.txt"
-"--file ${input_directory}/tscc/scc_fb-messages.txt"
+"--file ${input_directory}/hb/bcsstm27.txt"
+"--file ${input_directory}/hb/bcsstk04.txt"
+"--file ${input_directory}/labeled/BA-1_10_60-L5.txt"
+"--file ${input_directory}/dimacs/c-fat500-10.txt"
 "--file ${input_directory}/tscc/scc_infect-hyper.txt"
 "--file ${input_directory}/artificial/complete-10000.txt"
 )
