@@ -43,8 +43,8 @@ add_executable(
   algorithms/BFL.h
   algorithms/GrailWrapper.cpp
   algorithms/GrailWrapper.h
-        algorithms/ReachCode.cpp
-        algorithms/ReachCode.h
+        algorithms/ORSE_Toy.cpp
+        algorithms/ORSE_Toy.h
   algorithms/PathTreeWrapper.cpp
   algorithms/PathTreeWrapper.h
   AutoTest.cpp

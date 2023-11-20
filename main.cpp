@@ -13,7 +13,7 @@
 #include "AutoTest.h"
 #include "Profile.h"
 
-#include "algorithms/ReachCode.h"
+#include "algorithms/ORSE_Toy.h"
 #include "algorithms/BFL.h"
 #include "algorithms/GrailWrapper.h"
 #include "algorithms/PathTreeWrapper.h"
@@ -28,7 +28,7 @@
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
-using rc::ReachCode;
+using orse_toy::ORSE_Toy;
 using bfl::BFL;
 using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
@@ -78,7 +78,7 @@ unsigned int max_time_second = 0;
 //}
 
 void testAccuracy() {
-    ReachCode algorithm(32, 2.0);
+    ORSE_Toy algorithm(32, 2.0);
     int n = 1000, d = 10;
     Graph graph(n, d, "random");
     algorithm.construction(graph);
@@ -169,10 +169,11 @@ void usage() {
 }
 
 void algorithmUsage(const std::string& algorithm_name) {
-    if (algorithm_name == "reachcode") {
-        std::cout << "Usage of reachcode:\n"
-                     "Total: 1 argument(s)\n"
+    if (algorithm_name == "orse_toy") {
+        std::cout << "Usage of orse_toy:\n"
+                     "Total: 2 argument(s)\n"
                      "arg[0]: x\n"
+                     "arg[1]: r\n"
                   << std::endl;
     } else if (algorithm_name == "bfl") {
         std::cout << "Usage of bfl:\n"
@@ -281,14 +282,14 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
             std::string algorithm_name = argv[i++];
-            if (algorithm_name == "reachcode") {
-                if (i + 1 > argc) {
+            if (algorithm_name == "orse_toy") {
+                if (i + 2 > argc) {
                     algorithmUsage(algorithm_name);
                     return 0;
                 }
                 int x = atoi(argv[i++]);
                 float r = atof(argv[i++]);
-                algorithm = new ReachCode(x, r);
+                algorithm = new ORSE_Toy(x, r);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);

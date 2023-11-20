@@ -1,5 +1,5 @@
-#ifndef REACHABILITY_CODING_H
-#define REACHABILITY_CODING_H
+#ifndef ORSE_TOY_H
+#define ORSE_TOY_H
 
 #include <algorithm>
 #include <cmath>
@@ -31,7 +31,7 @@
 
 typedef unsigned int fastfloat_t;
 
-namespace rc {
+namespace orse_toy {
     static int log2(int val) {
         int ret = 0;
         while (val > 1) {
@@ -41,7 +41,7 @@ namespace rc {
         return ret;
     }
 
-    class ReachCode : public Algorithm {
+    class ORSE_Toy : public Algorithm {
     private:
         struct Bits {
             unsigned char *data = nullptr;
@@ -204,7 +204,7 @@ namespace rc {
         void encode(Node &node);
         bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const;
     public:
-        ReachCode(int x, float r);
+        ORSE_Toy(int x, float r);
 
         std::string getName() const override;
 
@@ -220,4 +220,4 @@ namespace rc {
     };
 }
 
-#endif //REACHABILITY_CODING_H
+#endif //ORSE_TOY_H
