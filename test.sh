@@ -5,13 +5,10 @@ cd ./build || cd ./cmake-build-debug || exit
 input_directory="/home/kang/xingliwang/data/converted_graphs"
 #input_directory="/home/kang/xingliwang/data/tc_graphs_grouped_by_factor"
 output_file="../output/result.csv"
-output_graph_statistic_file="../output/graph.csv"  # graph information including number of nodes, edges, and factor
 output_query_time_dir="../output/query_time"
 max_time="1000"  # second
-conda_environment="tc"  # Python environment which include networkx package
 
 echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
-echo "graph,n,m,factor" > ${output_graph_statistic_file}
 rm "${output_query_time_dir}"/*.txt
 
 graphs=(
@@ -335,19 +332,12 @@ algorithms=(
   "dbl"
 )
 
-echo "Start calculating graph statistics"
-source /home/kang/anaconda3/etc/profile.d/conda.sh
-for graph in "${graphs[@]}"
-do
-  conda run -n ${conda_environment} python ../utils/graph_statistics.py "${graph}"
-done
-
 for algorithm in "${algorithms[@]}"
 do
   echo "Start testing ${algorithm}"
   for graph in "${graphs[@]}"
   do
-    tmp_command="timeout ${max_time} ./reachability --time ${max_time} ${graph} --algorithm ${algorithm}"
+    tmp_command="timeout ${max_time} ./reachability --time ${max_time} ${graph} --algorithm ${algorithm} --accuracy"
     eval "${tmp_command}"
     exit_status=$?
     if [[ $exit_status -eq 124 ]]; then
