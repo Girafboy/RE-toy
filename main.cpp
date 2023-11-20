@@ -91,7 +91,7 @@ void testAccuracy() {
     }
 }
 
-Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, int sample_num, bool check_only_reached=false) {
+Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
     Profile profile;
     profile.graph_name = graph.getName();
     profile.algorithm_name = algorithm->getName();
@@ -142,17 +142,6 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
 //    double stdev = std::sqrt(sq_sum / (double)has_path_times_ns.size());
 //    profile.standard_deviation_of_has_path_times_ns = stdev;
 
-    auto left = has_path_times_ns.begin();
-    for (int i = 1; i < sample_num - 1; ++i) {
-        auto mid = left + has_path_times_ns.size() / (sample_num - 1);
-        std::nth_element(left, mid, has_path_times_ns.end());
-        if (i == 1) {
-            profile.has_path_time_samples.push_back(*min_element(has_path_times_ns.begin(), mid + 1));
-        }
-        profile.has_path_time_samples.push_back(*mid);
-        left = mid;
-    }
-    profile.has_path_time_samples.push_back(*max_element(left, has_path_times_ns.end()));
     profile.has_path_times_ns = std::move(has_path_times_ns);
 
     return profile;
@@ -406,15 +395,7 @@ int main(int argc, char* argv[]) {
     }
 
     int check_reachable_times = 100000;
-    int sample_num = 5;
-    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times, sample_num);
-
-    std::stringstream ss;
-    ss << '[';
-    for (const auto &t : profile.has_path_time_samples) {
-        ss << t << "; ";
-    }
-    ss << ']';
+    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times);
 
     std::ofstream myfile;
     myfile.open("../output/result.csv", std::ios_base::app);
@@ -424,8 +405,7 @@ int main(int argc, char* argv[]) {
            << profile.preparation_time_ns << ","
            << profile.index_size << ","
            << profile.query_num << ","
-           << profile.average_has_path_time_ns << ","
-           << ss.str() << "\n";
+           << profile.average_has_path_time_ns << "\n";
     myfile.close();
 
     std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";

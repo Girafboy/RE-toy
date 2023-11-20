@@ -8,7 +8,7 @@ output_file="../output/result.csv"
 output_query_time_dir="../output/query_time"
 max_time="1000"  # second
 
-echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns),query_samples" > ${output_file}
+echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > ${output_file}
 rm "${output_query_time_dir}"/*.txt
 
 graphs=(
