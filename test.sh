@@ -250,7 +250,7 @@ graphs=(
 "--file ${input_directory}/labeled/BA-1_10_60-L5.txt"
 "--file ${input_directory}/dimacs/c-fat500-10.txt"
 "--file ${input_directory}/tscc/scc_infect-hyper.txt"
-"--file ${input_directory}/artificial/complete-10000.txt"
+"--file ${input_directory}/artificial/complete-1000.txt"
 )
 
 algorithms=(
