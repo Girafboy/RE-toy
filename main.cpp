@@ -454,7 +454,7 @@ int main(int argc, char* argv[]) {
            << profile.average_has_path_time_ns << "\n";
     myfile.close();
 
-    std::string query_file_name = result_dir + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
+    std::string query_file_name = result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
     myfile.open(query_file_name);
     for (const auto &x : profile.has_path_times_ns) {
         myfile << x << '\n';
