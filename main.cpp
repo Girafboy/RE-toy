@@ -159,11 +159,11 @@ void usage() {
                     "--time <seconds>           Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)\n"
                     "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
                     "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
-                    "--result_file <file>       Set the file path for result output, default is \"../output/result.csv\" (optional)\n"
-                    "--result_dir <dir>         Set the directory path for query time output, default is \"../output/query_time/\" (optional)\n"
+                    "--result_file <file>       Set the file path for result output (optional)\n"
+                    "--result_dir <dir>         Set the directory path for query time output (optional)\n"
                     "--graph <type>             Specify input graph type (required)\n"
-                    "   --random <n> <d>        Generate random DAG with <n> nodes and <d> average degree\n"
-                    "   --file <file_path>      Load graph from file\n"
+                    "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
+                    "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
                     "\n"
                     "Reachability Algorithms:\n"
@@ -441,9 +441,9 @@ int main(int argc, char* argv[]) {
         AutoTest autoTest(graph, algorithm);
         auto ret = autoTest.checkCorrectness();
         if (ret.first) {
-            std::cout << "Correctness test passed." << std::endl;
+            std::cout << "Correctness test passed (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() << ")" << std::endl;
         } else {
-            std::cout << "Correctness test failed on test " << ret.second.second << "to" << ret.second.second << "." << std::endl;
+            std::cout << "Correctness test failed! (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() <<", from " << ret.second.second << " to " << ret.second.second << ")" << std::endl;
         }
         algorithm->reset();
         delete algorithm;
