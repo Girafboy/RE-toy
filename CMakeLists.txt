@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
 include_directories(algorithms)
-include_directories(/opt/homebrew/include)
-include_directories(/opt/homebrew/opt/libomp/include)
 include_directories(/home/xingliwang/program_installation/boost_1_83_0)
 
 
@@ -43,8 +41,8 @@ add_executable(
   algorithms/BFL.h
   algorithms/GrailWrapper.cpp
   algorithms/GrailWrapper.h
-        algorithms/ORSE_Toy.cpp
-        algorithms/ORSE_Toy.h
+  algorithms/ORSE_Toy.cpp
+  algorithms/ORSE_Toy.h
   algorithms/PathTreeWrapper.cpp
   algorithms/PathTreeWrapper.h
   AutoTest.cpp

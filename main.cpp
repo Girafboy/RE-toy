@@ -43,53 +43,8 @@ using pll::PLL;
 using preach::PReaCH;
 using dbl::DBLWrapper;
 
-
 decltype(std::chrono::high_resolution_clock::now()) start_time;
 unsigned int max_time_second = 0;
-
-
-//Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
-//    Profile profile;
-//    profile.graph_name = graph.getName();
-//    profile.algorithm_name = algorithm->getName();
-//    profile.params = algorithm->getParams();
-//
-//    decltype(std::chrono::high_resolution_clock::now()) time1, time2;
-//    std::chrono::duration<double, std::milli> ms_double{};
-//
-//    time1 = std::chrono::high_resolution_clock::now();
-//    algorithm->construction(graph);
-//    time2 = std::chrono::high_resolution_clock::now();
-//    ms_double = time2 - time1;
-//    profile.preparation_time = ms_double.count();
-//
-//    AutoTest auto_test = AutoTest(&graph, algorithm);
-//    auto_test.generateQueries(check_reachable_times, check_only_reached);
-//    time1 = std::chrono::high_resolution_clock::now();
-//    auto_test.runQueryTest();
-//    time2 = std::chrono::high_resolution_clock::now();
-//    ms_double = time2 - time1;
-//    profile.total_has_path_time = ms_double.count();
-//
-//    profile.index_size = algorithm->getIndexSize();
-//    algorithm->reset();
-//
-//    return profile;
-//}
-
-void testAccuracy() {
-    ORSE_Toy algorithm(32, 2.0);
-    int n = 1000, d = 10;
-    Graph graph(n, d, "random");
-    algorithm.construction(graph);
-    AutoTest autoTest(&graph, &algorithm);
-    auto ret = autoTest.checkCorrectness();
-    if (ret.first) {
-        std::cout << "Correctness test passed." << std::endl;
-    } else {
-        std::cout << "Correctness test failed." << std::endl;
-    }
-}
 
 Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
     Profile profile;
@@ -135,12 +90,6 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
     long long sum = std::accumulate(has_path_times_ns.begin(), has_path_times_ns.end(), 0ll);
     double mean = (double)sum / (double)has_path_times_ns.size();
     profile.average_has_path_time_ns = mean;
-
-//    std::vector<double> diff(has_path_times_ns.size());
-//    std::transform(has_path_times_ns.begin(), has_path_times_ns.end(), diff.begin(), [mean](double x) { return x - mean; });
-//    double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-//    double stdev = std::sqrt(sq_sum / (double)has_path_times_ns.size());
-//    profile.standard_deviation_of_has_path_times_ns = stdev;
 
     profile.has_path_times_ns = std::move(has_path_times_ns);
 
@@ -264,6 +213,7 @@ int main(int argc, char* argv[]) {
         usage();
         return 0;
     }
+
     int n = 0, d = 0;
     std::string file_path;
     bool test_accuracy = false;
