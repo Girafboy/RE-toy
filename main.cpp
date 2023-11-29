@@ -152,43 +152,44 @@ void usage() {
     std::string h = "reachability - A program for running reachability algorithms on a given directed graph\n"
                     "\n"
                     "Usage:\n"
-                    "./reachability [options] --time <max_execution_time>\n"
+                    "./reachability [options]\n"
                     "\n"
                     "Options:\n"
-                    "--help                     Display this help message and exit\n"
-                    "--time <max_execution_time> Set the maximum execution time for the program (required, unless --accuracy is specified)\n"
+                    "--help                     Show help message\n"
+                    "--time <seconds>           Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)\n"
                     "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
-                    "--query <num_tests>        Set the number of tests for reachability, default value is 100000 (optional)\n"
-                    "--result_file <result_file_path>  Set the file path for result output, default is \"../output/result.csv\" (optional)\n"
-                    "--result_dir <result_dir_path>    Set the directory path for query time output, default is \"../output/query_time/\" (optional)\n"
-                    "--random <num_nodes> <avg_degree> Use a random DAG of a specified number of nodes and average degree\n"
-                    "--file <graph_file_path>    Use the specified graph file as input\n"
+                    "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
+                    "--result_file <file>       Set the file path for result output, default is \"../output/result.csv\" (optional)\n"
+                    "--result_dir <dir>         Set the directory path for query time output, default is \"../output/query_time/\" (optional)\n"
+                    "--graph <type>             Specify input graph type (required)\n"
+                    "   --random <n> <d>        Generate random DAG with <n> nodes and <d> average degree\n"
+                    "   --file <file_path>      Load graph from file\n"
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
                     "\n"
                     "Reachability Algorithms:\n"
-                    "orse_toy <x> <r>           ORSE_Toy algorithm, with parameters <x> and <r>\n"
-                    "bfl <K>                    BFL algorithm, with parameter <K>\n"
-                    "grail <t> <ltype> <dim>    GRAIL algorithm, with parameters <t>, <ltype>, and <dim>\n"
-                    "pathtree <alg_type>        PathTree algorithm, with parameter <alg_type>\n"
-                    "tol <style> <opr>          TOL algorithm, with parameters <style> and <opr>\n"
+                    "orse_toy <x> <r>           ORSE_Toy algorithm\n"
+                    "bfl <K>                    BFL algorithm\n"
+                    "grail <t> <ltype> <dim>    GRAIL algorithm\n"
+                    "pathtree <alg_type>        PathTree algorithm\n"
+                    "tol <style> <opr>          TOL algorithm\n"
                     "gripp                      GRIPP algorithm\n"
-                    "ferrari <k> <seeds> <global>  Ferrari algorithm, with parameters <k>, <seeds>, and <global>\n"
-                    "ip <k> <h> <mu>            IP algorithm, with parameters <k>, <h>, and <mu>\n"
-                    "pll <use_RQPrunedLandmarkLabeling>  PLL algorithm, with parameter <use_RQPrunedLandmarkLabeling>\n"
+                    "ferrari <k> <seeds> <global>  Ferrari algorithm\n"
+                    "ip <k> <h> <mu>            IP algorithm\n"
+                    "pll <use_RQPrunedLandmarkLabeling>  PLL algorithm\n"
                     "preach                     PReaCH algorithm\n"
                     "dbl                        DBL algorithm\n"
                     "\n"
                     "Examples:\n"
                     "- Run the reachability algorithm ORSE_Toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
-                    "  ./reachability --time 10 --random 100 3 --algorithm orse_toy 32 2.0\n"
+                    "  ./reachability --time 10 --graph --random 100 3 --algorithm orse_toy 32 2.0\n"
                     "\n"
                     "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
-                    "  ./reachability --time 1000 --file /path/to/graph.txt --algorithm bfl 5\n"
+                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
                     "\n"
                     "- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:\n"
-                    "  ./reachability --accuracy --random 1000 1 --algorithm pll 1 \n"
+                    "  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1 \n"
                     "\n"
-                    "Please note that either the `--random` or `--file` option is required, and you should replace specific values and file paths with your own in the examples above.";
+                    "Please note that you should replace specific values and file paths with your own in the examples above.";
     std::cout << h << std::endl;
 }
 
@@ -287,7 +288,7 @@ int main(int argc, char* argv[]) {
         } else if (strcmp("--accuracy", argv[i]) == 0) {  // test accuarcy
             test_accuracy = true;
             ++i;
-        } else if (strcmp("--query", argv[i]) == 0) {  // query num
+        } else if (strcmp("--query_num", argv[i]) == 0) {  // query num
             ++i;
             if (i >= argc) {
                 usage();
@@ -308,22 +309,28 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
             result_dir = argv[i++];
-        } else if (strcmp("--random", argv[i]) == 0) {  // random graph
-            ++i;
-            if (i + 1 >= argc) {
-                usage();
-                return 0;
-            }
-            n = atoi(argv[i++]);
-            d = atoi(argv[i++]);
-        } else if (strcmp("--file", argv[i]) == 0) {  // graph file
+        } else if (strcmp("--graph", argv[i]) == 0) {  // input graph
             ++i;
             if (i >= argc) {
                 usage();
                 return 0;
             }
-            file_path = argv[i++];
-        } else if (strcmp("--algorithm", argv[i]) == 0) {
+            std::string graph_type = argv[i++];
+            if (graph_type == "--random") {  // random DAG
+                if (i + 1 >= argc) {
+                    usage();
+                    return 0;
+                }
+                n = atoi(argv[i++]);
+                d = atoi(argv[i++]);
+            } else if (graph_type == "--file") {  // graph from file
+                if (i >= argc) {
+                    usage();
+                    return 0;
+                }
+                file_path = argv[i++];
+            }
+        } else if (strcmp("--algorithm", argv[i]) == 0) {  // algorithm
             ++i;
             if (i >= argc) {
                 usage();
@@ -412,6 +419,9 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
                 algorithm = new DBLWrapper();
+            } else {
+                usage();
+                return 0;
             }
         }
     }
