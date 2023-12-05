@@ -1,13 +1,9 @@
-#include <iomanip>
 #include <iostream>
 #include <ostream>
-#include <queue>
 #include <chrono>
 #include <fstream>
-#include <filesystem>
 #include <cstring>
 #include <numeric>
-#include <sstream>
 
 #include "Graph.h"
 #include "AutoTest.h"
@@ -19,12 +15,9 @@
 #include "algorithms/PathTreeWrapper.h"
 #include "algorithms/TOLWrapper.h"
 #include "algorithms/GrippWrapper.h"
-//#include "algorithms/buTRWrapper.h"
 #include "algorithms/Ferrari.h"
 #include "algorithms/IP.h"
 #include "algorithms/PLL.h"
-//#include "algorithms/TFLabel.h"
-//#include "algorithms/TFL.h"
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
@@ -34,12 +27,9 @@ using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
 using tol::TOLWrapper;
 using gripp::GrippWrapper;
-//using butr::buTRWrapper;
 using ferrari::Ferrari;
 using ip::IP;
 using pll::PLL;
-//using tf_label::TFLabel;
-//using tfl::TFL;
 using preach::PReaCH;
 using dbl::DBLWrapper;
 

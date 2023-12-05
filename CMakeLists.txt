@@ -62,15 +62,6 @@ add_executable(
   algorithms/GrippUtils/GrippGraph.h
   algorithms/GrippUtils/Gripp.cpp
   algorithms/GrippUtils/Gripp.h
-  algorithms/buTRWrapper.cpp
-  algorithms/buTRWrapper.h
-  algorithms/buTRUtils/butr.h
-  algorithms/buTRUtils/dimesion.h
-  algorithms/buTRUtils/equalVertex.h
-  algorithms/buTRUtils/graph.h
-  algorithms/buTRUtils/hopLabel.h
-  algorithms/buTRUtils/interval.h
-  algorithms/buTRUtils/transitiveReduction.h 
   algorithms/Ferrari.cpp algorithms/Ferrari.h 
   algorithms/FerrariUtils/FerrariGraph.cpp 
   algorithms/FerrariUtils/FerrariGraph.h
@@ -88,14 +79,6 @@ add_executable(
   algorithms/PLL.h
   algorithms/PllUtils/PrunedLabeling.h
   algorithms/PllUtils/PrunedLabeling.cpp
-  algorithms/TFLabel.cpp
-  algorithms/TFLabel.h
-  algorithms/TfLabelUtils/Util.h
-  algorithms/TFL.cpp
-  algorithms/TFL.h
-  algorithms/TflUtils/pre_check.h
-  algorithms/TflUtils/runtimecounter.h
-  algorithms/TflUtils/queryscc.h
   algorithms/PReaCH.cpp
   algorithms/PReaCH.h
   algorithms/PreachUtils/ConstructionGraph.cc
