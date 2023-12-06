@@ -15,7 +15,7 @@ namespace ip {
     }
 
     std::string IP::getParams() const {
-        return "k = " + std::to_string(k) + " h = " + std::to_string(h) + " mu = " + std::to_string(mu);
+        return "k=" + std::to_string(k) + " h=" + std::to_string(h) + " mu=" + std::to_string(mu);
     }
 
     void IP::construction(const Graph &graph) {

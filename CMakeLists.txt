@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
 include_directories(algorithms)
-include_directories(/opt/homebrew/include)
-include_directories(/opt/homebrew/opt/libomp/include)
 include_directories(/home/xingliwang/program_installation/boost_1_83_0)
 
 
@@ -43,8 +41,8 @@ add_executable(
   algorithms/BFL.h
   algorithms/GrailWrapper.cpp
   algorithms/GrailWrapper.h
-        algorithms/ReachCode.cpp
-        algorithms/ReachCode.h
+  algorithms/ORSE_Toy.cpp
+  algorithms/ORSE_Toy.h
   algorithms/PathTreeWrapper.cpp
   algorithms/PathTreeWrapper.h
   AutoTest.cpp
@@ -64,15 +62,6 @@ add_executable(
   algorithms/GrippUtils/GrippGraph.h
   algorithms/GrippUtils/Gripp.cpp
   algorithms/GrippUtils/Gripp.h
-  algorithms/buTRWrapper.cpp
-  algorithms/buTRWrapper.h
-  algorithms/buTRUtils/butr.h
-  algorithms/buTRUtils/dimesion.h
-  algorithms/buTRUtils/equalVertex.h
-  algorithms/buTRUtils/graph.h
-  algorithms/buTRUtils/hopLabel.h
-  algorithms/buTRUtils/interval.h
-  algorithms/buTRUtils/transitiveReduction.h 
   algorithms/Ferrari.cpp algorithms/Ferrari.h 
   algorithms/FerrariUtils/FerrariGraph.cpp 
   algorithms/FerrariUtils/FerrariGraph.h
@@ -90,14 +79,6 @@ add_executable(
   algorithms/PLL.h
   algorithms/PllUtils/PrunedLabeling.h
   algorithms/PllUtils/PrunedLabeling.cpp
-  algorithms/TFLabel.cpp
-  algorithms/TFLabel.h
-  algorithms/TfLabelUtils/Util.h
-  algorithms/TFL.cpp
-  algorithms/TFL.h
-  algorithms/TflUtils/pre_check.h
-  algorithms/TflUtils/runtimecounter.h
-  algorithms/TflUtils/queryscc.h
   algorithms/PReaCH.cpp
   algorithms/PReaCH.h
   algorithms/PreachUtils/ConstructionGraph.cc

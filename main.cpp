@@ -1,97 +1,42 @@
-#include <iomanip>
 #include <iostream>
 #include <ostream>
-#include <queue>
 #include <chrono>
 #include <fstream>
-#include <filesystem>
 #include <cstring>
 #include <numeric>
-#include <sstream>
 
 #include "Graph.h"
 #include "AutoTest.h"
 #include "Profile.h"
 
-#include "algorithms/ReachCode.h"
+#include "algorithms/ORSE_Toy.h"
 #include "algorithms/BFL.h"
 #include "algorithms/GrailWrapper.h"
 #include "algorithms/PathTreeWrapper.h"
 #include "algorithms/TOLWrapper.h"
 #include "algorithms/GrippWrapper.h"
-//#include "algorithms/buTRWrapper.h"
 #include "algorithms/Ferrari.h"
 #include "algorithms/IP.h"
 #include "algorithms/PLL.h"
-//#include "algorithms/TFLabel.h"
-//#include "algorithms/TFL.h"
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
-using rc::ReachCode;
+using orse_toy::ORSE_Toy;
 using bfl::BFL;
 using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
 using tol::TOLWrapper;
 using gripp::GrippWrapper;
-//using butr::buTRWrapper;
 using ferrari::Ferrari;
 using ip::IP;
 using pll::PLL;
-//using tf_label::TFLabel;
-//using tfl::TFL;
 using preach::PReaCH;
 using dbl::DBLWrapper;
-
 
 decltype(std::chrono::high_resolution_clock::now()) start_time;
 unsigned int max_time_second = 0;
 
-
-//Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
-//    Profile profile;
-//    profile.graph_name = graph.getName();
-//    profile.algorithm_name = algorithm->getName();
-//    profile.params = algorithm->getParams();
-//
-//    decltype(std::chrono::high_resolution_clock::now()) time1, time2;
-//    std::chrono::duration<double, std::milli> ms_double{};
-//
-//    time1 = std::chrono::high_resolution_clock::now();
-//    algorithm->construction(graph);
-//    time2 = std::chrono::high_resolution_clock::now();
-//    ms_double = time2 - time1;
-//    profile.preparation_time = ms_double.count();
-//
-//    AutoTest auto_test = AutoTest(&graph, algorithm);
-//    auto_test.generateQueries(check_reachable_times, check_only_reached);
-//    time1 = std::chrono::high_resolution_clock::now();
-//    auto_test.runQueryTest();
-//    time2 = std::chrono::high_resolution_clock::now();
-//    ms_double = time2 - time1;
-//    profile.total_has_path_time = ms_double.count();
-//
-//    profile.index_size = algorithm->getIndexSize();
-//    algorithm->reset();
-//
-//    return profile;
-//}
-
-void testAccuracy() {
-    ReachCode algorithm(32, 2.0);
-    int n = 1000, d = 10;
-    Graph graph(n, d, "random");
-    algorithm.construction(graph);
-    AutoTest autoTest(&graph, &algorithm);
-    auto ret = autoTest.checkCorrectness();
-    if (ret.first) {
-        std::cout << "Correctness test passed." << std::endl;
-    } else {
-        std::cout << "Correctness test failed." << std::endl;
-    }
-}
-
-Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, int sample_num, bool check_only_reached=false) {
+Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
     Profile profile;
     profile.graph_name = graph.getName();
     profile.algorithm_name = algorithm->getName();
@@ -136,23 +81,6 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
     double mean = (double)sum / (double)has_path_times_ns.size();
     profile.average_has_path_time_ns = mean;
 
-//    std::vector<double> diff(has_path_times_ns.size());
-//    std::transform(has_path_times_ns.begin(), has_path_times_ns.end(), diff.begin(), [mean](double x) { return x - mean; });
-//    double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-//    double stdev = std::sqrt(sq_sum / (double)has_path_times_ns.size());
-//    profile.standard_deviation_of_has_path_times_ns = stdev;
-
-    auto left = has_path_times_ns.begin();
-    for (int i = 1; i < sample_num - 1; ++i) {
-        auto mid = left + has_path_times_ns.size() / (sample_num - 1);
-        std::nth_element(left, mid, has_path_times_ns.end());
-        if (i == 1) {
-            profile.has_path_time_samples.push_back(*min_element(has_path_times_ns.begin(), mid + 1));
-        }
-        profile.has_path_time_samples.push_back(*mid);
-        left = mid;
-    }
-    profile.has_path_time_samples.push_back(*max_element(left, has_path_times_ns.end()));
     profile.has_path_times_ns = std::move(has_path_times_ns);
 
     return profile;
@@ -160,19 +88,56 @@ Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int chec
 
 
 void usage() {
-    std::cout << "Usage:\n"
-                 "tc [--help] todo\n"
-                 "Description:\n"
-                 "\t --help \t\t  print the help message\n"
-                 "\t todo\n"
-              << std::endl;
+    std::string h = "reachability - A program for running reachability algorithms on a given directed graph\n"
+                    "\n"
+                    "Usage:\n"
+                    "./reachability [options]\n"
+                    "\n"
+                    "Options:\n"
+                    "--help                     Show help message\n"
+                    "--time <seconds>           Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)\n"
+                    "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
+                    "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
+                    "--result_file <file>       Set the file path for result output (optional)\n"
+                    "--result_dir <dir>         Set the directory path for query time output (optional)\n"
+                    "--graph <type>             Specify input graph type (required)\n"
+                    "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
+                    "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
+                    "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
+                    "\n"
+                    "Reachability Algorithms:\n"
+                    "orse_toy <x> <r>           ORSE_Toy algorithm\n"
+                    "bfl <K>                    BFL algorithm\n"
+                    "grail <t> <ltype> <dim>    GRAIL algorithm\n"
+                    "pathtree <alg_type>        PathTree algorithm\n"
+                    "tol <style> <opr>          TOL algorithm\n"
+                    "gripp                      GRIPP algorithm\n"
+                    "ferrari <k> <seeds> <global>  Ferrari algorithm\n"
+                    "ip <k> <h> <mu>            IP algorithm\n"
+                    "pll <use_RQPrunedLandmarkLabeling>  PLL algorithm\n"
+                    "preach                     PReaCH algorithm\n"
+                    "dbl                        DBL algorithm\n"
+                    "\n"
+                    "Examples:\n"
+                    "- Run the reachability algorithm ORSE_Toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
+                    "  ./reachability --time 10 --graph --random 100 3 --algorithm orse_toy 32 2.0\n"
+                    "\n"
+                    "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
+                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
+                    "\n"
+                    "- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:\n"
+                    "  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1 \n"
+                    "\n"
+                    "Please note that you should replace specific values and file paths with your own in the examples above.";
+    std::cout << h << std::endl;
 }
 
 void algorithmUsage(const std::string& algorithm_name) {
-    if (algorithm_name == "reachcode") {
-        std::cout << "Usage of reachcode:\n"
-                     "Total: 1 argument(s)\n"
+    if (algorithm_name == "orse_toy") {
+        std::cout << "Usage of orse_toy:\n"
+                     "Total: 2 argument(s)\n"
                      "arg[0]: x\n"
+                     "arg[1]: r\n"
                   << std::endl;
     } else if (algorithm_name == "bfl") {
         std::cout << "Usage of bfl:\n"
@@ -238,9 +203,13 @@ int main(int argc, char* argv[]) {
         usage();
         return 0;
     }
+
     int n = 0, d = 0;
     std::string file_path;
     bool test_accuracy = false;
+    int check_reachable_times = 100000;
+    std::string result_file = "../output/result.csv";
+    std::string result_dir = "../output/query_time/";
     Algorithm *algorithm;
 
     int i = 1;
@@ -249,46 +218,73 @@ int main(int argc, char* argv[]) {
             usage();
             return 0;
         }
-        if (strcmp("--time", argv[i]) == 0) {
+        if (strcmp("--time", argv[i]) == 0) {  // timeout second
             ++i;
             if (i >= argc) {
                 usage();
                 return 0;
             }
             max_time_second = atoi(argv[i++]);
-        } else if (strcmp("--accuracy", argv[i]) == 0) {
+        } else if (strcmp("--accuracy", argv[i]) == 0) {  // test accuarcy
             test_accuracy = true;
             ++i;
-        } else if (strcmp("--random", argv[i]) == 0) {  // random graph
-            ++i;
-            if (i + 1 >= argc) {
-                usage();
-                return 0;
-            }
-            n = atoi(argv[i++]);
-            d = atoi(argv[i++]);
-        } else if (strcmp("--file", argv[i]) == 0) {  // graph file
+        } else if (strcmp("--query_num", argv[i]) == 0) {  // query num
             ++i;
             if (i >= argc) {
                 usage();
                 return 0;
             }
-            file_path = argv[i++];
-        } else if (strcmp("--algorithm", argv[i]) == 0) {
+            check_reachable_times = atoi(argv[i++]);
+        } else if (strcmp("--result_file", argv[i]) == 0) {  // result.csv file path
+            ++i;
+            if (i >= argc) {
+                usage();
+                return 0;
+            }
+            result_file = argv[i++];
+        } else if (strcmp("--result_dir", argv[i]) == 0) {  // query file output directory
+            ++i;
+            if (i >= argc) {
+                usage();
+                return 0;
+            }
+            result_dir = argv[i++];
+        } else if (strcmp("--graph", argv[i]) == 0) {  // input graph
+            ++i;
+            if (i >= argc) {
+                usage();
+                return 0;
+            }
+            std::string graph_type = argv[i++];
+            if (graph_type == "--random") {  // random DAG
+                if (i + 1 >= argc) {
+                    usage();
+                    return 0;
+                }
+                n = atoi(argv[i++]);
+                d = atoi(argv[i++]);
+            } else if (graph_type == "--file") {  // graph from file
+                if (i >= argc) {
+                    usage();
+                    return 0;
+                }
+                file_path = argv[i++];
+            }
+        } else if (strcmp("--algorithm", argv[i]) == 0) {  // algorithm
             ++i;
             if (i >= argc) {
                 usage();
                 return 0;
             }
             std::string algorithm_name = argv[i++];
-            if (algorithm_name == "reachcode") {
-                if (i + 1 > argc) {
+            if (algorithm_name == "orse_toy") {
+                if (i + 2 > argc) {
                     algorithmUsage(algorithm_name);
                     return 0;
                 }
                 int x = atoi(argv[i++]);
                 float r = atof(argv[i++]);
-                algorithm = new ReachCode(x, r);
+                algorithm = new ORSE_Toy(x, r);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
@@ -363,8 +359,10 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
                 algorithm = new DBLWrapper();
+            } else {
+                usage();
+                return 0;
             }
-            // todo: algorithms
         }
     }
 
@@ -379,55 +377,34 @@ int main(int argc, char* argv[]) {
     }
 
     if (test_accuracy) {
-        Graph graph1(10, 3, "random");
-        algorithm->construction(graph1);
-        AutoTest autoTest1(&graph1, algorithm);
-        auto ret1 = autoTest1.checkCorrectness();
-        algorithm->reset();
-
-        Graph graph2(100, 10, "random");
-        algorithm->construction(graph2);
-        AutoTest autoTest2(&graph2, algorithm);
-        auto ret2 = autoTest2.checkCorrectness();
-        algorithm->reset();
-
-        Graph graph3(1000, 10, "random");
-        algorithm->construction(graph3);
-        AutoTest autoTest3(&graph3, algorithm);
-        auto ret3 = autoTest3.checkCorrectness();
-        algorithm->reset();
-
-        if (ret1.first && ret2.first && ret3.first) {
-            std::cout << "Correctness test passed." << std::endl;
+        algorithm->construction(*graph);
+        AutoTest autoTest(graph, algorithm);
+        auto ret = autoTest.checkCorrectness();
+        if (ret.first) {
+            std::cout << "Correctness test passed (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() << ")" << std::endl;
         } else {
-            std::cout << "Correctness test failed." << std::endl;
+            std::cout << "Correctness test failed! (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() <<", from " << ret.second.second << " to " << ret.second.second << ")" << std::endl;
         }
+        algorithm->reset();
+        delete algorithm;
+        delete graph;
+        return 0;
     }
 
-    int check_reachable_times = 100000;
-    int sample_num = 5;
-    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times, sample_num);
-
-    std::stringstream ss;
-    ss << '[';
-    for (const auto &t : profile.has_path_time_samples) {
-        ss << t << "; ";
-    }
-    ss << ']';
+    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times);
 
     std::ofstream myfile;
-    myfile.open("../output/result.csv", std::ios_base::app);
+    myfile.open(result_file, std::ios_base::app);
     myfile << profile.algorithm_name << ","
            << profile.graph_name << ","
            << profile.params << ","
            << profile.preparation_time_ns << ","
            << profile.index_size << ","
            << profile.query_num << ","
-           << profile.average_has_path_time_ns << ","
-           << ss.str() << "\n";
+           << profile.average_has_path_time_ns << "\n";
     myfile.close();
 
-    std::string query_file_name = "../output/query_time/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
+    std::string query_file_name = result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
     myfile.open(query_file_name);
     for (const auto &x : profile.has_path_times_ns) {
         myfile << x << '\n';

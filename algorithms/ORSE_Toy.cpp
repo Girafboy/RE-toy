@@ -1,4 +1,4 @@
-#include "ReachCode.h"
+#include "ORSE_Toy.h"
 
 #include <cassert>
 #include <cmath>
@@ -22,10 +22,10 @@
 
 // #define DEBUG
 
-namespace rc {
-    ReachCode::ReachCode(int x, float r) : chunk_size(x-1), ratio(r) {}
+namespace orse_toy {
+    ORSE_Toy::ORSE_Toy(int x, float r) : chunk_size(x-1), ratio(r) {}
 
-    ReachCode::FastFloat ReachCode::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
+    ORSE_Toy::FastFloat ORSE_Toy::encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len-1; i >=0; i--) {
@@ -94,7 +94,7 @@ namespace rc {
         return p0;
     }
 
-    void ReachCode::encode(ReachCode::Node &node) {
+    void ORSE_Toy::encode(ORSE_Toy::Node &node) {
         int chunks = get_chunk_num(node.topo_order);
 
         Bits *code_raw = node.codes;
@@ -116,13 +116,13 @@ namespace rc {
         delete [] code_raw;
     }
 
-    void ReachCode::reset() {
+    void ORSE_Toy::reset() {
         delete [] nodes;
         delete [] connect_p0;
         delete [] p0_pos;
     }
 
-    void ReachCode::construction(const Graph &graph) {
+    void ORSE_Toy::construction(const Graph &graph) {
         n = graph.size();
         nodes = new Node[n];
         connect_p0 = new FastFloat[n];
@@ -180,7 +180,7 @@ namespace rc {
         }
     }
 
-    bool ReachCode::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const {
+    bool ORSE_Toy::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const {
         int size = code.size-1;
         unsigned int value = bswap(*(unsigned int *)code.data);
 
@@ -243,7 +243,7 @@ namespace rc {
         return value >= mid;
     }
 
-    bool ReachCode::TC_haspath(int source, int target) {
+    bool ORSE_Toy::TC_haspath(int source, int target) {
         if (source == target) {
             return true;
         }
@@ -265,17 +265,17 @@ namespace rc {
         }
     }
 
-    std::string ReachCode::getName() const {
-        return "ReachCode";
+    std::string ORSE_Toy::getName() const {
+        return "ORSE-Toy";
     }
 
-    std::string ReachCode::getParams() const {
+    std::string ORSE_Toy::getParams() const {
         std::stringstream stream;
         stream << "x=" << chunk_size + 1 << " r=" << std::fixed << std::setprecision(1) << ratio;
         return stream.str();
     }
 
-    unsigned long long ReachCode::getIndexSize() const {
+    unsigned long long ORSE_Toy::getIndexSize() const {
         long long index_size = n * sizeof(int) * 2;
         for (int i = 0; i < n; i++) {
             int chunks = (nodes[i].topo_order+chunk_size-1)/chunk_size;
