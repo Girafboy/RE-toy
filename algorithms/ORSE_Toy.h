@@ -152,7 +152,7 @@ namespace orse_toy {
             pair(int pos, FastFloat p0) : pos(pos), p0(p0) {}
         };
 
-        inline FastFloat get_p0(std::vector<pair> &p0_pos, int pos, FastFloat p0_default) {
+        static inline FastFloat get_p0(std::vector<pair> &p0_pos, int pos, FastFloat p0_default) {
             auto len = p0_pos.size();
             const pair *first = &p0_pos[0], *mid;
             while (len) {
@@ -173,7 +173,7 @@ namespace orse_toy {
             return (topo_order + chunk_size - 1) / chunk_size;
         }
 
-        inline float approximation_ratio(FastFloat p0, FastFloat p0_base) const {
+        static inline float approximation_ratio(FastFloat p0, FastFloat p0_base) {
             return ((32ULL << 32) + p0.val * std::log2(1.0 / p0_base.val) +
                     ((1ULL << 32) - p0.val) * std::log2(1.0 / ((1ULL << 32) - p0_base.val))) /
                    ((32ULL << 32) + p0.val * std::log2(1.0 / p0.val) +
