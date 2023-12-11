@@ -14,7 +14,7 @@
 namespace orse_toy {
     ORSE_Toy::ORSE_Toy(int x, float r) : chunk_size(x - 1), ratio(r) {}
 
-    ORSE_Toy::FastFloat ORSE_Toy::encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len) {
+    ORSE_Toy::FastFloat ORSE_Toy::encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len) const {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len - 1; i >= 0; i--) {
@@ -173,7 +173,7 @@ namespace orse_toy {
         }
     }
 
-    bool ORSE_Toy::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const {
+     bool ORSE_Toy::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) {
         int size = code.size - 1;
         unsigned int value = bswap(*(unsigned int *) code.data);
 

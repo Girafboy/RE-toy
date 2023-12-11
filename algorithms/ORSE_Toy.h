@@ -187,11 +187,11 @@ namespace orse_toy {
         float ratio;
         size_t n;
 
-        FastFloat encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len);
+        FastFloat encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len) const;
 
         void encode(Node &node);
 
-        bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const;
+        static bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len);
 
     public:
         ORSE_Toy(int x, float r);
