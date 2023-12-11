@@ -273,7 +273,7 @@ namespace orse_toy {
     }
 
     unsigned long long ORSE_Toy::getIndexSize() const {
-        long long index_size = n * sizeof(int) * 2;
+        unsigned long long index_size = n * sizeof(int) * 2;
         for (int i = 0; i < n; i++) {
             int chunks = (nodes[i].topo_order + chunk_size - 1) / chunk_size;
             for (int j = 0; j < chunks; j++) {
