@@ -45,11 +45,14 @@ namespace orse_toy {
                 std::memcpy(data, other.data, size_bytes);
             }
 
-            void operator=(const Bits &other) {
-                data = new unsigned char[other.size_bytes];
+            Bits& operator=(Bits &&other) {
+                delete []data;
+                data = other.data;
                 size = other.size;
                 size_bytes = other.size_bytes;
-                std::memcpy(data, other.data, size_bytes);
+                other.data = nullptr;
+                other.size = 0;
+                other.size_bytes = 0;
             }
 
             ~Bits() {
@@ -184,7 +187,7 @@ namespace orse_toy {
         float ratio;
         size_t n;
 
-        FastFloat encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len);
+        FastFloat encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len);
 
         void encode(Node &node);
 
