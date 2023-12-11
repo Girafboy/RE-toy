@@ -5,7 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
 include_directories(algorithms)
-include_directories(/home/xingliwang/program_installation/boost_1_83_0)
+# boost library path
+include_directories(~/program_installation/boost_1_83_0)
 
 
 add_executable(
