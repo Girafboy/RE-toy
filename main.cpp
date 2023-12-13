@@ -3,7 +3,6 @@
 #include <chrono>
 #include <fstream>
 #include <cstring>
-#include <numeric>
 
 #include "Graph.h"
 #include "AutoTest.h"
@@ -33,58 +32,8 @@ using pll::PLL;
 using preach::PReaCH;
 using dbl::DBLWrapper;
 
-decltype(std::chrono::high_resolution_clock::now()) start_time;
-unsigned int max_time_second = 0;
-
-Profile testAlgorithmsOnGraph(const Graph &graph, Algorithm *algorithm, int check_reachable_times, bool check_only_reached=false) {
-    Profile profile;
-    profile.graph_name = graph.getName();
-    profile.algorithm_name = algorithm->getName();
-    profile.params = algorithm->getParams();
-
-    decltype(std::chrono::high_resolution_clock::now()) time1, time2;
-    std::chrono::duration<long long, std::nano> ms_nano{};
-
-    time1 = std::chrono::high_resolution_clock::now();
-    algorithm->construction(graph);
-    time2 = std::chrono::high_resolution_clock::now();
-    ms_nano = time2 - time1;
-    profile.preparation_time_ns = ms_nano.count();
-
-    profile.index_size = algorithm->getIndexSize();
-
-    std::vector<long long> has_path_times_ns;
-    AutoTest auto_test = AutoTest(&graph, algorithm);
-    auto queries = auto_test.generateQueries(check_reachable_times, check_only_reached);
-    for (const auto &query : queries) {
-        std::vector<long long> tmp_has_path_times_ns;
-        for (int _ = 0; _ < 5; ++_) {
-            time1 = std::chrono::high_resolution_clock::now();
-            algorithm->TC_haspath(query.first, query.second);
-            time2 = std::chrono::high_resolution_clock::now();
-            ms_nano = time2 - time1;
-            tmp_has_path_times_ns.push_back(ms_nano.count());
-        }
-        std::nth_element(tmp_has_path_times_ns.begin(), tmp_has_path_times_ns.begin() + tmp_has_path_times_ns.size() / 2, tmp_has_path_times_ns.end());
-        has_path_times_ns.push_back(tmp_has_path_times_ns[tmp_has_path_times_ns.size() / 2]);
-        ms_nano = time2 - start_time;
-        if ((unsigned long long)max_time_second * 1000000000 - ms_nano.count() < 2000000000) {
-            break;
-        }
-    }
-    profile.query_num = has_path_times_ns.size();
-    if (has_path_times_ns.empty()) {
-        return profile;
-    }
-
-    long long sum = std::accumulate(has_path_times_ns.begin(), has_path_times_ns.end(), 0ll);
-    double mean = (double)sum / (double)has_path_times_ns.size();
-    profile.average_has_path_time_ns = mean;
-
-    profile.has_path_times_ns = std::move(has_path_times_ns);
-
-    return profile;
-}
+std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+long long max_time_second;
 
 
 void usage() {
@@ -376,40 +325,37 @@ int main(int argc, char* argv[]) {
         graph = new Graph(file_path, graph_name);
     }
 
+    AutoTest autoTest(graph, algorithm);
+
     if (test_accuracy) {
         algorithm->construction(*graph);
-        AutoTest autoTest(graph, algorithm);
         auto ret = autoTest.checkCorrectness();
         if (ret.first) {
             std::cout << "Correctness test passed (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() << ")" << std::endl;
         } else {
             std::cout << "Correctness test failed! (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() <<", from " << ret.second.second << " to " << ret.second.second << ")" << std::endl;
         }
-        algorithm->reset();
-        delete algorithm;
-        delete graph;
-        return 0;
+    } else {
+        auto profile = autoTest.testAlgorithmOnGraph(check_reachable_times);
+
+        std::ofstream myfile;
+        myfile.open(result_file, std::ios_base::app);
+        myfile << profile.algorithm_name << ","
+               << profile.graph_name << ","
+               << profile.params << ","
+               << profile.preparation_time_ns << ","
+               << profile.index_size << ","
+               << profile.query_num << ","
+               << profile.average_has_path_time_ns << "\n";
+        myfile.close();
+
+        std::string query_file_name = result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
+        myfile.open(query_file_name);
+        for (const auto &x : profile.has_path_times_ns) {
+            myfile << x << '\n';
+        }
+        myfile.close();
     }
-
-    auto profile = testAlgorithmsOnGraph(*graph, algorithm, check_reachable_times);
-
-    std::ofstream myfile;
-    myfile.open(result_file, std::ios_base::app);
-    myfile << profile.algorithm_name << ","
-           << profile.graph_name << ","
-           << profile.params << ","
-           << profile.preparation_time_ns << ","
-           << profile.index_size << ","
-           << profile.query_num << ","
-           << profile.average_has_path_time_ns << "\n";
-    myfile.close();
-
-    std::string query_file_name = result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
-    myfile.open(query_file_name);
-    for (const auto &x : profile.has_path_times_ns) {
-        myfile << x << '\n';
-    }
-    myfile.close();
 
     algorithm->reset();
     delete algorithm;

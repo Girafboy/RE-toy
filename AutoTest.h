@@ -4,12 +4,13 @@
 
 #include "algorithms/Algorithm.h"
 #include "Graph.h"
+#include "Profile.h"
 
 
 class AutoTest {
 private:
     Algorithm *algorithm_ptr;
-    const Graph *graph_ptr;
+    const Graph *const graph_ptr;
 
 public:
     explicit AutoTest(const Graph *graph_ptr, Algorithm *algorithm_ptr);
@@ -18,7 +19,7 @@ public:
 
     std::vector<std::pair<int, int>> generateQueries(int m, bool check_only_reached = false);
 
-    bool runQueryTest(const std::pair<int, int> &query);
+    Profile testAlgorithmOnGraph(int check_reachable_times, bool check_only_reached=false);
 };
 
 
