@@ -53,6 +53,7 @@ namespace orse_toy {
                 other.data = nullptr;
                 other.size = 0;
                 other.size_bytes = 0;
+                return *this;
             }
 
             ~Bits() {
