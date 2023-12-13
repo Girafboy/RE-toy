@@ -111,29 +111,6 @@ namespace orse_toy {
             }
         };
 
-        struct FastFloat { // from 0 to 1
-            unsigned int val;
-
-            FastFloat() {};
-
-            FastFloat(unsigned int val) : val(val) {};
-
-            FastFloat(unsigned int numerator, unsigned int denominator) : val(
-                    (unsigned long long) numerator * 0xFFFFFFFFU / denominator) {};
-
-            FastFloat operator*(const FastFloat other) const {
-                return FastFloat(((unsigned long long) val * other.val) >> 32);
-            }
-
-            unsigned int operator*(const unsigned int other) const {
-                return ((unsigned long long) val * other) >> 32;
-            }
-
-            FastFloat operator/(const FastFloat other) const {
-                return FastFloat(((unsigned long long) val * 0xFFFFFFFFU) / other.val);
-            }
-        };
-
         struct Node {
             int topo_order;
             Bits *codes = nullptr;
@@ -147,12 +124,12 @@ namespace orse_toy {
 
         struct pair {
             int pos;
-            FastFloat p0;
+            unsigned int p0;
 
-            pair(int pos, FastFloat p0) : pos(pos), p0(p0) {}
+            pair(int pos, unsigned int p0) : pos(pos), p0(p0) {}
         };
 
-        static inline FastFloat get_p0(std::vector<pair> &p0_pos, int pos, FastFloat p0_default) {
+        static inline unsigned int get_p0(std::vector<pair> &p0_pos, int pos, unsigned int p0_default) {
             auto len = p0_pos.size();
             const pair *first = &p0_pos[0], *mid;
             while (len) {
@@ -173,21 +150,21 @@ namespace orse_toy {
             return (topo_order + chunk_size - 1) / chunk_size;
         }
 
-        static inline float approximation_ratio(FastFloat p0, FastFloat p0_base) {
-            return ((32ULL << 32) + p0.val * std::log2(1.0 / p0_base.val) +
-                    ((1ULL << 32) - p0.val) * std::log2(1.0 / ((1ULL << 32) - p0_base.val))) /
-                   ((32ULL << 32) + p0.val * std::log2(1.0 / p0.val) +
-                    ((1ULL << 32) - p0.val) * std::log2(1.0 / ((1ULL << 32) - p0.val)));
+        static inline float approximation_ratio(unsigned int p0, unsigned int p0_base) {
+            return ((32ULL << 32) + p0 * std::log2(1.0 / p0_base) +
+                    ((1ULL << 32) - p0) * std::log2(1.0 / ((1ULL << 32) - p0_base))) /
+                   ((32ULL << 32) + p0 * std::log2(1.0 / p0) +
+                    ((1ULL << 32) - p0) * std::log2(1.0 / ((1ULL << 32) - p0)));
         }
 
         Node *nodes;
-        FastFloat *connect_p0 = nullptr;
+        unsigned int *connect_p0 = nullptr;
         std::vector<pair> *p0_pos;
         int chunk_size;
         float ratio;
         size_t n;
 
-        FastFloat encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len) const;
+        unsigned int encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const;
 
         void encode(Node &node);
 

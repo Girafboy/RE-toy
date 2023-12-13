@@ -14,11 +14,11 @@
 namespace orse_toy {
     ORSE_Toy::ORSE_Toy(int x, float r) : chunk_size(x - 1), ratio(r) {}
 
-    ORSE_Toy::FastFloat ORSE_Toy::encode(Bits &bits, Bits &out, FastFloat p0, int cur, int len) const {
+    unsigned int ORSE_Toy::encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len - 1; i >= 0; i--) {
-            mid = p0 * (hi - lo);
+            mid = p0 * (hi - lo) >> 32;
             if (mid < 1) {
                 mid = 1;
             }
@@ -29,7 +29,7 @@ namespace orse_toy {
 
             if (bits.get(i)) {
                 lo = mid;
-                p0 = p0 * connect_p0[cur - len + i];
+                p0 = (unsigned long long)p0 * connect_p0[cur - len + i] >> 32;
             } else {
                 hi = mid - 1;
             }
@@ -90,16 +90,16 @@ namespace orse_toy {
         Bits *code_raw = node.codes;
 
         node.codes = new Bits[chunks];
-        FastFloat p0_base = connect_p0[node.topo_order];
-        FastFloat p0 = encode(code_raw[chunks - 1], node.codes[chunks - 1], p0_base, node.topo_order,
+        unsigned int p0_base = connect_p0[node.topo_order];
+        unsigned int p0 = encode(code_raw[chunks - 1], node.codes[chunks - 1], p0_base, node.topo_order,
                               node.topo_order - chunk_size * (chunks - 1));
         for (int i = chunks - 2; i >= 0; i--) {
             if (approximation_ratio(p0, p0_base) > ratio) {
                 p0_base = p0;
                 p0_pos[node.topo_order].emplace_back(i, p0_base);
             }
-            if (p0_base.val) {
-                p0 = p0 * encode(code_raw[i], node.codes[i], p0_base, (i + 1) * chunk_size, chunk_size) / p0_base;
+            if (p0_base) {
+                p0 = ((unsigned long long)p0 * encode(code_raw[i], node.codes[i], p0_base, (i + 1) * chunk_size, chunk_size)) >> 32 * 0xFFFFFFFFU / p0_base;
             } else {
                 p0 = encode(code_raw[i], node.codes[i], p0_base, (i + 1) * chunk_size, chunk_size);
             }
@@ -116,7 +116,7 @@ namespace orse_toy {
     void ORSE_Toy::construction(const Graph &graph) {
         n = graph.size();
         nodes = new Node[n];
-        connect_p0 = new FastFloat[n];
+        connect_p0 = new unsigned int [n];
         p0_pos = new std::vector<pair>[n];
 
         std::queue<int> q;
@@ -139,8 +139,7 @@ namespace orse_toy {
             if (nodes[cur].topo_order) {
                 int chunks = get_chunk_num(nodes[cur].topo_order);
                 nodes[cur].codes = new Bits[chunks];
-                connect_p0[nodes[cur].topo_order] = FastFloat(nodes[cur].topo_order - graph.getOutDegree(cur),
-                                                              nodes[cur].topo_order);
+                connect_p0[nodes[cur].topo_order] = (unsigned long long)(nodes[cur].topo_order - graph.getOutDegree(cur)) * 0xFFFFFFFFU / nodes[cur].topo_order;
 
                 for (int i = 0; i < chunks - 1; i++) {
                     nodes[cur].codes[i].init(chunk_size);
@@ -253,10 +252,10 @@ namespace orse_toy {
             return bits->get(target_topo % chunk_size);
         }
         if (pos == (source_topo - 1) / chunk_size) {
-            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]).val,
+            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]),
                                 (fastfloat_t *) connect_p0 + source_topo, source_topo - target_topo);
         } else {
-            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]).val,
+            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]),
                                 (fastfloat_t *) connect_p0 + (pos + 1) * chunk_size,
                                 chunk_size - target_topo % chunk_size);
         }
