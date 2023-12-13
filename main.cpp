@@ -36,116 +36,11 @@ std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
 long long max_time_second;
 
 
-void usage() {
-    std::string h = "reachability - A program for running reachability algorithms on a given directed graph\n"
-                    "\n"
-                    "Usage:\n"
-                    "./reachability [options]\n"
-                    "\n"
-                    "Options:\n"
-                    "--help                     Show help message\n"
-                    "--time <seconds>           Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)\n"
-                    "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
-                    "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
-                    "--result_file <file>       Set the file path for result output (optional)\n"
-                    "--result_dir <dir>         Set the directory path for query time output (optional)\n"
-                    "--graph <type>             Specify input graph type (required)\n"
-                    "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
-                    "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
-                    "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
-                    "\n"
-                    "Reachability Algorithms:\n"
-                    "orse_toy <x> <r>           ORSE_Toy algorithm\n"
-                    "bfl <K>                    BFL algorithm\n"
-                    "grail <t> <ltype> <dim>    GRAIL algorithm\n"
-                    "pathtree <alg_type>        PathTree algorithm\n"
-                    "tol <style> <opr>          TOL algorithm\n"
-                    "gripp                      GRIPP algorithm\n"
-                    "ferrari <k> <seeds> <global>  Ferrari algorithm\n"
-                    "ip <k> <h> <mu>            IP algorithm\n"
-                    "pll <use_RQPrunedLandmarkLabeling>  PLL algorithm\n"
-                    "preach                     PReaCH algorithm\n"
-                    "dbl                        DBL algorithm\n"
-                    "\n"
-                    "Examples:\n"
-                    "- Run the reachability algorithm ORSE_Toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
-                    "  ./reachability --time 10 --graph --random 100 3 --algorithm orse_toy 32 2.0\n"
-                    "\n"
-                    "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
-                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
-                    "\n"
-                    "- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:\n"
-                    "  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1 \n"
-                    "\n"
-                    "Please note that you should replace specific values and file paths with your own in the examples above.";
-    std::cout << h << std::endl;
-}
+void usage();
 
-void algorithmUsage(const std::string& algorithm_name) {
-    if (algorithm_name == "orse_toy") {
-        std::cout << "Usage of orse_toy:\n"
-                     "Total: 2 argument(s)\n"
-                     "arg[0]: x\n"
-                     "arg[1]: r\n"
-                  << std::endl;
-    } else if (algorithm_name == "bfl") {
-        std::cout << "Usage of bfl:\n"
-                     "Total: 1 argument(s)\n"
-                     "arg[0]: K\n"
-                  << std::endl;
-    } else if (algorithm_name == "grail") {
-        std::cout << "Usage of grail:\n"
-                     "Total: 3 argument(s)\n"
-                     "arg[0]: t\n"
-                     "arg[1]: ltype\n"
-                     "arg[2]: dim\n"
-                  << std::endl;
-    } else if (algorithm_name == "pathtree") {
-        std::cout << "Usage of pathtree:\n"
-                     "Total: 1 argument(s)\n"
-                     "arg[0]: alg_type\n"
-                  << std::endl;
-    } else if (algorithm_name == "tol") {
-        std::cout << "Usage of tol:\n"
-                     "Total: 2 argument(s)\n"
-                     "arg[0]: style\n"
-                     "arg[1]: opr\n"
-                  << std::endl;
-    } else if (algorithm_name == "gripp") {
-        std::cout << "Usage of pathtree:\n"
-                     "Total: 0 argument(s)\n"
-                  << std::endl;
-    } else if (algorithm_name == "ferrari") {
-        std::cout << "Usage of ferrari:\n"
-                     "Total: 3 argument(s)\n"
-                     "arg[0]: k\n"
-                     "arg[1]: seeds\n"
-                     "arg[2]: global\n"
-                  << std::endl;
-    } else if (algorithm_name == "ip") {
-        std::cout << "Usage of ip:\n"
-                     "Total: 3 argument(s)\n"
-                     "arg[0]: k\n"
-                     "arg[1]: h\n"
-                     "arg[2]: mu\n"
-                  << std::endl;
-    } else if (algorithm_name == "pll") {
-        std::cout << "Usage of pll:\n"
-                     "Total: 1 argument(s)\n"
-                     "arg[0]: use_RQPrunedLandmarkLabeling\n"
-                  << std::endl;
-    } else if (algorithm_name == "preach") {
-        std::cout << "Usage of preach:\n"
-                     "Total: 0 argument(s)\n"
-                  << std::endl;
-    } else if (algorithm_name == "dbl") {
-        std::cout << "Usage of dbl:\n"
-                     "Total: 0 argument(s)\n"
-                  << std::endl;
-    }
-}
+void algorithmUsage(const std::string &algorithm_name);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     start_time = std::chrono::high_resolution_clock::now();
 
     if (argc == 1) {
@@ -331,9 +226,12 @@ int main(int argc, char* argv[]) {
         algorithm->construction(*graph);
         auto ret = autoTest.checkCorrectness();
         if (ret.first) {
-            std::cout << "Correctness test passed (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() << ")" << std::endl;
+            std::cout << "Correctness test passed (" << algorithm->getName() << ", " << algorithm->getParams() << ", "
+                      << graph->getName() << ")" << std::endl;
         } else {
-            std::cout << "Correctness test failed! (" << algorithm->getName() << ", " << algorithm->getParams() << ", " << graph->getName() <<", from " << ret.second.second << " to " << ret.second.second << ")" << std::endl;
+            std::cout << "Correctness test failed! (" << algorithm->getName() << ", " << algorithm->getParams() << ", "
+                      << graph->getName() << ", from " << ret.second.second << " to " << ret.second.second << ")"
+                      << std::endl;
         }
     } else {
         auto profile = autoTest.testAlgorithmOnGraph(check_reachable_times);
@@ -349,9 +247,10 @@ int main(int argc, char* argv[]) {
                << profile.average_has_path_time_ns << "\n";
         myfile.close();
 
-        std::string query_file_name = result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
+        std::string query_file_name =
+                result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
         myfile.open(query_file_name);
-        for (const auto &x : profile.has_path_times_ns) {
+        for (const auto &x: profile.has_path_times_ns) {
             myfile << x << '\n';
         }
         myfile.close();
@@ -362,4 +261,113 @@ int main(int argc, char* argv[]) {
     delete graph;
 
     return 0;
+}
+
+void usage() {
+    std::string h = "reachability - A program for running reachability algorithms on a given directed graph\n"
+                    "\n"
+                    "Usage:\n"
+                    "./reachability [options]\n"
+                    "\n"
+                    "Options:\n"
+                    "--help                     Show help message\n"
+                    "--time <seconds>           Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)\n"
+                    "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
+                    "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
+                    "--result_file <file>       Set the file path for result output (optional)\n"
+                    "--result_dir <dir>         Set the directory path for query time output (optional)\n"
+                    "--graph <type>             Specify input graph type (required)\n"
+                    "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
+                    "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
+                    "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
+                    "\n"
+                    "Reachability Algorithms:\n"
+                    "orse_toy <x> <r>           ORSE_Toy algorithm\n"
+                    "bfl <K>                    BFL algorithm\n"
+                    "grail <t> <ltype> <dim>    GRAIL algorithm\n"
+                    "pathtree <alg_type>        PathTree algorithm\n"
+                    "tol <style> <opr>          TOL algorithm\n"
+                    "gripp                      GRIPP algorithm\n"
+                    "ferrari <k> <seeds> <global>  Ferrari algorithm\n"
+                    "ip <k> <h> <mu>            IP algorithm\n"
+                    "pll <use_RQPrunedLandmarkLabeling>  PLL algorithm\n"
+                    "preach                     PReaCH algorithm\n"
+                    "dbl                        DBL algorithm\n"
+                    "\n"
+                    "Examples:\n"
+                    "- Run the reachability algorithm ORSE_Toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
+                    "  ./reachability --time 10 --graph --random 100 3 --algorithm orse_toy 32 2.0\n"
+                    "\n"
+                    "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
+                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
+                    "\n"
+                    "- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:\n"
+                    "  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1 \n"
+                    "\n"
+                    "Please note that you should replace specific values and file paths with your own in the examples above.";
+    std::cout << h << std::endl;
+}
+
+void algorithmUsage(const std::string &algorithm_name) {
+    if (algorithm_name == "orse_toy") {
+        std::cout << "Usage of orse_toy:\n"
+                     "Total: 2 argument(s)\n"
+                     "arg[0]: x\n"
+                     "arg[1]: r\n"
+                  << std::endl;
+    } else if (algorithm_name == "bfl") {
+        std::cout << "Usage of bfl:\n"
+                     "Total: 1 argument(s)\n"
+                     "arg[0]: K\n"
+                  << std::endl;
+    } else if (algorithm_name == "grail") {
+        std::cout << "Usage of grail:\n"
+                     "Total: 3 argument(s)\n"
+                     "arg[0]: t\n"
+                     "arg[1]: ltype\n"
+                     "arg[2]: dim\n"
+                  << std::endl;
+    } else if (algorithm_name == "pathtree") {
+        std::cout << "Usage of pathtree:\n"
+                     "Total: 1 argument(s)\n"
+                     "arg[0]: alg_type\n"
+                  << std::endl;
+    } else if (algorithm_name == "tol") {
+        std::cout << "Usage of tol:\n"
+                     "Total: 2 argument(s)\n"
+                     "arg[0]: style\n"
+                     "arg[1]: opr\n"
+                  << std::endl;
+    } else if (algorithm_name == "gripp") {
+        std::cout << "Usage of pathtree:\n"
+                     "Total: 0 argument(s)\n"
+                  << std::endl;
+    } else if (algorithm_name == "ferrari") {
+        std::cout << "Usage of ferrari:\n"
+                     "Total: 3 argument(s)\n"
+                     "arg[0]: k\n"
+                     "arg[1]: seeds\n"
+                     "arg[2]: global\n"
+                  << std::endl;
+    } else if (algorithm_name == "ip") {
+        std::cout << "Usage of ip:\n"
+                     "Total: 3 argument(s)\n"
+                     "arg[0]: k\n"
+                     "arg[1]: h\n"
+                     "arg[2]: mu\n"
+                  << std::endl;
+    } else if (algorithm_name == "pll") {
+        std::cout << "Usage of pll:\n"
+                     "Total: 1 argument(s)\n"
+                     "arg[0]: use_RQPrunedLandmarkLabeling\n"
+                  << std::endl;
+    } else if (algorithm_name == "preach") {
+        std::cout << "Usage of preach:\n"
+                     "Total: 0 argument(s)\n"
+                  << std::endl;
+    } else if (algorithm_name == "dbl") {
+        std::cout << "Usage of dbl:\n"
+                     "Total: 0 argument(s)\n"
+                  << std::endl;
+    }
 }
