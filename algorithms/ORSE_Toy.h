@@ -20,7 +20,6 @@
 #define RANGE_HALF 0x80000000U
 #define RANGE_ONE_QUAR 0x40000000U
 #define RANGE_THREE_QUAR 0xC0000000U
-#define RANGE_MID_MIN 0x00000001U
 
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -32,15 +31,6 @@
 typedef unsigned int fastfloat_t;
 
 namespace orse_toy {
-    static int log2(int val) {
-        int ret = 0;
-        while (val > 1) {
-            val >>= 1;
-            ret++;
-        }
-        return ret;
-    }
-
     class ORSE_Toy : public Algorithm {
     private:
         struct Bits {
@@ -50,25 +40,29 @@ namespace orse_toy {
 
             Bits() : data(nullptr), size(0), size_bytes(0) {}
 
-            Bits(const Bits& other) : data(new unsigned char[other.size_bytes]), size(other.size), size_bytes(other.size_bytes) {
+            Bits(const Bits &other) : data(new unsigned char[other.size_bytes]), size(other.size),
+                                      size_bytes(other.size_bytes) {
                 std::memcpy(data, other.data, size_bytes);
             }
 
-            void operator=(const Bits &other) {
-                data = new unsigned char[other.size_bytes];
+            Bits& operator=(Bits &&other) {
+                delete []data;
+                data = other.data;
                 size = other.size;
                 size_bytes = other.size_bytes;
-                std::memcpy(data, other.data, size_bytes);
+                other.data = nullptr;
+                other.size = 0;
+                other.size_bytes = 0;
+                return *this;
             }
 
             ~Bits() {
-                if (data)
-                    delete[] data;
+                delete[] data;
             }
 
             void init(int size) {
                 this->size = size;
-                this->size_bytes = (size+7)/8;
+                this->size_bytes = (size + 7) / 8;
                 this->data = new unsigned char[size_bytes];
                 std::memset(data, 0, size_bytes);
             }
@@ -98,53 +92,23 @@ namespace orse_toy {
 
             void append_zero() {
                 size++;
-                if ((size+7)/8 > size_bytes) {
+                if ((size + 7) / 8 > size_bytes) {
                     unsigned char *tmp = data;
                     init(size);
-                    std::memcpy(data, tmp, size_bytes-1);
-                    delete []tmp;
+                    std::memcpy(data, tmp, size_bytes - 1);
+                    delete[] tmp;
                 }
             }
 
             void append_one() {
                 size++;
-                if ((size+7)/8 > size_bytes) {
+                if ((size + 7) / 8 > size_bytes) {
                     unsigned char *tmp = data;
                     init(size);
-                    std::memcpy(data, tmp, size_bytes-1);
-                    delete []tmp;
+                    std::memcpy(data, tmp, size_bytes - 1);
+                    delete[] tmp;
                 }
-                set(size-1);
-            }
-
-            void print() {
-                for (int i = 0; i < size; i++) {
-                    if (get(i)) {
-                        std::cout << '1';
-                    } else {
-                        std::cout << '0';
-                    }
-                }
-            }
-        };
-
-        struct FastFloat { // from 0 to 1
-            unsigned int val;
-
-            FastFloat() {};
-            FastFloat(unsigned int val) : val(val) {};
-            FastFloat(unsigned int numerator, unsigned int denominator) : val((unsigned long long)numerator * 0xFFFFFFFFU / denominator) {};
-
-            FastFloat operator*(const FastFloat other) const {
-                return FastFloat(((unsigned long long)val * other.val) >> 32);
-            }
-
-            unsigned int operator*(const unsigned int other) const {
-                return ((unsigned long long)val * other) >> 32;
-            }
-
-            FastFloat operator/(const FastFloat other) const {
-                return FastFloat(((unsigned long long)val * 0xFFFFFFFFU) / other.val);
+                set(size - 1);
             }
         };
 
@@ -152,22 +116,21 @@ namespace orse_toy {
             int topo_order;
             Bits *codes = nullptr;
 
-            Node() {}
+            Node() = default;
 
             ~Node() {
-                if (codes)
-                    delete[] codes;
+                delete[] codes;
             }
         };
 
         struct pair {
             int pos;
-            FastFloat p0;
+            unsigned int p0;
 
-            pair(int pos, FastFloat p0) : pos(pos), p0(p0) {}
+            pair(int pos, unsigned int p0) : pos(pos), p0(p0) {}
         };
 
-        inline FastFloat get_p0(std::vector<pair> &p0_pos, int pos, FastFloat p0_default) {
+        static inline unsigned int get_p0(std::vector<pair> &p0_pos, int pos, unsigned int p0_default) {
             auto len = p0_pos.size();
             const pair *first = &p0_pos[0], *mid;
             while (len) {
@@ -188,21 +151,26 @@ namespace orse_toy {
             return (topo_order + chunk_size - 1) / chunk_size;
         }
 
-        inline float approximation_ratio(FastFloat p0, FastFloat p0_base) const {
-            return ((32ULL<<32) + p0.val*std::log2(1.0/p0_base.val) + ((1ULL<<32)-p0.val)*std::log2(1.0/((1ULL<<32)-p0_base.val))) / 
-                   ((32ULL<<32) + p0.val*std::log2(1.0/p0.val) + ((1ULL<<32)-p0.val)*std::log2(1.0/((1ULL<<32)-p0.val)));
+        static inline float approximation_ratio(unsigned int p0, unsigned int p0_base) {
+            return ((32ULL << 32) + p0 * std::log2(1.0 / p0_base) +
+                    ((1ULL << 32) - p0) * std::log2(1.0 / ((1ULL << 32) - p0_base))) /
+                   ((32ULL << 32) + p0 * std::log2(1.0 / p0) +
+                    ((1ULL << 32) - p0) * std::log2(1.0 / ((1ULL << 32) - p0)));
         }
 
-        Node* nodes;
-        FastFloat *connect_p0 = nullptr;
-        std::vector<pair>* p0_pos;
+        Node *nodes;
+        unsigned int *connect_p0 = nullptr;
+        std::vector<pair> *p0_pos;
         int chunk_size;
         float ratio;
         size_t n;
 
-        FastFloat encode(const Bits &bits, Bits &out, FastFloat p0, int cur, int len);
+        unsigned int encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const;
+
         void encode(Node &node);
-        bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) const;
+
+        static bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len);
+
     public:
         ORSE_Toy(int x, float r);
 
