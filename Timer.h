@@ -12,8 +12,6 @@ public:
 
     Timer();
 
-    void reset();
-
     void setMaxTimeSecond(long long t);
 
     bool isKilledWithinTime(long long t);

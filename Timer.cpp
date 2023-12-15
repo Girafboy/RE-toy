@@ -2,10 +2,6 @@
 
 Timer::Timer() : start(std::chrono::high_resolution_clock::now()), max_time_second(0ll) {}
 
-void Timer::reset() {
-    start = std::chrono::high_resolution_clock::now();
-}
-
 void Timer::setMaxTimeSecond(long long int t) {
     max_time_second = t;
 }
