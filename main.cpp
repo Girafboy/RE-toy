@@ -1,12 +1,12 @@
 #include <iostream>
 #include <ostream>
-#include <chrono>
 #include <fstream>
 #include <cstring>
 
 #include "Graph.h"
 #include "AutoTest.h"
 #include "Profile.h"
+#include "Timer.h"
 
 #include "algorithms/ORSE_Toy.h"
 #include "algorithms/BFL.h"
@@ -32,22 +32,19 @@ using pll::PLL;
 using preach::PReaCH;
 using dbl::DBLWrapper;
 
-std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
-long long max_time_second;
-
+Timer timer;
 
 void usage();
 
 void algorithmUsage(const std::string &algorithm_name);
 
 int main(int argc, char *argv[]) {
-    start_time = std::chrono::high_resolution_clock::now();
-
     if (argc == 1) {
         usage();
         return 0;
     }
 
+    // arguments read from command line
     int n = 0, d = 0;
     std::string file_path;
     bool test_accuracy = false;
@@ -68,7 +65,7 @@ int main(int argc, char *argv[]) {
                 usage();
                 return 0;
             }
-            max_time_second = atoi(argv[i++]);
+            timer.setMaxTimeSecond(atoi(argv[i++]));
         } else if (strcmp("--accuracy", argv[i]) == 0) {  // test accuarcy
             test_accuracy = true;
             ++i;
@@ -210,19 +207,20 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // prepare graph
     Graph *graph;
-    if (file_path.empty()) {
+    if (file_path.empty()) {  // generate random graph
         graph = new Graph(n, d, "random-" + std::to_string(n) + "-" + std::to_string(d));
-    } else {
+    } else {  // read graph from file
         auto pos = file_path.find_last_of('/');
         auto graph_name = file_path.substr(pos + 1);
         graph_name = graph_name.substr(0, graph_name.size() - 4);
         graph = new Graph(file_path, graph_name);
     }
 
+    // test algorithm on graph
     AutoTest autoTest(graph, algorithm);
-
-    if (test_accuracy) {
+    if (test_accuracy) {  // test the accuracy of the algorithm on the graph
         algorithm->construction(*graph);
         auto ret = autoTest.checkCorrectness();
         if (ret.first) {
@@ -233,7 +231,7 @@ int main(int argc, char *argv[]) {
                       << graph->getName() << ", from " << ret.second.second << " to " << ret.second.second << ")"
                       << std::endl;
         }
-    } else {
+    } else {  // test construction time, index size, and query time of the algorithm on the graph
         auto profile = autoTest.testAlgorithmOnGraph(check_reachable_times);
 
         std::ofstream myfile;

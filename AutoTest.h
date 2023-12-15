@@ -9,7 +9,7 @@
 
 class AutoTest {
 private:
-    Algorithm *algorithm_ptr;
+    Algorithm *const algorithm_ptr;
     const Graph *const graph_ptr;
 
 public:
@@ -19,7 +19,7 @@ public:
 
     std::vector<std::pair<int, int>> generateQueries(int m, bool check_only_reached = false);
 
-    Profile testAlgorithmOnGraph(int check_reachable_times, bool check_only_reached=false);
+    Profile testAlgorithmOnGraph(int check_reachable_times, bool check_only_reached = false);
 };
 
 

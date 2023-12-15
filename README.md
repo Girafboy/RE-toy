@@ -9,7 +9,8 @@ This repository includes the C++ implementation of the ORSE-Toy algorithm, as de
 The code is organized as follows:
 
 - `Graph` class: This class represents the input graph. It can be constructed by random Directed Acyclic Graphs (DAGs) or conversion of input files representing directed graphs into DAGs. All algorithms within the platform utilize the `Graph` class as a unified input, enabling convenient and standardized testing.
-- `AutoTest` class: This class provides auxiliary functionality for testing reachability algorithms.
+- `AutoTest` class: This class provides functionality for testing reachability algorithms.
+- `Timer` class: This class provides timing utilities.
 - `Profile` struct: This struct stores the results obtained from the testing process.
 - `algorithms` directory: This directory contains implementations of various reachability algorithms. To facilitate testing, we have made slight modifications to these algorithms, ensuring that they all inherit from the abstract class `Algorithm` and implement the same interface.
 - `main.cpp`: This file executes a single experiment, including the construction of index and query testing for of an algorithm with specific parameters on a given graph.
