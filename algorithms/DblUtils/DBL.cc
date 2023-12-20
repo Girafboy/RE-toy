@@ -1,5 +1,5 @@
 #include "DBL.h"
-#include <omp.h>
+#include "omp.h"
 #include <climits>
 //#include <xmmintrin.h>
 #include <algorithm>
