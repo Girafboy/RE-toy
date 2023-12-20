@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
                       << graph->getName() << ")" << std::endl;
         } else {
             std::cout << "Correctness test failed! (" << algorithm->getName() << ", " << algorithm->getParams() << ", "
-                      << graph->getName() << ", from " << ret.second.second << " to " << ret.second.second << ")"
+                      << graph->getName() << ", from " << ret.second.first << " to " << ret.second.second << ")"
                       << std::endl;
         }
     } else {  // test construction time, index size, and query time of the algorithm on the graph
