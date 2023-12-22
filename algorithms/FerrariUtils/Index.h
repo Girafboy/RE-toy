@@ -17,7 +17,7 @@
 #include <set>
 #include <vector>
 //--------------------------------------------------------------------------------------------------
-#include <boost/dynamic_bitset.hpp>
+#include "dynamic_bitset.hpp"
 
 namespace ferrari {
     typedef boost::dynamic_bitset<> bitset;

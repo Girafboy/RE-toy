@@ -104,7 +104,6 @@ algorithms=(
    "pathtree 1"
    "pathtree 2"
  # TOL
-   "tol 0 1"
    "tol 0 2"
    "tol 1 2"
  # Gripp
