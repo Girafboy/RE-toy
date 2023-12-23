@@ -159,7 +159,7 @@ namespace orse_toy {
         }
 
         Node *nodes;
-        unsigned int *connect_p0 = nullptr;
+        unsigned int *parameter = nullptr;
         std::vector<pair> *p0_pos;
         int chunk_size;
         float ratio;

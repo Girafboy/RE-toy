@@ -1,8 +1,11 @@
 #include "ORSE_Toy.h"
 
+#include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iterator>
+#include <math.h>
 #include <sstream>
 #include <iostream>
 #include <queue>
@@ -29,7 +32,7 @@ namespace orse_toy {
 
             if (bits.get(i)) {
                 lo = mid;
-                p0 = (unsigned long long)p0 * connect_p0[cur - len + i] >> 32;
+                p0 = (unsigned long long)p0 * parameter[cur - len + i] >> 32;
             } else {
                 hi = mid - 1;
             }
@@ -90,7 +93,7 @@ namespace orse_toy {
         Bits *code_raw = node.codes;
 
         node.codes = new Bits[chunks];
-        unsigned int p0_base = connect_p0[node.topo_order];
+        unsigned int p0_base = parameter[node.topo_order];
         unsigned int p0 = encode(code_raw[chunks - 1], node.codes[chunks - 1], p0_base, node.topo_order,
                               node.topo_order - chunk_size * (chunks - 1));
         for (int i = chunks - 2; i >= 0; i--) {
@@ -109,14 +112,14 @@ namespace orse_toy {
 
     void ORSE_Toy::reset() {
         delete[] nodes;
-        delete[] connect_p0;
+        delete[] parameter;
         delete[] p0_pos;
     }
 
     void ORSE_Toy::construction(const Graph &graph) {
         n = graph.size();
         nodes = new Node[n];
-        connect_p0 = new unsigned int [n];
+        parameter = new unsigned int [n];
         p0_pos = new std::vector<pair>[n];
 
         std::queue<int> q;
@@ -139,7 +142,6 @@ namespace orse_toy {
             if (nodes[cur].topo_order) {
                 int chunks = get_chunk_num(nodes[cur].topo_order);
                 nodes[cur].codes = new Bits[chunks];
-                connect_p0[nodes[cur].topo_order] = (unsigned long long)(nodes[cur].topo_order - graph.getOutDegree(cur)) * 0xFFFFFFFFU / nodes[cur].topo_order;
 
                 for (int i = 0; i < chunks - 1; i++) {
                     nodes[cur].codes[i].init(chunk_size);
@@ -158,10 +160,39 @@ namespace orse_toy {
                         }
                     }
                 }
+
+                float *a_array = new float[nodes[cur].topo_order];
+                float a = 1;
+                for (int j = nodes[cur].topo_order-1; j >= 0 ; j--) {
+                    a_array[j] = a;
+                    if (nodes[cur].codes[j/chunk_size].get(j%chunk_size)) {
+                        a = (float)parameter[j] / 0xFFFFFFFFU * a;
+                    }
+                }
+                float theta = 0.5, step = 0.25;
+                for (int i = 0; i < 20; i++) {
+                    float df = 0;
+                    for (int j = nodes[cur].topo_order-1; j >= 0 ; j--) {
+                        if (nodes[cur].codes[j/chunk_size].get(j%chunk_size)) {
+                            df += -a_array[j] / (1-a_array[j] * (1 - theta));
+                        } else {
+                            df += 1.0 / (1 - theta);
+                        }
+                    }
+                    if (df > 0) {
+                        theta -= step;
+                    } else {
+                        theta += step;
+                    }
+                    step /= 2;
+                    // std::cout << theta << ' ';
+                }
+                // std::cout << std::endl;
+                parameter[nodes[cur].topo_order] = (unsigned long long)((1.0 - theta) * 0xFFFFFFFFU);
+
                 if (graph.getInDegree(cur) == 0) {
                     encode(nodes[cur]);
                 }
-
             }
 
             for (const int u: graph.getPredecessors(cur)) {
@@ -252,11 +283,11 @@ namespace orse_toy {
             return bits->get(target_topo % chunk_size);
         }
         if (pos == (source_topo - 1) / chunk_size) {
-            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]),
-                                (fastfloat_t *) connect_p0 + source_topo, source_topo - target_topo);
+            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, parameter[source_topo]),
+                                (fastfloat_t *) parameter + source_topo, source_topo - target_topo);
         } else {
-            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, connect_p0[source_topo]),
-                                (fastfloat_t *) connect_p0 + (pos + 1) * chunk_size,
+            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, parameter[source_topo]),
+                                (fastfloat_t *) parameter + (pos + 1) * chunk_size,
                                 chunk_size - target_topo % chunk_size);
         }
     }
