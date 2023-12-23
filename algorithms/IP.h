@@ -1,7 +1,7 @@
 #ifndef TC_IP_H
 #define TC_IP_H
 
-#include "../Graph.h"
+#include "Graph.h"
 #include "Algorithm.h"
 #include "IpUtils/IPGraph.h"
 

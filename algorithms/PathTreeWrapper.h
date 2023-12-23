@@ -3,7 +3,7 @@
 
 
 #include "Algorithm.h"
-#include "../Graph.h"
+#include "Graph.h"
 #include "PathTreeUtils/PathTree.h"
 
 namespace path_tree {

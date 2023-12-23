@@ -2,7 +2,7 @@
 #define TC_GRIPPGRAPH_H
 
 #include"Util.h"
-#include "../Graph.h"
+#include "Graph.h"
 
 namespace gripp {
     using namespace ::std;

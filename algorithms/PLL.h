@@ -1,7 +1,7 @@
 #ifndef TC_PLL_H
 #define TC_PLL_H
 
-#include "../Graph.h"
+#include "Graph.h"
 #include "Algorithm.h"
 #include "PllUtils/PrunedLabeling.h"
 

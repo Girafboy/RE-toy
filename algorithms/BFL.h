@@ -3,7 +3,7 @@
 
 #include <utility>
 #include <vector>
-#include "../Graph.h"
+#include "Graph.h"
 #include "Algorithm.h"
 
 namespace bfl {

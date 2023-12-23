@@ -2,7 +2,7 @@
 #define TC_GRIPPWRAPPER_H
 
 #include "Algorithm.h"
-#include "../Graph.h"
+#include "Graph.h"
 #include "GrippUtils/Gripp.h"
 #include "GrippUtils/GrippGraph.h"
 

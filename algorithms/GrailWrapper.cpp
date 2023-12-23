@@ -1,17 +1,17 @@
 #include "GrailWrapper.h"
 
-#include "./GrailUtils/GrailGraph.h"
-#include "./GrailUtils/GrailGraphUtil.h"
+#include "GrailUtils/GrailGraph.h"
+#include "GrailUtils/GrailGraphUtil.h"
 #include <sys/time.h>
 #include <cstdlib>
 #include <cstdio>
 #include <csignal>
 #include <cstring>
-#include "./GrailUtils/exception_list.h"
-#include "./GrailUtils/exception_list_incremental_base.h"
-#include "./GrailUtils/exception_list_incremental_plus.h"
+#include "GrailUtils/exception_list.h"
+#include "GrailUtils/exception_list_incremental_base.h"
+#include "GrailUtils/exception_list_incremental_plus.h"
 
-#include "./GrailUtils/utils.h"
+#include "GrailUtils/utils.h"
 
 namespace grail {
     GrailWrapper::GrailWrapper(int t, int ltype, int dim) : alg_type(t), LABELINGTYPE(ltype), DIM(dim) {

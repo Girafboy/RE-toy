@@ -4,92 +4,45 @@ project(reachability)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
-include_directories(algorithms)
 include_directories(include)
 
 
 add_executable(
         reachability
-        algorithms/GrailUtils/exception_list.h
-        algorithms/GrailUtils/exception_list_incremental_base.h
-        algorithms/GrailUtils/exception_list_incremental_plus.h
-        algorithms/GrailUtils/Grail.cpp
-        algorithms/GrailUtils/Grail.h
-        algorithms/GrailUtils/GrailGraph.cpp
-        algorithms/GrailUtils/GrailGraph.h
-        algorithms/GrailUtils/GrailGraphUtil.cpp
-        algorithms/GrailUtils/GrailGraphUtil.h
-        algorithms/GrailUtils/interval_tree.cpp
-        algorithms/GrailUtils/interval_tree.h
-        algorithms/GrailUtils/TCSEstimator.cpp
-        algorithms/GrailUtils/TCSEstimator.h
-        algorithms/GrailUtils/templatestack.h
-        algorithms/GrailUtils/time_tracker.h
-        algorithms/GrailUtils/utils.h
-        algorithms/PathTreeUtils/DWGraph.cpp
-        algorithms/PathTreeUtils/DWGraph.h
-        algorithms/PathTreeUtils/DWGraphUtil.cpp
-        algorithms/PathTreeUtils/DWGraphUtil.h
-        algorithms/PathTreeUtils/PathTree.cpp
-        algorithms/PathTreeUtils/PathTree.h
-        algorithms/PathTreeUtils/PathTreeGraph.cpp
-        algorithms/PathTreeUtils/PathTreeGraph.h
-        algorithms/PathTreeUtils/PathTreeGraphUtil.cpp
-        algorithms/PathTreeUtils/PathTreeGraphUtil.h
-        algorithms/Algorithm.h
-        algorithms/BFL.cpp
-        algorithms/BFL.h
-        algorithms/GrailWrapper.cpp
-        algorithms/GrailWrapper.h
-        algorithms/ORSE_Toy.cpp
-        algorithms/ORSE_Toy.h
-        algorithms/PathTreeWrapper.cpp
-        algorithms/PathTreeWrapper.h
-        AutoTest.cpp
-        AutoTest.h
-        Graph.cpp
-        Graph.h
         main.cpp
-        Profile.h
+        Graph.cpp
+        Timer.cpp
+        AutoTest.cpp
+        algorithms/GrailUtils/Grail.cpp
+        algorithms/GrailUtils/GrailGraph.cpp
+        algorithms/GrailUtils/GrailGraphUtil.cpp
+        algorithms/GrailUtils/interval_tree.cpp
+        algorithms/GrailUtils/TCSEstimator.cpp
+        algorithms/PathTreeUtils/DWGraph.cpp
+        algorithms/PathTreeUtils/DWGraphUtil.cpp
+        algorithms/PathTreeUtils/PathTree.cpp
+        algorithms/PathTreeUtils/PathTreeGraph.cpp
+        algorithms/PathTreeUtils/PathTreeGraphUtil.cpp
+        algorithms/BFL.cpp
+        algorithms/GrailWrapper.cpp
+        algorithms/ORSE_Toy.cpp
+        algorithms/PathTreeWrapper.cpp
         algorithms/TOLWrapper.cpp
-        algorithms/TOLWrapper.h
-        algorithms/TolUtils/utility1.h
-        algorithms/TolUtils/Butterfly.h
         algorithms/GrippWrapper.cpp
-        algorithms/GrippWrapper.h
-        algorithms/GrippUtils/Util.h
         algorithms/GrippUtils/GrippGraph.cpp
-        algorithms/GrippUtils/GrippGraph.h
         algorithms/GrippUtils/Gripp.cpp
-        algorithms/GrippUtils/Gripp.h
-        algorithms/Ferrari.cpp algorithms/Ferrari.h
+        algorithms/Ferrari.cpp
         algorithms/FerrariUtils/FerrariGraph.cpp
-        algorithms/FerrariUtils/FerrariGraph.h
         algorithms/FerrariUtils/Index.cpp
-        algorithms/FerrariUtils/Index.h
         algorithms/FerrariUtils/IntervalList.cpp
-        algorithms/FerrariUtils/IntervalList.h
         algorithms/IP.cpp
-        algorithms/IP.h
         algorithms/IpUtils/IPGraph.cpp
-        algorithms/IpUtils/IPGraph.h
         algorithms/IpUtils/Util.cpp
-        algorithms/IpUtils/Util.h
         algorithms/PLL.cpp
-        algorithms/PLL.h
-        algorithms/PllUtils/PrunedLabeling.h
         algorithms/PllUtils/PrunedLabeling.cpp
         algorithms/PReaCH.cpp
-        algorithms/PReaCH.h
         algorithms/PreachUtils/ConstructionGraph.cc
-        algorithms/PreachUtils/ConstructionGraph.hh
         algorithms/PreachUtils/Fifo.cc
-        algorithms/PreachUtils/Fifo.hh
         algorithms/PreachUtils/QueryGraph.cc
-        algorithms/PreachUtils/QueryGraph.hh
         algorithms/DblUtils/DBL.cc
-        algorithms/DblUtils/DBL.h
-        algorithms/DBLWrapper.cpp
-        algorithms/DBLWrapper.h
-        Timer.cpp
-        Timer.h)
+        algorithms/DBLWrapper.cpp)

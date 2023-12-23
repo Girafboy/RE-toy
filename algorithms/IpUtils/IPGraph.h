@@ -20,7 +20,7 @@
 #include <sys/time.h>
 
 #include "Util.h"
-#include "../../Graph.h"
+#include "Graph.h"
 
 namespace ip {
     using namespace ::std;

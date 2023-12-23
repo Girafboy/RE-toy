@@ -21,7 +21,7 @@
 #include <sstream>
 
 #include "QueryGraph.hh"
-#include "../../Graph.h"
+#include "Graph.h"
 
 #define E_NONE 0
 #define E_FWD 1

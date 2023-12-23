@@ -13,7 +13,7 @@
 #include <utility>
 #include <cmath>
 #include <ext/hash_map>
-#include "../../Graph.h"
+#include "Graph.h"
 //#include <hash_map.h>
 
 namespace path_tree {
