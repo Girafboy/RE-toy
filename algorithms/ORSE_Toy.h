@@ -13,7 +13,7 @@
 #include <list>
 
 #include "Algorithm.h"
-#include "../Graph.h"
+#include "Graph.h"
 
 
 #define RANGE_MAX 0xFFFFFFFFU

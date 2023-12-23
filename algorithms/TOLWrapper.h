@@ -4,8 +4,8 @@
 #include <string>
 
 #include "Algorithm.h"
-#include "../Graph.h"
-#include "./TolUtils/utility1.h"
+#include "Graph.h"
+#include "TolUtils/utility1.h"
 
 namespace tol {
     using namespace ::std;

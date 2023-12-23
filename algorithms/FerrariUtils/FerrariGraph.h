@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "../../Graph.h"
+#include "Graph.h"
 //--------------------------------------------------------------------------------------------------
 namespace ferrari {
     class FerrariGraph {

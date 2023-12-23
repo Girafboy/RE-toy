@@ -4,9 +4,9 @@
 #include <string>
 
 #include "Algorithm.h"
-#include "../Graph.h"
-#include "./FerrariUtils/FerrariGraph.h"
-#include "./FerrariUtils/Index.h"
+#include "Graph.h"
+#include "FerrariUtils/FerrariGraph.h"
+#include "FerrariUtils/Index.h"
 
 namespace ferrari {
     class Ferrari : public Algorithm {

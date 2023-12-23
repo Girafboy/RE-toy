@@ -20,7 +20,7 @@ or their institutions liable under any circumstances.
 #include <cmath>
 #include <ext/hash_map>
 
-#include "../../Graph.h"
+#include "Graph.h"
 
 namespace grail {
 

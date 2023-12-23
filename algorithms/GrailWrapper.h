@@ -4,8 +4,8 @@
 #include <string>
 
 #include "Algorithm.h"
-#include "../Graph.h"
-#include "./GrailUtils/Grail.h"
+#include "Graph.h"
+#include "GrailUtils/Grail.h"
 
 namespace grail {
     using namespace ::std;

@@ -2,7 +2,7 @@
 #define TC_BUTTERFLY_H
 
 #include "utility1.h"
-#include "../Graph.h"
+#include "Graph.h"
 
 namespace tol {
     const int TOPNUM = 1;

@@ -4,7 +4,7 @@
 #include <bitset>
 #include <set>
 
-#include "../Graph.h"
+#include "Graph.h"
 #define dl 64 
 #define bl 64 
 #define query_threadNum 1 

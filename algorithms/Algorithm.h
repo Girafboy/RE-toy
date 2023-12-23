@@ -1,4 +1,4 @@
-#include "../Graph.h"
+#include "Graph.h"
 
 #ifndef TC_ALGORITHM_H
 #define TC_ALGORITHM_H
