@@ -3,7 +3,7 @@
 # config
 
 # path to the executable file
-executable="./cmake-build-debug/reachability"
+executable="./build/reachability"
 
 # common parent directory of graph files
 # ignore if only use random DAGs
