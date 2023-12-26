@@ -112,23 +112,27 @@ namespace orse_toy {
             }
         };
 
-        struct Node {
-            int topo_order;
-            Bits *codes = nullptr;
-
-            Node() = default;
-
-            ~Node() {
-                delete[] codes;
-            }
-        };
-
         struct pair {
             int pos;
             unsigned int p0;
 
             pair(int pos, unsigned int p0) : pos(pos), p0(p0) {}
         };
+
+        struct Code {
+            std::vector<pair> a_state;
+            Bits *chunks = nullptr;
+
+            Code() = default;
+        };
+
+        struct Node {
+            int topo_order;
+            Code code;
+
+            Node() = default;
+        };
+
 
         static inline unsigned int get_p0(std::vector<pair> &p0_pos, int pos, unsigned int p0_default) {
             auto len = p0_pos.size();
@@ -160,7 +164,6 @@ namespace orse_toy {
 
         Node *nodes;
         unsigned int *parameter = nullptr;
-        std::vector<pair> *p0_pos;
         int chunk_size;
         float ratio;
         size_t n;

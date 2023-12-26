@@ -21,7 +21,7 @@ namespace orse_toy {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len - 1; i >= 0; i--) {
-            mid = p0 * (hi - lo) >> 32;
+            mid = ((unsigned long long)p0 * (hi - lo)) >> 32;
             if (mid < 1) {
                 mid = 1;
             }
@@ -32,7 +32,7 @@ namespace orse_toy {
 
             if (bits.get(i)) {
                 lo = mid;
-                p0 = (unsigned long long)p0 * parameter[cur - len + i] >> 32;
+                p0 = ((unsigned long long)p0 * parameter[cur - len + i]) >> 32;
             } else {
                 hi = mid - 1;
             }
@@ -90,21 +90,21 @@ namespace orse_toy {
     void ORSE_Toy::encode(ORSE_Toy::Node &node) {
         int chunks = get_chunk_num(node.topo_order);
 
-        Bits *code_raw = node.codes;
+        Bits *code_raw = node.code.chunks;
 
-        node.codes = new Bits[chunks];
+        node.code.chunks = new Bits[chunks];
         unsigned int p0_base = parameter[node.topo_order];
-        unsigned int p0 = encode(code_raw[chunks - 1], node.codes[chunks - 1], p0_base, node.topo_order,
+        unsigned int p0 = encode(code_raw[chunks - 1], node.code.chunks[chunks - 1], p0_base, node.topo_order,
                               node.topo_order - chunk_size * (chunks - 1));
         for (int i = chunks - 2; i >= 0; i--) {
             if (approximation_ratio(p0, p0_base) > ratio) {
                 p0_base = p0;
-                p0_pos[node.topo_order].emplace_back(i, p0_base);
+                node.code.a_state.emplace_back(i, p0_base);
             }
             if (p0_base) {
-                p0 = ((unsigned long long)p0 * encode(code_raw[i], node.codes[i], p0_base, (i + 1) * chunk_size, chunk_size)) >> 32 * 0xFFFFFFFFU / p0_base;
+                p0 = (((unsigned long long)p0 * encode(code_raw[i], node.code.chunks[i], p0_base, (i + 1) * chunk_size, chunk_size)) >> 32) / p0_base;
             } else {
-                p0 = encode(code_raw[i], node.codes[i], p0_base, (i + 1) * chunk_size, chunk_size);
+                p0 = encode(code_raw[i], node.code.chunks[i], p0_base, (i + 1) * chunk_size, chunk_size);
             }
         }
         delete[] code_raw;
@@ -113,14 +113,13 @@ namespace orse_toy {
     void ORSE_Toy::reset() {
         delete[] nodes;
         delete[] parameter;
-        delete[] p0_pos;
     }
 
     void ORSE_Toy::construction(const Graph &graph) {
         n = graph.size();
+        
         nodes = new Node[n];
         parameter = new unsigned int [n];
-        p0_pos = new std::vector<pair>[n];
 
         std::queue<int> q;
         std::vector<size_t> out_degree(n), in_degree(n);
@@ -141,19 +140,19 @@ namespace orse_toy {
 
             if (nodes[cur].topo_order) {
                 int chunks = get_chunk_num(nodes[cur].topo_order);
-                nodes[cur].codes = new Bits[chunks];
+                nodes[cur].code.chunks = new Bits[chunks];
 
                 for (int i = 0; i < chunks - 1; i++) {
-                    nodes[cur].codes[i].init(chunk_size);
+                    nodes[cur].code.chunks[i].init(chunk_size);
                 }
-                nodes[cur].codes[chunks - 1].init(nodes[cur].topo_order - chunk_size * (chunks - 1));
+                nodes[cur].code.chunks[chunks - 1].init(nodes[cur].topo_order - chunk_size * (chunks - 1));
 
                 for (const int v: graph.getSuccessors(cur)) {
-                    nodes[cur].codes[nodes[v].topo_order / chunk_size].set(nodes[v].topo_order % chunk_size);
+                    nodes[cur].code.chunks[nodes[v].topo_order / chunk_size].set(nodes[v].topo_order % chunk_size);
                     if (nodes[v].topo_order) {
                         int chunks_v = get_chunk_num(nodes[v].topo_order);
                         for (int i = 0; i < chunks_v; i++) {
-                            nodes[cur].codes[i].bits_or(nodes[v].codes[i]);
+                            nodes[cur].code.chunks[i].bits_or(nodes[v].code.chunks[i]);
                         }
                         if (--in_degree[v] == 0) {
                             encode(nodes[v]);
@@ -161,34 +160,34 @@ namespace orse_toy {
                     }
                 }
 
-                float *a_array = new float[nodes[cur].topo_order];
-                float a = 1;
+                unsigned int *a_array = new unsigned int[nodes[cur].topo_order];
+                unsigned int a = 0xFFFFFFFFU;
                 for (int j = nodes[cur].topo_order-1; j >= 0 ; j--) {
                     a_array[j] = a;
-                    if (nodes[cur].codes[j/chunk_size].get(j%chunk_size)) {
-                        a = (float)parameter[j] / 0xFFFFFFFFU * a;
+                    if (nodes[cur].code.chunks[j/chunk_size].get(j%chunk_size)) {
+                        a = ((unsigned long long)parameter[j] * a) >> 32;
                     }
                 }
-                float theta = 0.5, step = 0.25;
-                for (int i = 0; i < 20; i++) {
+                unsigned int theta_r = 0x80000000U, step = 0x40000000U;
+                for (int i = 0; i < 30; i++) {
                     float df = 0;
                     for (int j = nodes[cur].topo_order-1; j >= 0 ; j--) {
-                        if (nodes[cur].codes[j/chunk_size].get(j%chunk_size)) {
-                            df += -a_array[j] / (1-a_array[j] * (1 - theta));
+                        if (nodes[cur].code.chunks[j/chunk_size].get(j%chunk_size)) {
+                            df += 1.0 / (1.0 / ((float)a_array[j] / (float)0xFFFFFFFF) - ((float)theta_r / (float)0xFFFFFFFF));
                         } else {
-                            df += 1.0 / (1 - theta);
+                            df += - 1.0 / ((float)theta_r / (float)0xFFFFFFFF);
                         }
                     }
                     if (df > 0) {
-                        theta -= step;
+                        theta_r -= step;
                     } else {
-                        theta += step;
+                        theta_r += step;
                     }
                     step /= 2;
-                    // std::cout << theta << ' ';
+                    // std::cout << theta_r << ' ';
                 }
                 // std::cout << std::endl;
-                parameter[nodes[cur].topo_order] = (unsigned long long)((1.0 - theta) * 0xFFFFFFFFU);
+                parameter[nodes[cur].topo_order] = theta_r;
 
                 if (graph.getInDegree(cur) == 0) {
                     encode(nodes[cur]);
@@ -278,15 +277,15 @@ namespace orse_toy {
         }
 
         int pos = target_topo / chunk_size;
-        Bits *bits = &nodes[source].codes[pos];
+        Bits *bits = &nodes[source].code.chunks[pos];
         if (bits->get(bits->size - 1)) {
             return bits->get(target_topo % chunk_size);
         }
         if (pos == (source_topo - 1) / chunk_size) {
-            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, parameter[source_topo]),
+            return decode_check(*bits, get_p0(nodes[source].code.a_state, pos, parameter[source_topo]),
                                 (fastfloat_t *) parameter + source_topo, source_topo - target_topo);
         } else {
-            return decode_check(*bits, get_p0(p0_pos[source_topo], pos, parameter[source_topo]),
+            return decode_check(*bits, get_p0(nodes[source].code.a_state, pos, parameter[source_topo]),
                                 (fastfloat_t *) parameter + (pos + 1) * chunk_size,
                                 chunk_size - target_topo % chunk_size);
         }
@@ -307,16 +306,16 @@ namespace orse_toy {
         for (int i = 0; i < n; i++) {
             int chunks = (nodes[i].topo_order + chunk_size - 1) / chunk_size;
             for (int j = 0; j < chunks; j++) {
-                index_size += nodes[i].codes[j].size_bytes;
+                index_size += nodes[i].code.chunks[j].size_bytes;
             }
-            index_size += p0_pos[nodes[i].topo_order].size() * sizeof(pair);
+            index_size += nodes[i].code.a_state.size() * sizeof(pair);
 #ifdef DEBUG
-            std::cout << nodes[i].topo_order << " " << connect_p0[nodes[i].topo_order].val << ":";
+            std::cout << nodes[i].topo_order << " " << parameter[nodes[i].topo_order] << ":";
             for (int j = 0; j < get_chunk_num(nodes[i].topo_order); j++)
-                std::cout << " " << nodes[i].codes[j].size;
+                std::cout << " " << nodes[i].code.chunks[j].size;
             std::cout << "\t\t\t\t";
-            for (auto pair: p0_pos[nodes[i].topo_order])
-                std::cout << " " << pair.pos << "/" << pair.p0.val;
+            for (auto pair: nodes[i].code.a_state)
+                std::cout << " " << pair.pos << "/" << pair.p0;
             std::cout << std::endl;
 #endif
         }
