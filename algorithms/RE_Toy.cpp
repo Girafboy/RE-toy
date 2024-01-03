@@ -292,7 +292,7 @@ namespace re {
     }
 
     std::string RE_Toy::getName() const {
-        return "ORSE-Toy";
+        return "RE-toy";
     }
 
     std::string RE_Toy::getParams() const {
