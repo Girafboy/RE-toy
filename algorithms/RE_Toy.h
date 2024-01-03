@@ -1,5 +1,5 @@
-#ifndef ORSE_TOY_H
-#define ORSE_TOY_H
+#ifndef RE_TOY_H
+#define RE_TOY_H
 
 #include <algorithm>
 #include <cmath>
@@ -30,8 +30,8 @@
 
 typedef unsigned int fastfloat_t;
 
-namespace orse_toy {
-    class ORSE_Toy : public Algorithm {
+namespace re {
+    class RE_Toy : public Algorithm {
     private:
         struct Bits {
             unsigned char *data = nullptr;
@@ -175,7 +175,7 @@ namespace orse_toy {
         static bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len);
 
     public:
-        ORSE_Toy(int x, float r);
+        RE_Toy(int x, float r);
 
         std::string getName() const override;
 
@@ -191,4 +191,4 @@ namespace orse_toy {
     };
 }
 
-#endif //ORSE_TOY_H
+#endif //RE_TOY_H
