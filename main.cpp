@@ -8,7 +8,7 @@
 #include "Profile.h"
 #include "Timer.h"
 
-#include "algorithms/ORSE_Toy.h"
+#include "algorithms/RE_Toy.h"
 #include "algorithms/BFL.h"
 #include "algorithms/GrailWrapper.h"
 #include "algorithms/PathTreeWrapper.h"
@@ -20,7 +20,7 @@
 #include "algorithms/PReaCH.h"
 #include "algorithms/DBLWrapper.h"
 
-using orse_toy::ORSE_Toy;
+using re::RE_Toy;
 using bfl::BFL;
 using grail::GrailWrapper;
 using path_tree::PathTreeWrapper;
@@ -118,14 +118,14 @@ int main(int argc, char *argv[]) {
                 return 0;
             }
             std::string algorithm_name = argv[i++];
-            if (algorithm_name == "orse_toy") {
+            if (algorithm_name == "re_toy") {
                 if (i + 2 > argc) {
                     algorithmUsage(algorithm_name);
                     return 0;
                 }
                 int x = atoi(argv[i++]);
                 float r = atof(argv[i++]);
-                algorithm = new ORSE_Toy(x, r);
+                algorithm = new RE_Toy(x, r);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
@@ -280,7 +280,7 @@ void usage() {
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
                     "\n"
                     "Reachability Algorithms:\n"
-                    "orse_toy <x> <r>           ORSE_Toy algorithm\n"
+                    "re_toy <x> <r>             RE-toy algorithm\n"
                     "bfl <K>                    BFL algorithm\n"
                     "grail <t> <ltype> <dim>    GRAIL algorithm\n"
                     "pathtree <alg_type>        PathTree algorithm\n"
@@ -293,8 +293,8 @@ void usage() {
                     "dbl                        DBL algorithm\n"
                     "\n"
                     "Examples:\n"
-                    "- Run the reachability algorithm ORSE_Toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
-                    "  ./reachability --time 10 --graph --random 100 3 --algorithm orse_toy 32 2.0\n"
+                    "- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
+                    "  ./reachability --time 10 --graph --random 100 3 --algorithm re 32 2.0\n"
                     "\n"
                     "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
                     "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
@@ -307,8 +307,8 @@ void usage() {
 }
 
 void algorithmUsage(const std::string &algorithm_name) {
-    if (algorithm_name == "orse_toy") {
-        std::cout << "Usage of orse_toy:\n"
+    if (algorithm_name == "re_toy") {
+        std::cout << "Usage of re_toy:\n"
                      "Total: 2 argument(s)\n"
                      "arg[0]: x\n"
                      "arg[1]: r\n"

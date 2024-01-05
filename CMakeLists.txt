@@ -25,7 +25,7 @@ add_executable(
         algorithms/PathTreeUtils/PathTreeGraphUtil.cpp
         algorithms/BFL.cpp
         algorithms/GrailWrapper.cpp
-        algorithms/ORSE_Toy.cpp
+        algorithms/RE_Toy.cpp
         algorithms/PathTreeWrapper.cpp
         algorithms/TOLWrapper.cpp
         algorithms/GrippWrapper.cpp

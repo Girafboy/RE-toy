@@ -1,28 +1,28 @@
-# orse-toy paper name  todo
+# re-toy paper name  todo
 
-Welcome to the ORSE-TOY algorithm and our reachability testing platform!
+Welcome to the RE-toy algorithm and our reachability testing platform!
 
-This repository includes the C++ implementation of the ORSE-Toy algorithm, as described in our paper todo todo[insert paper title]. Additionally, it provides a platform that facilitates the validation and testing of reachability algorithms.
+This repository includes the C++ implementation of the RE-toy algorithm, as described in our paper todo todo[insert paper title]. Additionally, it provides a platform that facilitates the validation and testing of reachability algorithms.
 
 ## Code Structure
 
 The code is organized as follows:
 
-- `Graph` class: This class represents the input graph. It can be constructed by random Directed Acyclic Graphs (DAGs) or conversion of input files representing directed graphs into DAGs. All algorithms within the platform utilize the `Graph` class as a unified input, enabling convenient and standardized testing.
-- `AutoTest` class: This class provides functionality for testing reachability algorithms.
-- `Timer` class: This class provides timing utilities.
-- `Profile` struct: This struct stores the results obtained from the testing process.
-- `algorithms` directory: This directory contains implementations of various reachability algorithms. To facilitate testing, we have made slight modifications to these algorithms, ensuring that they all inherit from the abstract class `Algorithm` and implement the same interface.
-- `main.cpp`: This file executes a single experiment, including the construction of index and query testing for of an algorithm with specific parameters on a given graph.
-- `test.sh`: This script automates the execution of `main.cpp` to perform multiple tests.
+- `Graph` class: represents the input graph. It can be constructed by random Directed Acyclic Graphs (DAGs) or conversion of input files representing directed graphs into DAGs. All algorithms within the platform utilize the `Graph` class as a unified input, enabling convenient and standardized testing.
+- `AutoTest` class: provides functionality for testing reachability algorithms.
+- `Timer` class: provides timing utilities.
+- `Profile` struct: stores the results obtained from the testing process.
+- `algorithms` directory: contains implementations of various reachability algorithms. To facilitate testing, we have made slight modifications to these algorithms, ensuring that they all inherit from the abstract class `Algorithm` and implement the same interface.
+- `include` directory: contains library dependencies of some baseline algorithms.
+- `graphs` directory: contains real DAGs used in our experiments.
+- `main.cpp`: executes a single experiment, including the construction of index and query testing for of an algorithm with specific parameters on a given graph.
+- `test.sh` and `experiments.sh`: automate the execution of `main.cpp` to perform multiple tests.
 
 ## Reachability Program Usage
 
-The `reachability` program is designed to be used in conjunction with the `test.sh` script rather than being used independently. Users can customize the testing parameters within the `test.sh` script according to their specific needs.
+The `reachability` program is designed to be used in conjunction with the `test.sh` or `experiments.sh` script rather than being used independently. Users can customize the testing parameters within the `test.sh` script according to their specific needs, or perform the experiments mentioned in our paper by directly running `experiments.sh`.
 
 ### Preparation
-
-Our implementation of ORSE-TOY does not depend on any third-party libraries. However, some other algorithms may require dependencies such as Boost. Please ensure that these dependencies are installed and update the CMakeLists.txt file accordingly.
 
 Compile the project and generate the `reachability` executable file.
 
@@ -49,7 +49,7 @@ To execute the program, use the following command:
 
 Here are the available reachability algorithms and their usages:
 
-- `orse_toy <x> <r>`: ORSE_Toy algorithm
+- `re_toy <x> <r>`: RE-toy algorithm
 - `bfl <K>`: BFL algorithm
 - `grail <t> <ltype> <dim>`: GRAIL algorithm
 - `pathtree <alg_type>`: PathTree algorithm
@@ -65,10 +65,10 @@ Here are the available reachability algorithms and their usages:
 
 Here are some examples of how to use the commands:
 
-- Run the reachability algorithm ORSE_Toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:
+- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:
 
   ````
-  ./reachability --time 10 --graph --random 100 3 --algorithm orse_toy 32 2.0
+  ./reachability --time 10 --graph --random 100 3 --algorithm re_toy 32 2.0
   ```
 
 - Run the reachability algorithm BFL of specific parameters on a specified graph file:
@@ -107,7 +107,7 @@ This file represents a graph with five nodes, where node 0 has edges to nodes 1 
 
 ## Test Script `tesh.sh` Usage
 
-The `test.sh` script is used to automate multiple tests with different parameters using the `reachability` program. You can follow the steps below to use the `test.sh` script:
+The `test.sh` script is an example on how to automate multiple tests with different parameters using the `reachability` program. You can follow the steps below to use the `test.sh` script:
 
 1. Make sure you have successfully compiled the `reachability` program.
 
@@ -133,10 +133,18 @@ The `test.sh` script is used to automate multiple tests with different parameter
 
 5. If `test_accuracy` is set to true, results will be shown in the terminal. Otherwise, once the script completes, the test results will be saved in the file specified by the `output_file` variable and the query time files will be stored in the directory specified by the `output_query_time_dir` variable.
 
+## Test Script `experiments.sh` Usage
+
+The `experiments.sh` runs all the four experiments mentioned in the paper, namely tradeoff, real_graph, scale_up, and dense_up.
+
+The usage of this script is similar to `test.sh`. Please alter the configuration parameters before running it.
+
 ## Citation
 
-If you use the ORSE-Toy algorithm or our testing platform for your research or any other work, please cite our paper.
+If you use the RE-toy algorithm or our testing platform for your research or any other work, please cite our paper.
 
 todo: bib
 
-While our repository provides many reachability algorithms, we take no responsibility for the implementations of algorithms other than our own algorithm, ORSE-Toy. The implementations of other reachability algorithms provided are for reference purposes only. Please refer to the original articles and official source code.
+## Disclaimer
+
+While our repository provides the implementations of many reachability algorithms, we take no responsibility for them, other than that of our own algorithm, RE-toy. The implementations of other reachability algorithms provided are for reference purposes only. Please refer to the original articles and official source code.

@@ -1,4 +1,4 @@
-#include "ORSE_Toy.h"
+#include "RE_Toy.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -14,10 +14,10 @@
 
 // #define DEBUG
 
-namespace orse_toy {
-    ORSE_Toy::ORSE_Toy(int x, float r) : chunk_size(x - 1), ratio(r) {}
+namespace re {
+    RE_Toy::RE_Toy(int x, float r) : chunk_size(x - 1), ratio(r) {}
 
-    unsigned int ORSE_Toy::encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const {
+    unsigned int RE_Toy::encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len - 1; i >= 0; i--) {
@@ -87,7 +87,7 @@ namespace orse_toy {
         return p0;
     }
 
-    void ORSE_Toy::encode(ORSE_Toy::Node &node) {
+    void RE_Toy::encode(RE_Toy::Node &node) {
         int chunks = get_chunk_num(node.topo_order);
 
         Bits *code_raw = node.code.chunks;
@@ -110,12 +110,12 @@ namespace orse_toy {
         delete[] code_raw;
     }
 
-    void ORSE_Toy::reset() {
+    void RE_Toy::reset() {
         delete[] nodes;
         delete[] parameter;
     }
 
-    void ORSE_Toy::construction(const Graph &graph) {
+    void RE_Toy::construction(const Graph &graph) {
         n = graph.size();
         
         nodes = new Node[n];
@@ -202,7 +202,7 @@ namespace orse_toy {
         }
     }
 
-     bool ORSE_Toy::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) {
+     bool RE_Toy::decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len) {
         int size = code.size - 1;
         unsigned int value = bswap(*(unsigned int *) code.data);
 
@@ -266,7 +266,7 @@ namespace orse_toy {
         return value >= mid;
     }
 
-    bool ORSE_Toy::TC_haspath(int source, int target) {
+    bool RE_Toy::TC_haspath(int source, int target) {
         if (source == target) {
             return true;
         }
@@ -291,17 +291,17 @@ namespace orse_toy {
         }
     }
 
-    std::string ORSE_Toy::getName() const {
-        return "ORSE-Toy";
+    std::string RE_Toy::getName() const {
+        return "RE-toy";
     }
 
-    std::string ORSE_Toy::getParams() const {
+    std::string RE_Toy::getParams() const {
         std::stringstream stream;
         stream << "x=" << chunk_size + 1 << " r=" << std::fixed << std::setprecision(1) << ratio;
         return stream.str();
     }
 
-    unsigned long long ORSE_Toy::getIndexSize() const {
+    unsigned long long RE_Toy::getIndexSize() const {
         unsigned long long index_size = n * sizeof(int) * 2;
         for (int i = 0; i < n; i++) {
             int chunks = (nodes[i].topo_order + chunk_size - 1) / chunk_size;
