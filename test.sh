@@ -51,7 +51,7 @@ graphs=(
   "--file ${input_directory}/econ-poli.txt"
   "--file ${input_directory}/ash958.txt"
   "--file ${input_directory}/yago_sub_6642.txt"
-  "--file ${input_directory}/econ-beaflw.txt"
+  "--file ${input_directory}/plat362.txt"
   "--file ${input_directory}/bcsstm27.txt"
   "--file ${input_directory}/bcsstk04.txt"
   "--file ${input_directory}/BA-1_10_60-L5.txt"
