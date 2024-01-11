@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
 
     // arguments read from command line
     int n = 0, d = 0;
+    int seed = 0;
     std::string file_path;
     bool test_accuracy = false;
     int check_reachable_times = 100000;
@@ -111,6 +112,13 @@ int main(int argc, char *argv[]) {
                 }
                 file_path = argv[i++];
             }
+        } else if (strcmp("--seed", argv[i]) == 0) {
+            ++i;
+            if (i >= argc) {
+                usage();
+                return 0;
+            }
+            seed = atoi(argv[i++]);
         } else if (strcmp("--algorithm", argv[i]) == 0) {  // algorithm
             ++i;
             if (i >= argc) {
@@ -201,6 +209,7 @@ int main(int argc, char *argv[]) {
                 }
                 algorithm = new DBLWrapper();
             } else {
+                std::cout << "Invalid algorithm name." << std::endl;
                 usage();
                 return 0;
             }
@@ -210,7 +219,7 @@ int main(int argc, char *argv[]) {
     // prepare graph
     Graph *graph;
     if (file_path.empty()) {  // generate random graph
-        graph = new Graph(n, d, "random-" + std::to_string(n) + "-" + std::to_string(d));
+        graph = new Graph(n, d, seed, "random-" + std::to_string(n) + "-" + std::to_string(d));
     } else {  // read graph from file
         auto pos = file_path.find_last_of('/');
         auto graph_name = file_path.substr(pos + 1);
@@ -277,6 +286,7 @@ void usage() {
                     "--graph <type>             Specify input graph type (required)\n"
                     "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
                     "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
+                    "--seed <seed>              Set the seed for the generation of the random graph.\n"
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
                     "\n"
                     "Reachability Algorithms:\n"
@@ -299,8 +309,8 @@ void usage() {
                     "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
                     "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
                     "\n"
-                    "- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:\n"
-                    "  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1 \n"
+                    "- Run tests to validate the correctness of the algorithm PLL on a random graph with a specific seed without limiting the maximum execution time:\n"
+                    "  ./reachability --accuracy --graph --random 1000 1 --seed 29 --algorithm pll 1 \n"
                     "\n"
                     "Please note that you should replace specific values and file paths with your own in the examples above.";
     std::cout << h << std::endl;

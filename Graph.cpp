@@ -57,12 +57,12 @@ Graph::Graph(const std::string &input_file_path, std::string name) : name(std::m
     }
 }
 
-Graph::Graph(int n, int d, std::string name) : name(std::move(name)) {
+Graph::Graph(int n, int d, int seed, std::string name) : name(std::move(name)) {
     int m = n * d;
     adj_list.resize(n);
     std::vector<std::unordered_set<int>> adj_hash(n);
     std::uniform_int_distribution<int> u(0, n - 1);
-    std::default_random_engine e;
+    std::default_random_engine e(seed);
     while (m > 0) {
         int r1 = u(e);
         int r2 = u(e);

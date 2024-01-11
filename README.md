@@ -45,6 +45,7 @@ To execute the program, use the following command:
 - `--graph <type>`: Specify input graph type (required)
   - `--random <n> <d>`: Generate a random DAG with \<n\> nodes and \<d\> average degree
   - `--file <file_path>`: Load a directed graph from file and convert it to a DAG
+- `--seed <seed>`: Set the seed for the generation of the random graph (optional)
 - `--algorithm <algorithm_name> [algorithm_params]`: Specify the reachability algorithm to use and its parameters (required)
 
 Here are the available reachability algorithms and their usages:
@@ -77,10 +78,10 @@ Here are some examples of how to use the commands:
   ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5
   ```
 
-- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:
+- Run tests to validate the correctness of the algorithm PLL on a random graph with a specific seed without limiting the maximum execution time:
 
   ````
-  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1
+  ./reachability --accuracy --graph --random 1000 1 --seed 29 --algorithm pll 1
   ```
 
 Please note that the above examples are meant to illustrate the usage of command-line arguments, and you should replace specific parameter values and file paths with your own.
@@ -137,7 +138,9 @@ The `test.sh` script is an example on how to automate multiple tests with differ
 
 The `experiments.sh` runs all the four experiments mentioned in the paper, namely tradeoff, real_graph, scale_up, and dense_up.
 
-The usage of this script is similar to `test.sh`. Please alter the configuration parameters before running it.
+Most configuration parameters of this script are similar to those in `test.sh`.
+
+`seed_cnt`: Specify the number of seeds used to generate a random graph. Each algorithm would be tested `seed_cnt` times on different random graphs with a specific `n` and `d`.
 
 ## Citation
 
