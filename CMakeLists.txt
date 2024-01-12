@@ -46,3 +46,5 @@ add_executable(
         algorithms/PreachUtils/QueryGraph.cc
         algorithms/DblUtils/DBL.cc
         algorithms/DBLWrapper.cpp)
+
+target_compile_options(reachability PRIVATE -O0)
