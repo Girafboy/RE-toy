@@ -40,11 +40,12 @@ To execute the program, use the following command:
 - `--time <seconds>`: Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)
 - `--accuracy`: Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)
 - `--query_num <number>`: Set number of queries, default value is 100000 (optional)
-- `--result_file <file>`: Set the file path for result output (optional)
-- `--result_dir <dir>`: Set the directory path for query time output (optional)
+- `--result_file <file>`: Set the file path for result output (optional, use when generating the result file)
+- `--result_dir <dir>`: Set the directory path for query time output (optional, use when generating query time files)
 - `--graph <type>`: Specify input graph type (required)
   - `--random <n> <d>`: Generate a random DAG with \<n\> nodes and \<d\> average degree
   - `--file <file_path>`: Load a directed graph from file and convert it to a DAG
+- `--seed <seed>`: Set the seed for the generation of the random graph (optional)
 - `--algorithm <algorithm_name> [algorithm_params]`: Specify the reachability algorithm to use and its parameters (required)
 
 Here are the available reachability algorithms and their usages:
@@ -65,22 +66,22 @@ Here are the available reachability algorithms and their usages:
 
 Here are some examples of how to use the commands:
 
-- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:
+- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds, and store the results in the specified path:
 
   ````
-  ./reachability --time 10 --graph --random 100 3 --algorithm re_toy 32 2.0
+  ./reachability --time 10 --graph --random 100 3 --algorithm re_toy 32 2.0 --result_file ./result.csv
   ```
 
-- Run the reachability algorithm BFL of specific parameters on a specified graph file:
+- Run the reachability algorithm BFL of specific parameters on a specified graph file, and store query time records under specified directory:
 
   ````
-  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5
+  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5 --result_dir ./query_time/
   ```
 
-- Run tests to validate the correctness of the algorithm PLL on a random graph without limiting the maximum execution time:
+- Run tests to validate the correctness of the algorithm PLL on a random graph with a specific seed without limiting the maximum execution time:
 
   ````
-  ./reachability --accuracy --graph --random 1000 1 --algorithm pll 1
+  ./reachability --accuracy --graph --random 1000 1 --seed 29 --algorithm pll 1
   ```
 
 Please note that the above examples are meant to illustrate the usage of command-line arguments, and you should replace specific parameter values and file paths with your own.
@@ -137,7 +138,9 @@ The `test.sh` script is an example on how to automate multiple tests with differ
 
 The `experiments.sh` runs all the four experiments mentioned in the paper, namely tradeoff, real_graph, scale_up, and dense_up.
 
-The usage of this script is similar to `test.sh`. Please alter the configuration parameters before running it.
+Most configuration parameters of this script are similar to those in `test.sh`.
+
+`seed_cnt`: Specify the number of seeds used to generate a random graph. Each algorithm would be tested `seed_cnt` times on different random graphs with a specific `n` and `d`.
 
 ## Citation
 

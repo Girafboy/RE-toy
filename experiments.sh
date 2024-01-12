@@ -20,6 +20,9 @@ query_num="100000"
 # maximum execution time for each single test in seconds
 max_time="1000"
 
+# number of seeds for each random graph
+seed_cnt=100
+
 
 # convert relative paths to absolute paths
 input_directory=$(readlink -f "${input_directory}")
@@ -33,9 +36,9 @@ do
     subdir_path="${output_dir}/${subdir}"
     mkdir -p "${subdir_path}"
     echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
-    mkdir -p "${subdir_path}/query_time"
-    rm "${subdir_path}/query_time"/*.txt
 done
+mkdir -p "${output_dir}/real_graph/query_time"
+rm -f "${output_dir}/real_graph/query_time"/*.txt
 
 
 ######################################## Experiment 1: tradeoff ########################################
@@ -52,24 +55,24 @@ algorithms=(
   "re_toy 16 2.0"
   "re_toy 32 2.0"
   "re_toy 64 2.0"
+  "re_toy 96 2.0"
   "re_toy 128 2.0"
+  "re_toy 192 2.0"
   "re_toy 256 2.0"
   "re_toy 512 2.0"
   "re_toy 1024 2.0"
-  "re_toy 2048 2.0"
-  "re_toy 4096 2.0"
-  "re_toy 8192 2.0"
-  "re_toy 16384 2.0"
 # BFL
   "bfl 1"
   "bfl 2"
+  "bfl 3"
   "bfl 5"
+  "bfl 8"
   "bfl 10"
+  "bfl 15"
   "bfl 20"
+  "bfl 25"
+  "bfl 30"
   "bfl 50"
-  "bfl 100"
-  "bfl 200"
-  "bfl 500"
 # Grail
   "grail 1 0 2"
   "grail 1 0 3"
@@ -117,12 +120,15 @@ do
   echo -ne "\033[2K\rTesting ${algorithm}..."
   for graph in "${graphs[@]}"
   do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/tradeoff/result.csv --result_dir ${output_dir}/tradeoff/query_time/"
-    eval "${test_command}"
-    exit_status=$?
-    if [[ $exit_status -eq 124 ]]; then
-        echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
-    fi
+    for ((seed=1; seed<=seed_cnt; seed++))
+    do
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/tradeoff/result.csv"
+      eval "${test_command}"
+      exit_status=$?
+      if [[ $exit_status -eq 124 ]]; then
+          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+      fi
+    done
   done
 done
 echo -e "\033[0G\033[2KExperiment 1: tradeoff done."
@@ -135,7 +141,7 @@ graphs=(
   "--file ${input_directory}/econ-poli.txt"
   "--file ${input_directory}/ash958.txt"
   "--file ${input_directory}/yago_sub_6642.txt"
-  "--file ${input_directory}/econ-beaflw.txt"
+  "--file ${input_directory}/plat362.txt"
   "--file ${input_directory}/bcsstm27.txt"
   "--file ${input_directory}/bcsstk04.txt"
   "--file ${input_directory}/BA-1_10_60-L5.txt"
@@ -158,7 +164,6 @@ algorithms=(
   "re_toy 2048 2.0"
   "re_toy 4096 2.0"
   "re_toy 8192 2.0"
-  "re_toy 16384 2.0"
 # BFL
   "bfl 1"
   "bfl 2"
@@ -276,12 +281,15 @@ for ((i=0; i<${#graphs[@]}; i++))
 do
   graph="${graphs[$i]}"
   algorithm="${re_toys[$i]}"
-  test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv --result_dir ${output_dir}/scale_up/query_time/"
-  eval "${test_command}"
-  exit_status=$?
-  if [[ $exit_status -eq 124 ]]; then
-      echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
-  fi
+  for ((seed=1; seed<=seed_cnt; seed++))
+  do
+    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv"
+    eval "${test_command}"
+    exit_status=$?
+    if [[ $exit_status -eq 124 ]]; then
+        echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+    fi
+  done
 done
 # baseline algorithms
 for algorithm in "${baselines[@]}"
@@ -289,12 +297,15 @@ do
   echo -ne "\033[2K\rTesting ${algorithm}..."
   for graph in "${graphs[@]}"
   do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv --result_dir ${output_dir}/scale_up/query_time/"
-    eval "${test_command}"
-    exit_status=$?
-    if [[ $exit_status -eq 124 ]]; then
-        echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
-    fi
+    for ((seed=1; seed<=seed_cnt; seed++))
+    do
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv"
+      eval "${test_command}"
+      exit_status=$?
+      if [[ $exit_status -eq 124 ]]; then
+          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+      fi
+    done
   done
 done
 echo -e "\033[0G\033[2KExperiment 3: scale_up done."
@@ -337,12 +348,15 @@ do
   echo -ne "\033[2K\rTesting ${algorithm}..."
   for graph in "${graphs[@]}"
   do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv --result_dir ${output_dir}/dense_up/query_time/"
-    eval "${test_command}"
-    exit_status=$?
-    if [[ $exit_status -eq 124 ]]; then
-        echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
-    fi
+    for ((seed=1; seed<=seed_cnt; seed++))
+    do
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+      eval "${test_command}"
+      exit_status=$?
+      if [[ $exit_status -eq 124 ]]; then
+          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+      fi
+    done
   done
 done
 echo -e "\033[0G\033[2KExperiment 4: dense_up done."
