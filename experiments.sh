@@ -36,9 +36,9 @@ do
     subdir_path="${output_dir}/${subdir}"
     mkdir -p "${subdir_path}"
     echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
-    mkdir -p "${subdir_path}/query_time"
-    rm -f "${subdir_path}/query_time"/*.txt
 done
+mkdir -p "${output_dir}/real_graph/query_time"
+rm -f "${output_dir}/real_graph/query_time"/*.txt
 
 
 ######################################## Experiment 1: tradeoff ########################################
@@ -122,7 +122,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/tradeoff/result.csv --result_dir ${output_dir}/tradeoff/query_time/"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/tradeoff/result.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -283,7 +283,7 @@ do
   algorithm="${re_toys[$i]}"
   for ((seed=1; seed<=seed_cnt; seed++))
   do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv --result_dir ${output_dir}/scale_up/query_time/"
+    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv"
     eval "${test_command}"
     exit_status=$?
     if [[ $exit_status -eq 124 ]]; then
@@ -299,7 +299,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv --result_dir ${output_dir}/scale_up/query_time/"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -350,7 +350,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv --result_dir ${output_dir}/dense_up/query_time/"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then

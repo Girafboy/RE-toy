@@ -50,8 +50,8 @@ int main(int argc, char *argv[]) {
     std::string file_path;
     bool test_accuracy = false;
     int check_reachable_times = 100000;
-    std::string result_file = "../output/result.csv";
-    std::string result_dir = "../output/query_time/";
+    std::string result_file;
+    std::string result_dir;
     Algorithm *algorithm;
 
     int i = 1;
@@ -242,25 +242,28 @@ int main(int argc, char *argv[]) {
         }
     } else {  // test construction time, index size, and query time of the algorithm on the graph
         auto profile = autoTest.testAlgorithmOnGraph(check_reachable_times);
-
-        std::ofstream myfile;
-        myfile.open(result_file, std::ios_base::app);
-        myfile << profile.algorithm_name << ","
-               << profile.graph_name << ","
-               << profile.params << ","
-               << profile.preparation_time_ns << ","
-               << profile.index_size << ","
-               << profile.query_num << ","
-               << profile.average_has_path_time_ns << "\n";
-        myfile.close();
-
-        std::string query_file_name =
-                result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
-        myfile.open(query_file_name);
-        for (const auto &x: profile.has_path_times_ns) {
-            myfile << x << '\n';
+        if (!result_file.empty()) {
+            std::ofstream myfile;
+            myfile.open(result_file, std::ios_base::app);
+            myfile << profile.algorithm_name << ","
+                   << profile.graph_name << ","
+                   << profile.params << ","
+                   << profile.preparation_time_ns << ","
+                   << profile.index_size << ","
+                   << profile.query_num << ","
+                   << profile.average_has_path_time_ns << "\n";
+            myfile.close();
         }
-        myfile.close();
+        if (!result_dir.empty()) {
+            std::ofstream myfile;
+            std::string query_file_name =
+                    result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
+            myfile.open(query_file_name);
+            for (const auto &x: profile.has_path_times_ns) {
+                myfile << x << '\n';
+            }
+            myfile.close();
+        }
     }
 
     algorithm->reset();
@@ -281,8 +284,8 @@ void usage() {
                     "--time <seconds>           Set the maximum execution time in seconds for the program (required, unless --accuracy is specified)\n"
                     "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
                     "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
-                    "--result_file <file>       Set the file path for result output (optional)\n"
-                    "--result_dir <dir>         Set the directory path for query time output (optional)\n"
+                    "--result_file <file>       Set the file path for result output (optional, use when generating the result file)\n"
+                    "--result_dir <dir>         Set the directory path for query time output (optional, use when generating query time files)\n"
                     "--graph <type>             Specify input graph type (required)\n"
                     "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
                     "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
@@ -303,11 +306,11 @@ void usage() {
                     "dbl                        DBL algorithm\n"
                     "\n"
                     "Examples:\n"
-                    "- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds:\n"
-                    "  ./reachability --time 10 --graph --random 100 3 --algorithm re 32 2.0\n"
+                    "- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds, and store the results in the specified path:\n"
+                    "  ./reachability --time 10 --graph --random 100 3 --algorithm re 32 2.0 --result_file ./result.csv\n"
                     "\n"
-                    "- Run the reachability algorithm BFL of specific parameters on a specified graph file:\n"
-                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5\n"
+                    "- Run the reachability algorithm BFL of specific parameters on a specified graph file, and store query time records under specified directory:\n"
+                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5 --result_dir ./query_time/\n"
                     "\n"
                     "- Run tests to validate the correctness of the algorithm PLL on a random graph with a specific seed without limiting the maximum execution time:\n"
                     "  ./reachability --accuracy --graph --random 1000 1 --seed 29 --algorithm pll 1 \n"
