@@ -101,11 +101,7 @@ namespace re {
                 p0_base = p0;
                 node.code.a_state.emplace_back(i, p0_base);
             }
-            if (p0_base) {
-                p0 = (((unsigned long long)p0 * encode(code_raw[i], node.code.chunks[i], p0_base, (i + 1) * chunk_size, chunk_size)) >> 32) / p0_base;
-            } else {
-                p0 = encode(code_raw[i], node.code.chunks[i], p0_base, (i + 1) * chunk_size, chunk_size);
-            }
+            p0 = (unsigned long long)p0 * encode(code_raw[i], node.code.chunks[i], p0_base, (i + 1) * chunk_size, chunk_size) / p0_base;
         }
         delete[] code_raw;
     }
