@@ -24,10 +24,6 @@ max_time="1000"
 seed_cnt=100
 
 
-# convert relative paths to absolute paths
-input_directory=$(readlink -f "${input_directory}")
-output_dir=$(readlink -f "${output_dir}")
-
 # create directories and clear old outputs
 subdirs=("tradeoff" "real_graph" "scale_up" "dense_up")
 mkdir -p "${output_dir}"
@@ -39,6 +35,10 @@ do
 done
 mkdir -p "${output_dir}/real_graph/query_time"
 rm -f "${output_dir}/real_graph/query_time"/*.txt
+
+# convert relative paths to absolute paths
+input_directory=$(readlink -f "${input_directory}")
+output_dir=$(readlink -f "${output_dir}")
 
 
 ######################################## Experiment 1: tradeoff ########################################
