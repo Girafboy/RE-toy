@@ -62,7 +62,6 @@ graphs=(
   "--file ${input_directory}/BA-1_10_60-L5.txt"
   "--file ${input_directory}/c-fat500-10.txt"
   "--file ${input_directory}/scc_infect-hyper.txt"
-#  "--file ${input_directory}/complete-1000.txt"
 )
 
 # algorithms to be tested

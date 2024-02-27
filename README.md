@@ -137,7 +137,7 @@ The `test.sh` script is an example on how to automate multiple tests with differ
 
 ## Test Script `experiments.sh` Usage
 
-The `experiments.sh` runs all the four experiments mentioned in the paper, namely tradeoff, real_graph, scale_up, and dense_up.
+The `experiments.sh` runs all the four experiments mentioned in the paper, namely parameter, tradeoff, real_graph, and dense_up.
 
 Most configuration parameters of this script are similar to those in `test.sh`.
 
