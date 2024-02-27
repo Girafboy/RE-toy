@@ -31,7 +31,7 @@ for subdir in "${subdirs[@]}"
 do
     subdir_path="${output_dir}/${subdir}"
     mkdir -p "${subdir_path}"
-    echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
+    echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
 done
 mkdir -p "${output_dir}/real_graph/query_time"
 rm -f "${output_dir}/real_graph/query_time"/*.txt

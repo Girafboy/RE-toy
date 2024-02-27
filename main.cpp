@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
             myfile << profile.algorithm_name << ","
                    << profile.graph_name << ","
                    << profile.params << ","
-                   << profile.preparation_time_ns << ","
+//                   << profile.preparation_time_ns << ","
                    << profile.index_size << ","
                    << profile.query_num << ","
                    << profile.average_has_path_time_ns << "\n";

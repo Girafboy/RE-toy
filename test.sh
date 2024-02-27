@@ -36,7 +36,7 @@ mkdir -p "${output_query_time_dir}"
 
 if [ "${test_accuracy}" = false ]; then
   # clean old outputs
-  echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > ${output_file}
+  echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > ${output_file}
   rm -f "${output_query_time_dir}"/*.txt
 fi
 
@@ -123,10 +123,6 @@ algorithms=(
 # PLL
   "pll 1"
   "pll 0"
-# PReaCH
-  "preach"
-# DBL
-  "dbl"
 )
 
 # main tests
