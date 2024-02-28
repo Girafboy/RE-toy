@@ -45,7 +45,8 @@ int main(int argc, char *argv[]) {
     }
 
     // arguments read from command line
-    int n = 0, d = 0;
+    int n = 0;
+    int d = -1;
     int seed = 0;
     std::string file_path;
     bool test_accuracy = false;
@@ -105,6 +106,12 @@ int main(int argc, char *argv[]) {
                 }
                 n = atoi(argv[i++]);
                 d = atoi(argv[i++]);
+            } else if (graph_type == "--complete") {  // complete DAG
+                if (i >= argc) {
+                    usage();
+                    return 0;
+                }
+                n = atoi(argv[i++]);
             } else if (graph_type == "--file") {  // graph from file
                 if (i >= argc) {
                     usage();
@@ -218,13 +225,15 @@ int main(int argc, char *argv[]) {
 
     // prepare graph
     Graph *graph;
-    if (file_path.empty()) {  // generate random graph
-        graph = new Graph(n, d, seed, "random-" + std::to_string(n) + "-" + std::to_string(d));
-    } else {  // read graph from file
+    if (!file_path.empty()) {  // read graph from file
         auto pos = file_path.find_last_of('/');
         auto graph_name = file_path.substr(pos + 1);
         graph_name = graph_name.substr(0, graph_name.size() - 4);
         graph = new Graph(file_path, graph_name);
+    } else if (d < 0) {  // generate complete graph
+        graph = new Graph(n, "complete-" + std::to_string(n));
+    } else {  // generate random graph
+        graph = new Graph(n, d, seed, "random-" + std::to_string(n) + "-" + std::to_string(d));
     }
 
     // test algorithm on graph
@@ -248,7 +257,7 @@ int main(int argc, char *argv[]) {
             myfile << profile.algorithm_name << ","
                    << profile.graph_name << ","
                    << profile.params << ","
-                   << profile.preparation_time_ns << ","
+//                   << profile.preparation_time_ns << ","
                    << profile.index_size << ","
                    << profile.query_num << ","
                    << profile.average_has_path_time_ns << "\n";
@@ -288,6 +297,7 @@ void usage() {
                     "--result_dir <dir>         Set the directory path for query time output (optional, use when generating query time files)\n"
                     "--graph <type>             Specify input graph type (required)\n"
                     "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
+                    "   --complete <n>          Generate a complete DAG with <n> nodes\n"
                     "   --file <file_path>      Load a directed graph from file and convert it to a DAG\n"
                     "--seed <seed>              Set the seed for the generation of the random graph.\n"
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
@@ -306,14 +316,14 @@ void usage() {
                     "dbl                        DBL algorithm\n"
                     "\n"
                     "Examples:\n"
-                    "- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds, and store the results in the specified path:\n"
-                    "  ./reachability --time 10 --graph --random 100 3 --algorithm re 32 2.0 --result_file ./result.csv\n"
+                    "- Run the reachability algorithm RE-toy of specific parameters on a complete DAG with 1000 nodes with a maximum execution time of 100 seconds, and store the results in the specified path:\n"
+                    "  ./reachability --time 100 --graph --complete 1000 --algorithm re 32 2.0 --result_file ./result.csv\n"
                     "\n"
                     "- Run the reachability algorithm BFL of specific parameters on a specified graph file, and store query time records under specified directory:\n"
                     "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5 --result_dir ./query_time/\n"
                     "\n"
-                    "- Run tests to validate the correctness of the algorithm PLL on a random graph with a specific seed without limiting the maximum execution time:\n"
-                    "  ./reachability --accuracy --graph --random 1000 1 --seed 29 --algorithm pll 1 \n"
+                    "- Run tests to validate the correctness of the algorithm PLL on a randomly generated DAG with 100 nodes and an average degree of 3 with a specific seed without limiting the maximum execution time:\n"
+                    "  ./reachability --accuracy --graph --random 100 3 --seed 29 --algorithm pll 1 \n"
                     "\n"
                     "Please note that you should replace specific values and file paths with your own in the examples above.";
     std::cout << h << std::endl;

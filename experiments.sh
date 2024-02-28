@@ -24,24 +24,24 @@ max_time="1000"
 seed_cnt=100
 
 
-# convert relative paths to absolute paths
-input_directory=$(readlink -f "${input_directory}")
-output_dir=$(readlink -f "${output_dir}")
-
 # create directories and clear old outputs
-subdirs=("tradeoff" "real_graph" "scale_up" "dense_up")
+subdirs=("parameter" "tradeoff" "real_graph" "dense_up")
 mkdir -p "${output_dir}"
 for subdir in "${subdirs[@]}"
 do
     subdir_path="${output_dir}/${subdir}"
     mkdir -p "${subdir_path}"
-    echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
+    echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
 done
 mkdir -p "${output_dir}/real_graph/query_time"
 rm -f "${output_dir}/real_graph/query_time"/*.txt
 
+# convert relative paths to absolute paths
+input_directory=$(readlink -f "${input_directory}")
+output_dir=$(readlink -f "${output_dir}")
 
-######################################## Experiment 1: tradeoff ########################################
+
+######################################## Experiment 1: parameter ########################################
 
 # input graphs
 graphs=(
@@ -51,16 +51,112 @@ graphs=(
 # algorithms to be tested
 algorithms=(
 # RE-toy
+  "re_toy 8 1.0"
+  "re_toy 16 1.0"
+  "re_toy 32 1.0"
+  "re_toy 64 1.0"
+  "re_toy 128 1.0"
+  "re_toy 256 1.0"
+  "re_toy 512 1.0"
+  "re_toy 1024 1.0"
+  "re_toy 8 1.2"
+  "re_toy 16 1.2"
+  "re_toy 32 1.2"
+  "re_toy 64 1.2"
+  "re_toy 128 1.2"
+  "re_toy 256 1.2"
+  "re_toy 512 1.2"
+  "re_toy 1024 1.2"
   "re_toy 8 2.0"
   "re_toy 16 2.0"
   "re_toy 32 2.0"
   "re_toy 64 2.0"
-  "re_toy 96 2.0"
   "re_toy 128 2.0"
-  "re_toy 192 2.0"
   "re_toy 256 2.0"
   "re_toy 512 2.0"
   "re_toy 1024 2.0"
+  "re_toy 8 5.0"
+  "re_toy 16 5.0"
+  "re_toy 32 5.0"
+  "re_toy 64 5.0"
+  "re_toy 128 5.0"
+  "re_toy 256 5.0"
+  "re_toy 512 5.0"
+  "re_toy 1024 5.0"
+  "re_toy 8 20.0"
+  "re_toy 16 20.0"
+  "re_toy 32 20.0"
+  "re_toy 64 20.0"
+  "re_toy 128 20.0"
+  "re_toy 256 20.0"
+  "re_toy 512 20.0"
+  "re_toy 1024 20.0"
+  "re_toy 8 50.0"
+  "re_toy 16 50.0"
+  "re_toy 32 50.0"
+  "re_toy 64 50.0"
+  "re_toy 128 50.0"
+  "re_toy 256 50.0"
+  "re_toy 512 50.0"
+  "re_toy 1024 50.0"
+  "re_toy 8 500.0"
+  "re_toy 16 500.0"
+  "re_toy 32 500.0"
+  "re_toy 64 500.0"
+  "re_toy 128 500.0"
+  "re_toy 256 500.0"
+  "re_toy 512 500.0"
+  "re_toy 1024 500.0"
+  "re_toy 8 5000.0"
+  "re_toy 16 5000.0"
+  "re_toy 32 5000.0"
+  "re_toy 64 5000.0"
+  "re_toy 128 5000.0"
+  "re_toy 256 5000.0"
+  "re_toy 512 5000.0"
+  "re_toy 1024 5000.0")
+
+# main tests
+echo "Experiment 1: parameter starts."
+for algorithm in "${algorithms[@]}"
+do
+  echo -ne "\033[2K\rTesting ${algorithm}..."
+  for graph in "${graphs[@]}"
+  do
+    for ((seed=1; seed<=seed_cnt; seed++))
+    do
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/parameter/result.csv"
+      eval "${test_command}"
+      exit_status=$?
+      if [[ $exit_status -eq 124 ]]; then
+          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+      fi
+    done
+  done
+done
+echo -e "\033[0G\033[2KExperiment 1: parameter done."
+
+
+######################################## Experiment 2: tradeoff ########################################
+
+# input graphs
+graphs=(
+  "--random 1000 10"
+)
+
+# algorithms to be tested
+algorithms=(
+# RE-toy
+  "re_toy 8 20.0"
+  "re_toy 16 20.0"
+  "re_toy 32 20.0"
+  "re_toy 64 20.0"
+  "re_toy 96 20.0"
+  "re_toy 128 20.0"
+  "re_toy 192 20.0"
+  "re_toy 256 20.0"
+  "re_toy 512 20.0"
+  "re_toy 1024 20.0"
 # BFL
   "bfl 1"
   "bfl 2"
@@ -72,7 +168,6 @@ algorithms=(
   "bfl 20"
   "bfl 25"
   "bfl 30"
-  "bfl 50"
 # Grail
   "grail 1 0 2"
   "grail 1 0 3"
@@ -107,14 +202,10 @@ algorithms=(
 # PLL
   "pll 1"
   "pll 0"
-# PReaCH
-  "preach"
-# DBL
-  "dbl"
 )
 
 # main tests
-echo "Experiment 1: tradeoff starts."
+echo "Experiment 2: tradeoff starts."
 for algorithm in "${algorithms[@]}"
 do
   echo -ne "\033[2K\rTesting ${algorithm}..."
@@ -131,10 +222,10 @@ do
     done
   done
 done
-echo -e "\033[0G\033[2KExperiment 1: tradeoff done."
+echo -e "\033[0G\033[2KExperiment 2: tradeoff done."
 
 
-######################################## Experiment 2: real_graph ########################################
+######################################## Experiment 3: real_graph ########################################
 
 # input graphs
 graphs=(
@@ -147,23 +238,23 @@ graphs=(
   "--file ${input_directory}/BA-1_10_60-L5.txt"
   "--file ${input_directory}/c-fat500-10.txt"
   "--file ${input_directory}/scc_infect-hyper.txt"
-  "--file ${input_directory}/complete-1000.txt"
+  "--complete 10000"
 )
 
 # algorithms to be tested
 algorithms=(
 # RE-toy
-  "re_toy 8 2.0"
-  "re_toy 16 2.0"
-  "re_toy 32 2.0"
-  "re_toy 64 2.0"
-  "re_toy 128 2.0"
-  "re_toy 256 2.0"
-  "re_toy 512 2.0"
-  "re_toy 1024 2.0"
-  "re_toy 2048 2.0"
-  "re_toy 4096 2.0"
-  "re_toy 8192 2.0"
+  "re_toy 8 20.0"
+  "re_toy 16 20.0"
+  "re_toy 32 20.0"
+  "re_toy 64 20.0"
+  "re_toy 128 20.0"
+  "re_toy 256 20.0"
+  "re_toy 512 20.0"
+  "re_toy 1024 20.0"
+  "re_toy 2048 20.0"
+  "re_toy 4096 20.0"
+  "re_toy 8192 20.0"
 # BFL
   "bfl 1"
   "bfl 2"
@@ -208,14 +299,10 @@ algorithms=(
 # PLL
   "pll 1"
   "pll 0"
-# PReaCH
-  "preach"
-# DBL
-  "dbl"
 )
 
 # main tests
-echo "Experiment 2: real_graph starts."
+echo "Experiment 3: real_graph starts."
 for algorithm in "${algorithms[@]}"
 do
   echo -ne "\033[2K\rTesting ${algorithm}..."
@@ -229,86 +316,7 @@ do
     fi
   done
 done
-echo -e "\033[0G\033[2KExperiment 2: real_graph done."
-
-
-######################################## Experiment 3: scale_up ########################################
-
-# input graphs
-graphs=(
-  "--random 32 6"
-  "--random 64 8"
-  "--random 128 12"
-  "--random 256 16"
-  "--random 512 23"
-  "--random 1024 32"
-  "--random 2048 46"
-  "--random 4096 64"
-  "--random 8192 91"
-)
-
-# RE-toy algorithm with recommended parameters for each graph
-re_toys=(
-  "re_toy 5 2.0"
-  "re_toy 8 2.0"
-  "re_toy 11 2.0"
-  "re_toy 16 2.0"
-  "re_toy 22 2.0"
-  "re_toy 32 2.0"
-  "re_toy 45 2.0"
-  "re_toy 64 2.0"
-  "re_toy 90 2.0"
-)
-
-# other baseline algorithms with their recommended parameters for all the graphs above
-baselines=(
-  "bfl 5"
-  "grail -2 1 5"
-  "pathtree 2"
-  "tol 0 2"
-  "ferrari 5 32 1"
-  "ip 5 5 100"
-  "pll 1"
-  "preach"
-  "dbl"
-)
-
-# main tests
-echo "Experiment 3: scale_up starts."
-# RE-toy
-echo -ne "\033[2K\rTesting re_toy..."
-for ((i=0; i<${#graphs[@]}; i++))
-do
-  graph="${graphs[$i]}"
-  algorithm="${re_toys[$i]}"
-  for ((seed=1; seed<=seed_cnt; seed++))
-  do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv"
-    eval "${test_command}"
-    exit_status=$?
-    if [[ $exit_status -eq 124 ]]; then
-        echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
-    fi
-  done
-done
-# baseline algorithms
-for algorithm in "${baselines[@]}"
-do
-  echo -ne "\033[2K\rTesting ${algorithm}..."
-  for graph in "${graphs[@]}"
-  do
-    for ((seed=1; seed<=seed_cnt; seed++))
-    do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/scale_up/result.csv"
-      eval "${test_command}"
-      exit_status=$?
-      if [[ $exit_status -eq 124 ]]; then
-          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
-      fi
-    done
-  done
-done
-echo -e "\033[0G\033[2KExperiment 3: scale_up done."
+echo -e "\033[0G\033[2KExperiment 3: real_graph done."
 
 
 ######################################## Experiment 4: dense_up ########################################
@@ -329,7 +337,7 @@ graphs=(
 
 # algorithms to be tested
 algorithms=(
-  "re_toy 32 2.0"
+  "re_toy 32 20.0"
   "bfl 5"
   "grail -2 1 5"
   "pathtree 2"
@@ -337,8 +345,6 @@ algorithms=(
   "ferrari 5 32 1"
   "ip 5 5 100"
   "pll 1"
-  "preach"
-  "dbl"
 )
 
 # main tests

@@ -22,7 +22,9 @@ public:
 
     explicit Graph(const std::string &input_file_path, std::string name = "graph");
 
-    explicit Graph(int n, int d, int seed, std::string name = "graph");
+    Graph(int n, int d, int seed, std::string name = "graph");
+
+    explicit Graph(int n, std::string name = "graph");
 
     size_t getInDegree(int i) const;
 

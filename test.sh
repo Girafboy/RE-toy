@@ -31,22 +31,27 @@ query_num="100000"
 # maximum execution time in seconds
 max_time="1000"
 
+# create output_query_time_dir if not exists
+mkdir -p "${output_query_time_dir}"
+
+if [ "${test_accuracy}" = false ]; then
+  # clean old outputs
+  echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > ${output_file}
+  rm -f "${output_query_time_dir}"/*.txt
+fi
 
 # convert relative paths to absolute paths
 input_directory=$(readlink -f "${input_directory}")
 output_file=$(readlink -f "${output_file}")
 output_query_time_dir=$(readlink -f "${output_query_time_dir}")
 
-if [ "${test_accuracy}" = false ]; then
-  # clean old outputs
-  echo "algorithm,graph,params,construction(ns),index(B),query_num,query_mean(ns)" > ${output_file}
-  rm "${output_query_time_dir}"/*.txt
-fi
 
 # input graphs
 graphs=(
 # random graphs
   "--random 1000 10"
+# complete graphs
+  "--complete 1000"
 # graphs from files
   "--file ${input_directory}/econ-poli.txt"
   "--file ${input_directory}/ash958.txt"
@@ -57,7 +62,6 @@ graphs=(
   "--file ${input_directory}/BA-1_10_60-L5.txt"
   "--file ${input_directory}/c-fat500-10.txt"
   "--file ${input_directory}/scc_infect-hyper.txt"
-  "--file ${input_directory}/complete-1000.txt"
 )
 
 # algorithms to be tested
@@ -119,10 +123,6 @@ algorithms=(
 # PLL
   "pll 1"
   "pll 0"
-# PReaCH
-  "preach"
-# DBL
-  "dbl"
 )
 
 # main tests

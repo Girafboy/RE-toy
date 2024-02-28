@@ -88,6 +88,20 @@ Graph::Graph(int n, int d, int seed, std::string name) : name(std::move(name)) {
     std::iota(scc_map.begin(), scc_map.end(), 0);
 }
 
+Graph::Graph(int n, std::string name) : name(std::move(name)) {
+    adj_list.resize(n);
+    for (int u = 0; u < n; ++u) {
+        for (int v = 0; v < u; ++v) {
+            adj_list[u].push_back(v);
+        }
+    }
+    generateReverseAdjList();
+    n_node = n;
+    n_edge = n * (n - 1) / 2;
+    scc_map.resize(n);
+    std::iota(scc_map.begin(), scc_map.end(), 0);
+}
+
 void Graph::generateReverseAdjList() {
     reverse_adj_list.resize(adj_list.size());
     for (int i = 0; i < adj_list.size(); ++i) {
