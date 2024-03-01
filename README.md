@@ -8,7 +8,7 @@ This repository includes the C++ implementation of the RE-toy algorithm, as desc
 
 The code is organized as follows:
 
-- `Graph` class: represents the input graph. It can be constructed by random Directed Acyclic Graphs (DAGs) or conversion of input files representing directed graphs into DAGs. All algorithms within the platform utilize the `Graph` class as a unified input, enabling convenient and standardized testing.
+- `Graph` class: represents the input graph. It can be constructed by random/complete Directed Acyclic Graphs (DAGs) or conversion of input files representing directed graphs into DAGs. All algorithms within the platform utilize the `Graph` class as a unified input, enabling convenient and standardized testing.
 - `AutoTest` class: provides functionality for testing reachability algorithms.
 - `Timer` class: provides timing utilities.
 - `Profile` struct: stores the results obtained from the testing process.
@@ -44,6 +44,7 @@ To execute the program, use the following command:
 - `--result_dir <dir>`: Set the directory path for query time output (optional, use when generating query time files)
 - `--graph <type>`: Specify input graph type (required)
   - `--random <n> <d>`: Generate a random DAG with \<n\> nodes and \<d\> average degree
+  - `--complete <n>`: Generate a complete DAG with \<n\> nodes
   - `--file <file_path>`: Load a directed graph from file and convert it to a DAG
 - `--seed <seed>`: Set the seed for the generation of the random graph (optional)
 - `--algorithm <algorithm_name> [algorithm_params]`: Specify the reachability algorithm to use and its parameters (required)
@@ -66,10 +67,10 @@ Here are the available reachability algorithms and their usages:
 
 Here are some examples of how to use the commands:
 
-- Run the reachability algorithm RE-toy of specific parameters on a randomly generated DAG with 100 nodes and an average degree of 3 with a maximum execution time of 10 seconds, and store the results in the specified path:
+- Run the reachability algorithm RE-toy of specific parameters on a complete DAG with 1000 nodes with a maximum execution time of 100 seconds, and store the results in the specified path:
 
   ````
-  ./reachability --time 10 --graph --random 100 3 --algorithm re_toy 32 2.0 --result_file ./result.csv
+  ./reachability --time 100 --graph --complete 1000 --algorithm re_toy 32 2.0 --result_file ./result.csv
   ```
 
 - Run the reachability algorithm BFL of specific parameters on a specified graph file, and store query time records under specified directory:
@@ -78,10 +79,10 @@ Here are some examples of how to use the commands:
   ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5 --result_dir ./query_time/
   ```
 
-- Run tests to validate the correctness of the algorithm PLL on a random graph with a specific seed without limiting the maximum execution time:
+- Run tests to validate the correctness of the algorithm PLL on a randomly generated DAG with 100 nodes and an average degree of 3 with a specific seed without limiting the maximum execution time:
 
   ````
-  ./reachability --accuracy --graph --random 1000 1 --seed 29 --algorithm pll 1
+  ./reachability --accuracy --graph --random 100 3 --seed 29 --algorithm pll 1
   ```
 
 Please note that the above examples are meant to illustrate the usage of command-line arguments, and you should replace specific parameter values and file paths with your own.
@@ -136,7 +137,7 @@ The `test.sh` script is an example on how to automate multiple tests with differ
 
 ## Test Script `experiments.sh` Usage
 
-The `experiments.sh` runs all the four experiments mentioned in the paper, namely tradeoff, real_graph, scale_up, and dense_up.
+The `experiments.sh` runs all the four experiments mentioned in the paper, namely parameter, tradeoff, real_graph, and dense_up.
 
 Most configuration parameters of this script are similar to those in `test.sh`.
 
