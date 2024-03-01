@@ -18,7 +18,7 @@ output_dir="./output"
 query_num="100000"
 
 # maximum execution time for each single test in seconds
-max_time="1000"
+max_time="10000"
 
 # number of seeds for each random graph
 seed_cnt=100
@@ -258,13 +258,14 @@ algorithms=(
 # BFL
   "bfl 1"
   "bfl 2"
+  "bfl 3"
   "bfl 5"
+  "bfl 8"
   "bfl 10"
+  "bfl 15"
   "bfl 20"
-  "bfl 50"
-  "bfl 100"
-  "bfl 200"
-  "bfl 500"
+  "bfl 25"
+  "bfl 30"
 # Grail
   "grail 1 0 2"
   "grail 1 0 3"
