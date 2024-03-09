@@ -229,11 +229,11 @@ echo -e "\033[0G\033[2KExperiment 2: tradeoff done."
 
 # input graphs
 graphs=(
-  "--file ${input_directory}/econ-poli.txt"
-  "--file ${input_directory}/ash958.txt"
-  "--file ${input_directory}/yago_sub_6642.txt"
-  "--file ${input_directory}/plat362.txt"
-  "--file ${input_directory}/bcsstm27.txt"
+  "--file ${input_directory}/watt__1.txt"
+  "--file ${input_directory}/ash219.txt"
+  "--file ${input_directory}/wm3.txt"
+  "--file ${input_directory}/bcsstk09.txt"
+  "--file ${input_directory}/dwt__193.txt"
   "--file ${input_directory}/bcsstk04.txt"
   "--file ${input_directory}/BA-1_10_60-L5.txt"
   "--file ${input_directory}/c-fat500-10.txt"
@@ -245,15 +245,25 @@ graphs=(
 algorithms=(
 # RE-toy
   "re_toy 8 20.0"
+  "re_toy 12 20.0"
   "re_toy 16 20.0"
+  "re_toy 24 20.0"
   "re_toy 32 20.0"
+  "re_toy 48 20.0"
   "re_toy 64 20.0"
+  "re_toy 96 20.0"
   "re_toy 128 20.0"
+  "re_toy 192 20.0"
   "re_toy 256 20.0"
+  "re_toy 384 20.0"
   "re_toy 512 20.0"
+  "re_toy 768 20.0"
   "re_toy 1024 20.0"
+  "re_toy 1536 20.0"
   "re_toy 2048 20.0"
+  "re_toy 3072 20.0"
   "re_toy 4096 20.0"
+  "re_toy 6144 20.0"
   "re_toy 8192 20.0"
 # BFL
   "bfl 1"
@@ -262,9 +272,13 @@ algorithms=(
   "bfl 5"
   "bfl 8"
   "bfl 10"
+  "bfl 12"
   "bfl 15"
+  "bfl 18"
   "bfl 20"
+  "bfl 22"
   "bfl 25"
+  "bfl 28"
   "bfl 30"
 # Grail
   "grail 1 0 2"
@@ -323,9 +337,15 @@ echo -e "\033[0G\033[2KExperiment 3: real_graph done."
 ######################################## Experiment 4: dense_up ########################################
 
 # input graphs
-graphs=(
+graphs1=(
   "--random 1024 1"
+)
+
+graphs2=(
   "--random 1024 2"
+)
+
+graphs3=(
   "--random 1024 4"
   "--random 1024 8"
   "--random 1024 16"
@@ -333,11 +353,36 @@ graphs=(
   "--random 1024 64"
   "--random 1024 128"
   "--random 1024 256"
-  "--random 1024 511"
+)
+
+complete_graphs=(
+  "--complete 1024"
 )
 
 # algorithms to be tested
-algorithms=(
+algorithms1=(
+  "re_toy 32 20.0"
+  "bfl 2"
+  "grail -2 1 2"
+  "pathtree 2"
+  "tol 0 2"
+  "ferrari 2 32 1"
+  "ip 2 2 100"
+  "pll 1"
+)
+
+algorithms2=(
+  "re_toy 32 20.0"
+  "bfl 5"
+  "grail -2 1 2"
+  "pathtree 2"
+  "tol 0 2"
+  "ferrari 2 32 1"
+  "ip 5 5 100"
+  "pll 1"
+)
+
+algorithms3=(
   "re_toy 32 20.0"
   "bfl 5"
   "grail -2 1 5"
@@ -350,10 +395,11 @@ algorithms=(
 
 # main tests
 echo "Experiment 4: dense_up starts."
-for algorithm in "${algorithms[@]}"
+
+for algorithm in "${algorithms1[@]}"
 do
   echo -ne "\033[2K\rTesting ${algorithm}..."
-  for graph in "${graphs[@]}"
+  for graph in "${graphs1[@]}"
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
@@ -366,4 +412,53 @@ do
     done
   done
 done
+
+for algorithm in "${algorithms2[@]}"
+do
+  echo -ne "\033[2K\rTesting ${algorithm}..."
+  for graph in "${graphs2[@]}"
+  do
+    for ((seed=1; seed<=seed_cnt; seed++))
+    do
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+      eval "${test_command}"
+      exit_status=$?
+      if [[ $exit_status -eq 124 ]]; then
+          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+      fi
+    done
+  done
+done
+
+for algorithm in "${algorithms3[@]}"
+do
+  echo -ne "\033[2K\rTesting ${algorithm}..."
+  for graph in "${graphs3[@]}"
+  do
+    for ((seed=1; seed<=seed_cnt; seed++))
+    do
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+      eval "${test_command}"
+      exit_status=$?
+      if [[ $exit_status -eq 124 ]]; then
+          echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+      fi
+    done
+  done
+done
+
+for algorithm in "${algorithms3[@]}"
+do
+  echo -ne "\033[2K\rTesting ${algorithm}..."
+  for graph in "${complete_graphs[@]}"
+  do
+    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+    eval "${test_command}"
+    exit_status=$?
+    if [[ $exit_status -eq 124 ]]; then
+        echo -e "\033[2K\rTimeout: Algorithm \"${algorithm}\" on graph \"${graph}\"."
+    fi
+  done
+done
+
 echo -e "\033[0G\033[2KExperiment 4: dense_up done."
