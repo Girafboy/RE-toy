@@ -1,8 +1,8 @@
-# re-toy paper name  todo
+# Reachability-state Encoding: A New Paradigm for Reachability Index
 
 Welcome to the RE-toy algorithm and our reachability testing platform!
 
-This repository includes the C++ implementation of the RE-toy algorithm, as described in our paper todo todo[insert paper title]. Additionally, it provides a platform that facilitates the validation and testing of reachability algorithms.
+This repository includes the C++ implementation of the RE-toy algorithm, as described in our paper Reachability-state Encoding: A New Paradigm for Reachability Index. Additionally, it provides a platform that facilitates the validation and testing of reachability algorithms.
 
 ## Code Structure
 
