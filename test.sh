@@ -53,11 +53,11 @@ graphs=(
 # complete graphs
   "--complete 1000"
 # graphs from files
-  "--file ${input_directory}/econ-poli.txt"
-  "--file ${input_directory}/ash958.txt"
-  "--file ${input_directory}/yago_sub_6642.txt"
-  "--file ${input_directory}/plat362.txt"
-  "--file ${input_directory}/bcsstm27.txt"
+  "--file ${input_directory}/watt__1.txt"
+  "--file ${input_directory}/ash219.txt"
+  "--file ${input_directory}/wm3.txt"
+  "--file ${input_directory}/bcsstk09.txt"
+  "--file ${input_directory}/dwt__193.txt"
   "--file ${input_directory}/bcsstk04.txt"
   "--file ${input_directory}/BA-1_10_60-L5.txt"
   "--file ${input_directory}/c-fat500-10.txt"
