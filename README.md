@@ -41,7 +41,6 @@ To execute the program, use the following command:
 - `--accuracy`: Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)
 - `--query_num <number>`: Set number of queries, default value is 100000 (optional)
 - `--result_file <file>`: Set the file path for result output (optional, use when generating the result file)
-- `--result_dir <dir>`: Set the directory path for query time output (optional, use when generating query time files)
 - `--graph <type>`: Specify input graph type (required)
   - `--random <n> <d>`: Generate a random DAG with \<n\> nodes and \<d\> average degree
   - `--complete <n>`: Generate a complete DAG with \<n\> nodes
@@ -71,12 +70,6 @@ Here are some examples of how to use the commands:
 
   ````
   ./reachability --time 100 --graph --complete 1000 --algorithm re_toy 32 2.0 --result_file ./result.csv
-  ```
-
-- Run the reachability algorithm BFL of specific parameters on a specified graph file, and store query time records under specified directory:
-
-  ````
-  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5 --result_dir ./query_time/
   ```
 
 - Run tests to validate the correctness of the algorithm PLL on a randomly generated DAG with 100 nodes and an average degree of 3 with a specific seed without limiting the maximum execution time:
@@ -117,9 +110,8 @@ The `test.sh` script is an example on how to automate multiple tests with differ
 
    - `executable`: Provide the path to the `reachability` executable file generated after compilation.
    - `input_directory`: Specify the common parent directory path where the input graph files are located. Ensure that the graph files are present in this directory and update the paths in the `graphs` array accordingly.
-   - `test_accuracy`: Set this variable to true if you want to perform accuracy tests, or false if you want to test index size, construction time, and query time.
+   - `test_accuracy`: Set this variable to true if you want to perform accuracy tests, or false if you want to test index size and query time.
    - `output_file`: Set the path to the output `result.csv` file where the test results will be stored.
-   - `output_query_time_dir`: Set the path to the directory where the output query time files will be stored. Please note that the script will delete all `.txt` files under this directory before writing new query time files. Make sure to save any important files before running this script.
    - `query_num`: Define the number of query pairs to be used in each test.
    - `max_time`: Set the maximum execution time in seconds for each test.
 
@@ -133,7 +125,7 @@ The `test.sh` script is an example on how to automate multiple tests with differ
    
    The script will start executing the tests based on the specified parameters.
 
-5. If `test_accuracy` is set to true, results will be shown in the terminal. Otherwise, once the script completes, the test results will be saved in the file specified by the `output_file` variable and the query time files will be stored in the directory specified by the `output_query_time_dir` variable.
+5. If `test_accuracy` is set to true, results will be shown in the terminal. Otherwise, once the script completes, the test results will be saved in the file specified by the `output_file` variable.
 
 ## Test Script `experiments.sh` Usage
 

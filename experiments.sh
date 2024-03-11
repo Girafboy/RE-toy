@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script automatically runs four experiments mentioned in the paper, namely tradeoff, real_graph, scale_up, and dense_up.
+# This script automatically runs four experiments mentioned in the paper, namely parameter, tradeoff, real_graph, and dense_up.
 
 # config
 
@@ -11,7 +11,7 @@ executable="./build/reachability"
 input_directory="./graphs/"
 
 # path to the output directory of all the results of the four experiments
-# results will be stored in subdirectories called tradeoff, real_graph, scale_up, and dense_up, respectively
+# results will be stored in parameter.csv, tradeoff.csv, real_graph.csv, and dense_up.csv, respectively
 output_dir="./output"
 
 # test number of query pairs in each experiment
@@ -25,16 +25,12 @@ seed_cnt=100
 
 
 # create directories and clear old outputs
-subdirs=("parameter" "tradeoff" "real_graph" "dense_up")
+tasks=("parameter" "tradeoff" "real_graph" "dense_up")
 mkdir -p "${output_dir}"
-for subdir in "${subdirs[@]}"
+for task in "${tasks[@]}"
 do
-    subdir_path="${output_dir}/${subdir}"
-    mkdir -p "${subdir_path}"
-    echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > "${subdir_path}/result.csv"
+    echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > "${output_dir}/${task}.csv"
 done
-mkdir -p "${output_dir}/real_graph/query_time"
-rm -f "${output_dir}/real_graph/query_time"/*.txt
 
 # convert relative paths to absolute paths
 input_directory=$(readlink -f "${input_directory}")
@@ -114,7 +110,8 @@ algorithms=(
   "re_toy 128 5000.0"
   "re_toy 256 5000.0"
   "re_toy 512 5000.0"
-  "re_toy 1024 5000.0")
+  "re_toy 1024 5000.0"
+)
 
 # main tests
 echo "Experiment 1: parameter starts."
@@ -125,7 +122,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/parameter/result.csv"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/parameter.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -213,7 +210,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/tradeoff/result.csv"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/tradeoff.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -323,7 +320,7 @@ do
   echo -ne "\033[2K\rTesting ${algorithm}..."
   for graph in "${graphs[@]}"
   do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/real_graph/result.csv --result_dir ${output_dir}/real_graph/query_time/"
+    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/real_graph.csv"
     eval "${test_command}"
     exit_status=$?
     if [[ $exit_status -eq 124 ]]; then
@@ -403,7 +400,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -420,7 +417,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -437,7 +434,7 @@ do
   do
     for ((seed=1; seed<=seed_cnt; seed++))
     do
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --seed ${seed} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up.csv"
       eval "${test_command}"
       exit_status=$?
       if [[ $exit_status -eq 124 ]]; then
@@ -452,7 +449,7 @@ do
   echo -ne "\033[2K\rTesting ${algorithm}..."
   for graph in "${complete_graphs[@]}"
   do
-    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up/result.csv"
+    test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_dir}/dense_up.csv"
     eval "${test_command}"
     exit_status=$?
     if [[ $exit_status -eq 124 ]]; then
