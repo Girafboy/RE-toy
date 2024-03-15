@@ -15,56 +15,56 @@
 // #define DEBUG
 
 namespace re {
-    RE_Toy::RE_Toy(int x, float r) : chunk_size(x - 1), ratio(r) {}
+    RE_Toy::RE_Toy(int x, float delta) : chunk_size(x - 1), delta(delta) {}
 
     unsigned int RE_Toy::encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const {
-        unsigned long long lo = 0, hi = RANGE_MAX, mid;
+        unsigned long long l = 0, h = RANGE_MAX, mid;
         int pending = 0;
         for (int i = len - 1; i >= 0; i--) {
-            mid = ((unsigned long long)p0 * (hi - lo)) >> 32;
+            mid = ((unsigned long long)p0 * (h - l)) >> 32;
             if (mid < 1) {
                 mid = 1;
             }
-            mid += lo;
+            mid += l;
             if (mid > RANGE_MAX) {
                 mid = RANGE_MAX;
             }
 
             if (bits.get(i)) {
-                lo = mid;
+                l = mid;
                 p0 = ((unsigned long long)p0 * parameter[cur - len + i]) >> 32;
             } else {
-                hi = mid - 1;
+                h = mid - 1;
             }
             while (true) {
-                if (hi < RANGE_HALF) {
+                if (h < RANGE_HALF) {
                     out.append_zero();
                     while (pending) {
                         out.append_one();
                         pending--;
                     }
-                } else if (lo >= RANGE_HALF) {
+                } else if (l >= RANGE_HALF) {
                     out.append_one();
                     while (pending) {
                         out.append_zero();
                         pending--;
                     }
-                } else if (lo >= RANGE_ONE_QUAR && hi < RANGE_THREE_QUAR) {
+                } else if (l >= RANGE_ONE_QUAR && h < RANGE_THREE_QUAR) {
                     pending++;
-                    lo -= RANGE_ONE_QUAR;
-                    hi -= RANGE_ONE_QUAR;
+                    l -= RANGE_ONE_QUAR;
+                    h -= RANGE_ONE_QUAR;
                 } else {
                     break;
                 }
-                lo <<= 1;
-                hi <<= 1;
-                hi |= 1;
-                lo &= RANGE_MAX;
-                hi &= RANGE_MAX;
+                l <<= 1;
+                h <<= 1;
+                h |= 1;
+                l &= RANGE_MAX;
+                h &= RANGE_MAX;
             }
         }
         pending++;
-        if (lo < RANGE_ONE_QUAR) {
+        if (l < RANGE_ONE_QUAR) {
             out.append_zero();
             while (pending) {
                 out.append_one();
@@ -97,7 +97,7 @@ namespace re {
         unsigned int p0 = encode(code_raw[chunks - 1], node.code.chunks[chunks - 1], p0_base, node.topo_order,
                               node.topo_order - chunk_size * (chunks - 1));
         for (int i = chunks - 2; i >= 0; i--) {
-            if (approximation_ratio(p0, p0_base) > ratio) {
+            if (approximation_ratio(p0, p0_base) > delta) {
                 p0_base = p0;
                 node.code.a_state.emplace_back(i, p0_base);
             }
@@ -209,41 +209,41 @@ namespace re {
         }
         code_cur = 32;
 
-        unsigned long long lo = 0, hi = RANGE_MAX, mid;
+        unsigned long long l = 0, h = RANGE_MAX, mid;
         for (len--; len; len--) {
-            mid = ((unsigned long long) p0 * (hi - lo)) >> 32;
+            mid = ((unsigned long long) p0 * (h - l)) >> 32;
             if (mid < 1) {
                 mid = 1;
             }
-            mid += lo;
+            mid += l;
             if (mid > RANGE_MAX) {
                 mid = RANGE_MAX;
             }
 
             p0_cur--;
             if (value >= mid) {
-                lo = mid;
+                l = mid;
                 p0 = (((unsigned long long) p0 * (*p0_cur)) >> 32);
             } else {
-                hi = mid - 1;
+                h = mid - 1;
             }
 
             while (true) {
-                if (hi < RANGE_HALF) {
-                } else if (lo >= RANGE_HALF) {
-                    lo -= RANGE_HALF;
-                    hi -= RANGE_HALF;
+                if (h < RANGE_HALF) {
+                } else if (l >= RANGE_HALF) {
+                    l -= RANGE_HALF;
+                    h -= RANGE_HALF;
                     value -= RANGE_HALF;
-                } else if (lo >= RANGE_ONE_QUAR && hi < RANGE_THREE_QUAR) {
-                    lo -= RANGE_ONE_QUAR;
-                    hi -= RANGE_ONE_QUAR;
+                } else if (l >= RANGE_ONE_QUAR && h < RANGE_THREE_QUAR) {
+                    l -= RANGE_ONE_QUAR;
+                    h -= RANGE_ONE_QUAR;
                     value -= RANGE_ONE_QUAR;
                 } else {
                     break;
                 }
-                lo <<= 1;
-                hi <<= 1;
-                hi |= 1;
+                l <<= 1;
+                h <<= 1;
+                h |= 1;
                 value <<= 1;
                 if (code_cur < size) {
                     value |= code.get(code_cur++);
@@ -251,11 +251,11 @@ namespace re {
             }
         }
 
-        mid = ((unsigned long long) p0 * (hi - lo)) >> 32;
+        mid = ((unsigned long long) p0 * (h - l)) >> 32;
         if (mid < 1) {
             mid = 1;
         }
-        mid += lo;
+        mid += l;
         if (mid > RANGE_MAX) {
             mid = RANGE_MAX;
         }
@@ -293,7 +293,7 @@ namespace re {
 
     std::string RE_Toy::getParams() const {
         std::stringstream stream;
-        stream << "x=" << chunk_size + 1 << " r=" << std::fixed << std::setprecision(1) << ratio;
+        stream << "x=" << chunk_size + 1 << " delta=" << std::fixed << std::setprecision(1) << delta;
         return stream.str();
     }
 

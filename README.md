@@ -50,7 +50,7 @@ To execute the program, use the following command:
 
 Here are the available reachability algorithms and their usages:
 
-- `re_toy <x> <r>`: RE-toy algorithm
+- `re_toy <x> <delta>`: RE-toy algorithm
 - `bfl <K>`: BFL algorithm
 - `grail <t> <ltype> <dim>`: GRAIL algorithm
 - `pathtree <alg_type>`: PathTree algorithm
@@ -137,7 +137,7 @@ Most configuration parameters of this script are similar to those in `test.sh`.
 
 ## Citation
 
-If you use the RE-toy algorithm or our testing platform for your research or any other work, please cite our paper.
+If you use the RE Paradigm or RE-toy algorithm for your research or any other work, please cite our paper.
 
 todo: bib
 

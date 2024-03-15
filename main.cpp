@@ -131,8 +131,8 @@ int main(int argc, char *argv[]) {
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                float r = atof(argv[i++]);
-                algorithm = new RE_Toy(x, r);
+                float delta = atof(argv[i++]);
+                algorithm = new RE_Toy(x, delta);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
@@ -283,7 +283,7 @@ void usage() {
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
                     "\n"
                     "Reachability Algorithms:\n"
-                    "re_toy <x> <r>             RE-toy algorithm\n"
+                    "re_toy <x> <delta>         RE-toy algorithm\n"
                     "bfl <K>                    BFL algorithm\n"
                     "grail <t> <ltype> <dim>    GRAIL algorithm\n"
                     "pathtree <alg_type>        PathTree algorithm\n"
@@ -311,7 +311,7 @@ void algorithmUsage(const std::string &algorithm_name) {
         std::cout << "Usage of re_toy:\n"
                      "Total: 2 argument(s)\n"
                      "arg[0]: x\n"
-                     "arg[1]: r\n"
+                     "arg[1]: delta\n"
                   << std::endl;
     } else if (algorithm_name == "bfl") {
         std::cout << "Usage of bfl:\n"

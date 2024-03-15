@@ -165,7 +165,7 @@ namespace re {
         Node *nodes;
         unsigned int *parameter = nullptr;
         int chunk_size;
-        float ratio;
+        float delta;
         size_t n;
 
         unsigned int encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const;
@@ -175,7 +175,7 @@ namespace re {
         static bool decode_check(const Bits &code, fastfloat_t p0, fastfloat_t *p0_cur, int len);
 
     public:
-        RE_Toy(int x, float r);
+        RE_Toy(int x, float delta);
 
         std::string getName() const override;
 
