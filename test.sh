@@ -11,18 +11,12 @@ input_directory="./graphs/"
 
 # flag to indicate whether to perform accuracy tests
 # true: test accuracy
-# false: test index size, construction time, and query time
+# false: test index size and query time
 test_accuracy=false
 
 # path to the output result.csv
 # ignore if test_accuracy
 output_file="./output/result.csv"
-
-# path to the directory of output query time files
-# ignore if test_accuracy
-# !!!IMPORTANT!!!: the script would DELETE all .txt files under this directory before writing new query time files
-# please save all important files under this directory before running this script
-output_query_time_dir="./output/query_time/"
 
 # test number of query pairs
 # ignore if test_accuracy
@@ -31,19 +25,14 @@ query_num="100000"
 # maximum execution time in seconds
 max_time="1000"
 
-# create output_query_time_dir if not exists
-mkdir -p "${output_query_time_dir}"
-
 if [ "${test_accuracy}" = false ]; then
   # clean old outputs
   echo "algorithm,graph,params,index(B),query_num,query_mean(ns)" > ${output_file}
-  rm -f "${output_query_time_dir}"/*.txt
 fi
 
 # convert relative paths to absolute paths
 input_directory=$(readlink -f "${input_directory}")
 output_file=$(readlink -f "${output_file}")
-output_query_time_dir=$(readlink -f "${output_query_time_dir}")
 
 
 # input graphs
@@ -53,11 +42,11 @@ graphs=(
 # complete graphs
   "--complete 1000"
 # graphs from files
-  "--file ${input_directory}/econ-poli.txt"
-  "--file ${input_directory}/ash958.txt"
-  "--file ${input_directory}/yago_sub_6642.txt"
-  "--file ${input_directory}/plat362.txt"
-  "--file ${input_directory}/bcsstm27.txt"
+  "--file ${input_directory}/watt__1.txt"
+  "--file ${input_directory}/ash219.txt"
+  "--file ${input_directory}/wm3.txt"
+  "--file ${input_directory}/bcsstk09.txt"
+  "--file ${input_directory}/dwt__193.txt"
   "--file ${input_directory}/bcsstk04.txt"
   "--file ${input_directory}/BA-1_10_60-L5.txt"
   "--file ${input_directory}/c-fat500-10.txt"
@@ -134,7 +123,7 @@ do
     if [ "$test_accuracy" = true ]; then
       test_command="timeout ${max_time} ${executable} --accuracy --graph ${graph} --algorithm ${algorithm}"
     else
-      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_file} --result_dir ${output_query_time_dir}"
+      test_command="timeout ${max_time} ${executable} --time ${max_time} --graph ${graph} --algorithm ${algorithm} --query_num ${query_num} --result_file ${output_file}"
     fi
     eval "${test_command}"
     exit_status=$?

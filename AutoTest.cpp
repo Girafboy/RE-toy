@@ -88,9 +88,7 @@ Profile AutoTest::testAlgorithmOnGraph(int check_reachable_times, bool check_onl
     profile.graph_name = graph_ptr->getName();
     profile.algorithm_name = algorithm_ptr->getName();
     profile.params = algorithm_ptr->getParams();
-    profile.preparation_time_ns = Timer::getExecutionTime([=] {
-        algorithm_ptr->construction(*graph_ptr);
-    });
+    algorithm_ptr->construction(*graph_ptr);
     profile.index_size = algorithm_ptr->getIndexSize();
 
     // test on reachability query time
@@ -119,7 +117,6 @@ Profile AutoTest::testAlgorithmOnGraph(int check_reachable_times, bool check_onl
         long long sum = std::reduce(has_path_times_ns.begin(), has_path_times_ns.end());
         double mean = (double) sum / (double) has_path_times_ns.size();
         profile.average_has_path_time_ns = mean;
-        profile.has_path_times_ns = std::move(has_path_times_ns);
     }
     return profile;
 }

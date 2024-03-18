@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
     bool test_accuracy = false;
     int check_reachable_times = 100000;
     std::string result_file;
-    std::string result_dir;
     Algorithm *algorithm;
 
     int i = 1;
@@ -85,13 +84,6 @@ int main(int argc, char *argv[]) {
                 return 0;
             }
             result_file = argv[i++];
-        } else if (strcmp("--result_dir", argv[i]) == 0) {  // query file output directory
-            ++i;
-            if (i >= argc) {
-                usage();
-                return 0;
-            }
-            result_dir = argv[i++];
         } else if (strcmp("--graph", argv[i]) == 0) {  // input graph
             ++i;
             if (i >= argc) {
@@ -139,8 +131,8 @@ int main(int argc, char *argv[]) {
                     return 0;
                 }
                 int x = atoi(argv[i++]);
-                float r = atof(argv[i++]);
-                algorithm = new RE_Toy(x, r);
+                float delta = atof(argv[i++]);
+                algorithm = new RE_Toy(x, delta);
             } else if (algorithm_name == "bfl") {
                 if (i + 1 > argc) {
                     algorithmUsage(algorithm_name);
@@ -249,7 +241,7 @@ int main(int argc, char *argv[]) {
                       << graph->getName() << ", from " << ret.second.first << " to " << ret.second.second << ")"
                       << std::endl;
         }
-    } else {  // test construction time, index size, and query time of the algorithm on the graph
+    } else {  // test index size and query time of the algorithm on the graph
         auto profile = autoTest.testAlgorithmOnGraph(check_reachable_times);
         if (!result_file.empty()) {
             std::ofstream myfile;
@@ -257,20 +249,9 @@ int main(int argc, char *argv[]) {
             myfile << profile.algorithm_name << ","
                    << profile.graph_name << ","
                    << profile.params << ","
-//                   << profile.preparation_time_ns << ","
                    << profile.index_size << ","
                    << profile.query_num << ","
                    << profile.average_has_path_time_ns << "\n";
-            myfile.close();
-        }
-        if (!result_dir.empty()) {
-            std::ofstream myfile;
-            std::string query_file_name =
-                    result_dir + "/" + profile.algorithm_name + "_" + profile.params + "_" + profile.graph_name + ".txt";
-            myfile.open(query_file_name);
-            for (const auto &x: profile.has_path_times_ns) {
-                myfile << x << '\n';
-            }
             myfile.close();
         }
     }
@@ -294,7 +275,6 @@ void usage() {
                     "--accuracy                 Run tests to validate the correctness of the algorithm (optional, --time parameter is not required)\n"
                     "--query_num <number>       Set number of queries, default value is 100000 (optional)\n"
                     "--result_file <file>       Set the file path for result output (optional, use when generating the result file)\n"
-                    "--result_dir <dir>         Set the directory path for query time output (optional, use when generating query time files)\n"
                     "--graph <type>             Specify input graph type (required)\n"
                     "   --random <n> <d>        Generate a random DAG with <n> nodes and <d> average degree\n"
                     "   --complete <n>          Generate a complete DAG with <n> nodes\n"
@@ -303,7 +283,7 @@ void usage() {
                     "--algorithm <algorithm_name> [algorithm_params]  Specify the reachability algorithm to use and its parameters (required)\n"
                     "\n"
                     "Reachability Algorithms:\n"
-                    "re_toy <x> <r>             RE-toy algorithm\n"
+                    "re_toy <x> <delta>         RE-toy algorithm\n"
                     "bfl <K>                    BFL algorithm\n"
                     "grail <t> <ltype> <dim>    GRAIL algorithm\n"
                     "pathtree <alg_type>        PathTree algorithm\n"
@@ -319,9 +299,6 @@ void usage() {
                     "- Run the reachability algorithm RE-toy of specific parameters on a complete DAG with 1000 nodes with a maximum execution time of 100 seconds, and store the results in the specified path:\n"
                     "  ./reachability --time 100 --graph --complete 1000 --algorithm re 32 2.0 --result_file ./result.csv\n"
                     "\n"
-                    "- Run the reachability algorithm BFL of specific parameters on a specified graph file, and store query time records under specified directory:\n"
-                    "  ./reachability --time 1000 --graph --file /path/to/graph.txt --algorithm bfl 5 --result_dir ./query_time/\n"
-                    "\n"
                     "- Run tests to validate the correctness of the algorithm PLL on a randomly generated DAG with 100 nodes and an average degree of 3 with a specific seed without limiting the maximum execution time:\n"
                     "  ./reachability --accuracy --graph --random 100 3 --seed 29 --algorithm pll 1 \n"
                     "\n"
@@ -334,7 +311,7 @@ void algorithmUsage(const std::string &algorithm_name) {
         std::cout << "Usage of re_toy:\n"
                      "Total: 2 argument(s)\n"
                      "arg[0]: x\n"
-                     "arg[1]: r\n"
+                     "arg[1]: delta\n"
                   << std::endl;
     } else if (algorithm_name == "bfl") {
         std::cout << "Usage of bfl:\n"

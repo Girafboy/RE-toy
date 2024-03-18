@@ -15,7 +15,7 @@
 // #define DEBUG
 
 namespace re {
-    RE_Toy::RE_Toy(int x, float r) : chunk_size(x - 1), ratio(r) {}
+    RE_Toy::RE_Toy(int x, float delta) : chunk_size(x - 1), delta(delta) {}
 
     unsigned int RE_Toy::encode(Bits &bits, Bits &out, unsigned int p0, int cur, int len) const {
         unsigned long long lo = 0, hi = RANGE_MAX, mid;
@@ -97,7 +97,7 @@ namespace re {
         unsigned int p0 = encode(code_raw[chunks - 1], node.code.chunks[chunks - 1], p0_base, node.topo_order,
                               node.topo_order - chunk_size * (chunks - 1));
         for (int i = chunks - 2; i >= 0; i--) {
-            if (approximation_ratio(p0, p0_base) > ratio) {
+            if (approximation_ratio(p0, p0_base) > delta) {
                 p0_base = p0;
                 node.code.a_state.emplace_back(i, p0_base);
             }
@@ -293,7 +293,7 @@ namespace re {
 
     std::string RE_Toy::getParams() const {
         std::stringstream stream;
-        stream << "x=" << chunk_size + 1 << " r=" << std::fixed << std::setprecision(1) << ratio;
+        stream << "x=" << chunk_size + 1 << " delta=" << std::fixed << std::setprecision(1) << delta;
         return stream.str();
     }
 
