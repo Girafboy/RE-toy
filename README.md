@@ -68,13 +68,13 @@ Here are some examples of how to use the commands:
 
 - Run the reachability algorithm RE-toy of specific parameters on a complete DAG with 1000 nodes with a maximum execution time of 100 seconds, and store the results in the specified path:
 
-  ````
+  ```
   ./reachability --time 100 --graph --complete 1000 --algorithm re_toy 32 2.0 --result_file ./result.csv
   ```
 
 - Run tests to validate the correctness of the algorithm PLL on a randomly generated DAG with 100 nodes and an average degree of 3 with a specific seed without limiting the maximum execution time:
 
-  ````
+  ```
   ./reachability --accuracy --graph --random 100 3 --seed 29 --algorithm pll 1
   ```
 
