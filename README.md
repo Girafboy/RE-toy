@@ -139,8 +139,22 @@ Most configuration parameters of this script are similar to those in `test.sh`.
 
 If you use the RE Paradigm or RE-toy algorithm for your research or any other work, please cite our paper.
 
-todo: bib
-
 ## Disclaimer
 
 While our repository provides the implementations of many reachability algorithms, we take no responsibility for them, other than that of our own algorithm, RE-toy. The implementations of other reachability algorithms provided are for reference purposes only. Please refer to the original articles and official source code.
+
+Here are the references and source code origins of the algorithms.
+
+| Algorithm | Reference                                                    | Source Code                                                  |
+| --------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| BFL       | Su J, Zhu Q, Wei H, et al. Reachability querying: Can it be even faster?[J]. IEEE Transactions on Knowledge and Data Engineering, 2016, 29(3): 683-697. | [GitHub](https://github.com/BoleynSu/bfl)                    |
+| DBL       | Lyu Q, Li Y, He B, et al. DBL: Efficient reachability queries on dynamic graphs[C]//Database Systems for Advanced Applications: 26th International Conference, DASFAA 2021, Taipei, Taiwan, April 11–14, 2021, Proceedings, Part II 26. Springer International Publishing, 2021: 761-777. | [GitHub](https://github.com/dabianzhixing/DBL)               |
+| FERRARI   | Seufert S, Anand A, Bedathur S, et al. Ferrari: Flexible and efficient reachability range assignment for graph indexing[C]//2013 IEEE 29th International Conference on Data Engineering (ICDE). IEEE, 2013: 1009-1020. | [GitHub](https://github.com/steps/Ferrari)                   |
+| GRAIL     | Yildirim H, Chaoji V, Zaki M J. Grail: Scalable reachability index for large graphs[J]. Proceedings of the VLDB Endowment, 2010, 3(1-2): 276-284. | [GitHub](https://github.com/zakimjz/grail)                   |
+| GRIPP     | Trißl S, Leser U. Fast and practical indexing and querying of very large graphs[C]//Proceedings of the 2007 ACM SIGMOD international conference on Management of data. 2007: 845-856. | [GitHub](https://github.com/Gnaiqing/GRIPP)                  |
+| IP        | Wei H, Yu J X, Lu C, et al. Reachability querying: An independent permutation labeling approach[J]. Proceedings of the VLDB Endowment, 2014, 7(12): 1191-1202.<br />Wei H, Yu J X, Lu C, et al. Reachability querying: an independent permutation labeling approach[J]. The VLDB Journal, 2018, 27: 1-26. | [GitHub](https://github.com/datourat/IP-label-for-graph-reachability) |
+| path-tree | Jin R, Xiang Y, Ruan N, et al. Efficiently answering reachability queries on very large directed graphs[C]//Proceedings of the 2008 ACM SIGMOD international conference on Management of data. 2008: 595-608.<br />Jin R, Ruan N, Xiang Y, et al. Path-tree: An efficient reachability indexing scheme for large directed graphs[J]. ACM Transactions on Database Systems (TODS), 2011, 36(1): 1-44. | [Author Homepage](https://www.cs.kent.edu/%7Enruan/soft.html) |
+| PLL       | Yano Y, Akiba T, Iwata Y, et al. Fast and scalable reachability queries on graphs by pruned labeling with landmarks and paths[C]//Proceedings of the 22nd ACM international conference on Information & Knowledge Management. 2013: 1601-1606. | [GitHub](https://github.com/y3eadgbe/PrunedLabeling)         |
+| PReaCH    | Merz F, Sanders P. Preach: A fast lightweight reachability index using pruning and contraction hierarchies[C]//European Symposium on Algorithms. Berlin, Heidelberg: Springer Berlin Heidelberg, 2014: 701-712. | [GitHub](https://github.com/fiji-flo/preach2014)             |
+| TOL       | Zhu A D, Lin W, Wang S, et al. Reachability queries on large dynamic graphs: a total order approach[C]//Proceedings of the 2014 ACM SIGMOD international conference on Management of data. 2014: 1323-1334. | [SourceForge](https://sourceforge.net/projects/totalorderlabeling/files/) |
+
