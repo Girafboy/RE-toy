@@ -470,7 +470,6 @@ namespace path_tree {
                     insert = false;
                     break;
                 } else if (pre2 <= pre1 && post2 >= post1 && labels[*sit1][2] > labels[*sit2][2]) {
-                    // todo: 检查，我修改了这里
                     sit1 = s1.erase(sit1);
 //				s1.erase(*sit1);
 //				sit1++;

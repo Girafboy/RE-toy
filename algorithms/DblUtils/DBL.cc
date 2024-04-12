@@ -544,7 +544,6 @@ namespace dbl {
 
         parallel_vector<int> p_nxt_que_in(V), p_nxt_que_out(V);
 
-        // todo: 这里修改了
         rep (source_i, min((int) dl_in[0].size(), (int) dl_in.size()))
         {
             int s = ord[source_i];
@@ -683,7 +682,6 @@ namespace dbl {
         vector<int> crr_que_in, crr_que_out;
         bool *visited_in = new bool[V], *visited_out = new bool[V];
 
-        // todo: 这里也修改了
         rep (source_i, min((int) bl_in[0].size(), (int) bl_in.size()))
         {
             int hash = source_i;
