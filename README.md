@@ -1,8 +1,8 @@
-# Reachability-state Encoding: A New Paradigm for Reachability Index
+# Reachability-state Encoding: Bridging between the Smallest Index Size and the Fastest Query Time for Reachability Query
 
 Welcome to the RE-toy algorithm and our reachability testing platform!
 
-This repository includes the C++ implementation of the RE-toy algorithm, as described in our paper Reachability-state Encoding: A New Paradigm for Reachability Index. Additionally, it provides a platform that facilitates the validation and testing of reachability algorithms.
+This repository includes the C++ implementation of the RE-toy algorithm, as described in our paper Reachability-state Encoding: Bridging between the Smallest Index Size and the Fastest Query Time for Reachability Query. Additionally, it provides a platform that facilitates the validation and testing of reachability algorithms.
 
 ## Code Structure
 
@@ -16,11 +16,11 @@ The code is organized as follows:
 - `include` directory: contains library dependencies of some baseline algorithms.
 - `graphs` directory: contains real DAGs used in our experiments.
 - `main.cpp`: executes a single experiment, including the construction of index and query testing for of an algorithm with specific parameters on a given graph.
-- `test.sh` and `experiments.sh`: automate the execution of `main.cpp` to perform multiple tests.
+- `demo.sh` and `experiments.sh`: automate the execution of `main.cpp` to perform multiple tests.
 
-## Reachability Program Usage
+## Usage
 
-The `reachability` program is designed to be used in conjunction with the `test.sh` or `experiments.sh` script rather than being used independently. Users can customize the testing parameters within the `test.sh` script according to their specific needs, or perform the experiments mentioned in our paper by directly running `experiments.sh`.
+Here are the instructions for using the `reachability` program. Additionally, we have included a convenient script called `demo.sh` to facilitate the usage of this program. The `demo.sh` script serves as an example of automating multiple tests with various parameters using the `reachability` program. You can refer to the comments within the script to customize your own tests.
 
 ### Preparation
 
@@ -30,7 +30,7 @@ Compile the project and generate the `reachability` executable file.
 
 To execute the program, use the following command:
 
-```
+```bash
 ./reachability [options]
 ```
 
@@ -68,13 +68,13 @@ Here are some examples of how to use the commands:
 
 - Run the reachability algorithm RE-toy of specific parameters on a complete DAG with 1000 nodes with a maximum execution time of 100 seconds, and store the results in the specified path:
 
-  ```
+  ```bash
   ./reachability --time 100 --graph --complete 1000 --algorithm re_toy 32 2.0 --result_file ./result.csv
   ```
 
 - Run tests to validate the correctness of the algorithm PLL on a randomly generated DAG with 100 nodes and an average degree of 3 with a specific seed without limiting the maximum execution time:
 
-  ```
+  ```bash
   ./reachability --accuracy --graph --random 100 3 --seed 29 --algorithm pll 1
   ```
 
@@ -100,60 +100,29 @@ For example, a valid `graph.txt` file could look like:
 
 This file represents a graph with five nodes, where node 0 has edges to nodes 1 and 2, node 1 has an edge to node 2, and so on.
 
-## Test Script `tesh.sh` Usage
-
-The `test.sh` script is an example on how to automate multiple tests with different parameters using the `reachability` program. You can follow the steps below to use the `test.sh` script:
-
-1. Make sure you have successfully compiled the `reachability` program.
-
-2. Modify the following variables within the script to customize the testing parameters:
-
-   - `executable`: Provide the path to the `reachability` executable file generated after compilation.
-   - `input_directory`: Specify the common parent directory path where the input graph files are located. Ensure that the graph files are present in this directory and update the paths in the `graphs` array accordingly.
-   - `test_accuracy`: Set this variable to true if you want to perform accuracy tests, or false if you want to test index size and query time.
-   - `output_file`: Set the path to the output `result.csv` file where the test results will be stored.
-   - `query_num`: Define the number of query pairs to be used in each test.
-   - `max_time`: Set the maximum execution time in seconds for each test.
-
-3. Modify the `graphs` and `algorithms` arrays to include specific graphs and reachability algorithms you want to test.
-
-4. Run the following command to execute the script:
-
-   ```
-   ./test.sh
-   ```
-   
-   The script will start executing the tests based on the specified parameters.
-
-5. If `test_accuracy` is set to true, results will be shown in the terminal. Otherwise, once the script completes, the test results will be saved in the file specified by the `output_file` variable.
-
-## Test Script `experiments.sh` Usage
+## Reproducing Our Experiments
 
 The `experiments.sh` runs all the four experiments mentioned in the paper, namely parameter, tradeoff, real_graph, and dense_up.
 
-Most configuration parameters of this script are similar to those in `test.sh`.
+To reproduce our experimental results, please begin by compiling the project and generating the `reachability` executable file. Once complete, you can execute the program using the following command:
 
-`seed_cnt`: Specify the number of seeds used to generate a random graph. Each algorithm would be tested `seed_cnt` times on different random graphs with a specific `n` and `d`.
+```bash
+./experiments.sh
+```
 
-## Citation
+## Credits
 
-If you use the RE Paradigm or RE-toy algorithm for your research or any other work, please cite our paper.
-
-## Disclaimer
-
-While our repository provides the implementations of many reachability algorithms, we take no responsibility for them, other than that of our own algorithm, RE-toy. The implementations of other reachability algorithms provided are for reference purposes only. Please refer to the original articles and official source code.
-
-Here are the references and source code origins of the algorithms.
+Here are the references and source code origins of the algorithms in this repository. For more information, please refer to the original articles and official source code.
 
 | Algorithm | Reference                                                    | Source Code                                                  |
-| --------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+|-----------| ------------------------------------------------------------ | ------------------------------------------------------------ |
 | BFL       | Su J, Zhu Q, Wei H, et al. Reachability querying: Can it be even faster?[J]. IEEE Transactions on Knowledge and Data Engineering, 2016, 29(3): 683-697. | [GitHub](https://github.com/BoleynSu/bfl)                    |
 | DBL       | Lyu Q, Li Y, He B, et al. DBL: Efficient reachability queries on dynamic graphs[C]//Database Systems for Advanced Applications: 26th International Conference, DASFAA 2021, Taipei, Taiwan, April 11–14, 2021, Proceedings, Part II 26. Springer International Publishing, 2021: 761-777. | [GitHub](https://github.com/dabianzhixing/DBL)               |
 | FERRARI   | Seufert S, Anand A, Bedathur S, et al. Ferrari: Flexible and efficient reachability range assignment for graph indexing[C]//2013 IEEE 29th International Conference on Data Engineering (ICDE). IEEE, 2013: 1009-1020. | [GitHub](https://github.com/steps/Ferrari)                   |
 | GRAIL     | Yildirim H, Chaoji V, Zaki M J. Grail: Scalable reachability index for large graphs[J]. Proceedings of the VLDB Endowment, 2010, 3(1-2): 276-284. | [GitHub](https://github.com/zakimjz/grail)                   |
 | GRIPP     | Trißl S, Leser U. Fast and practical indexing and querying of very large graphs[C]//Proceedings of the 2007 ACM SIGMOD international conference on Management of data. 2007: 845-856. | [GitHub](https://github.com/Gnaiqing/GRIPP)                  |
 | IP        | Wei H, Yu J X, Lu C, et al. Reachability querying: An independent permutation labeling approach[J]. Proceedings of the VLDB Endowment, 2014, 7(12): 1191-1202.<br />Wei H, Yu J X, Lu C, et al. Reachability querying: an independent permutation labeling approach[J]. The VLDB Journal, 2018, 27: 1-26. | [GitHub](https://github.com/datourat/IP-label-for-graph-reachability) |
-| path-tree | Jin R, Xiang Y, Ruan N, et al. Efficiently answering reachability queries on very large directed graphs[C]//Proceedings of the 2008 ACM SIGMOD international conference on Management of data. 2008: 595-608.<br />Jin R, Ruan N, Xiang Y, et al. Path-tree: An efficient reachability indexing scheme for large directed graphs[J]. ACM Transactions on Database Systems (TODS), 2011, 36(1): 1-44. | [Author Homepage](https://www.cs.kent.edu/%7Enruan/soft.html) |
+| Path-Tree | Jin R, Xiang Y, Ruan N, et al. Efficiently answering reachability queries on very large directed graphs[C]//Proceedings of the 2008 ACM SIGMOD international conference on Management of data. 2008: 595-608.<br />Jin R, Ruan N, Xiang Y, et al. Path-tree: An efficient reachability indexing scheme for large directed graphs[J]. ACM Transactions on Database Systems (TODS), 2011, 36(1): 1-44. | [Author Homepage](https://www.cs.kent.edu/%7Enruan/soft.html) |
 | PLL       | Yano Y, Akiba T, Iwata Y, et al. Fast and scalable reachability queries on graphs by pruned labeling with landmarks and paths[C]//Proceedings of the 22nd ACM international conference on Information & Knowledge Management. 2013: 1601-1606. | [GitHub](https://github.com/y3eadgbe/PrunedLabeling)         |
 | PReaCH    | Merz F, Sanders P. Preach: A fast lightweight reachability index using pruning and contraction hierarchies[C]//European Symposium on Algorithms. Berlin, Heidelberg: Springer Berlin Heidelberg, 2014: 701-712. | [GitHub](https://github.com/fiji-flo/preach2014)             |
 | TOL       | Zhu A D, Lin W, Wang S, et al. Reachability queries on large dynamic graphs: a total order approach[C]//Proceedings of the 2014 ACM SIGMOD international conference on Management of data. 2014: 1323-1334. | [SourceForge](https://sourceforge.net/projects/totalorderlabeling/files/) |
