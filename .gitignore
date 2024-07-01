@@ -1,0 +1,9 @@
+.cache
+.vscode
+build
+output
+/tmp/
+/.idea/
+.DS_Store
+/cmake-build-debug/
+/cmake-build-release/
